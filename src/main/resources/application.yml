@@ -3,6 +3,15 @@ server:
 spring:
   application:
     name: mod-circulation-bff
+  autoconfigure:
+    exclude: |-
+      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,
+      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,
+      org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+  liquibase:
+    enabled: false
+  mustache:
+    check-template-location: false
   jackson:
     default-property-inclusion: non_empty
     deserialization:
