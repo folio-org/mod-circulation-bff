@@ -1,0 +1,55 @@
+{
+  "id": "@artifactId@-@version@",
+  "name": "Folio mod-circulation-bff module",
+  "provides": [
+    {
+      "id": "circulation-bff-requests",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/requests/allowed-service-points",
+          "permissionsRequired": ["circulation-bff.requests.allowed-service-points.get"],
+          "modulePermissions": []
+        }
+      ]
+    },
+    {
+      "id": "_tenant",
+      "version": "1.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": ["POST"],
+          "pathPattern": "/_/tenant"
+        }, {
+          "methods": ["DELETE"],
+          "pathPattern": "/_/tenant"
+        }
+      ]
+    }
+  ],
+  "permissionSets" : [
+    {
+      "permissionName": "circulation-bff.requests.allowed-service-points.get",
+      "displayName": "circulation BFF - get allowed pickup service points for request",
+      "description": "get allowed pickup service points for request"
+    }
+  ],
+  "requires": [],
+  "launchDescriptor": {
+    "dockerImage": "@artifactId@:@version@",
+    "dockerPull": false,
+    "dockerArgs": {
+      "HostConfig": {
+        "Memory": 357913941,
+        "PortBindings": { "8081/tcp": [ { "HostPort": "%p" } ] }
+      }
+    },
+    "env": [
+      { "name": "JAVA_OPTIONS", "value": "-XX:MaxRAMPercentage=66.0"}
+    ]
+  }
+}
