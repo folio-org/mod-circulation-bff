@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.2.6</version>
         <relativePath/>
     </parent>
     <groupId>org.folio</groupId>
@@ -189,8 +189,8 @@
                             <inputSpec>${project.basedir}/src/main/resources/swagger.api/circulation-bff-requests.yaml</inputSpec>
                             <output>${project.build.directory}/generated-sources</output>
                             <generatorName>spring</generatorName>
-                            <modelPackage>${project.groupId}.mr.domain.dto</modelPackage>
-                            <apiPackage>${project.groupId}.mr.rest.resource</apiPackage>
+                            <modelPackage>${project.groupId}.circulationbff.domain.dto</modelPackage>
+                            <apiPackage>${project.groupId}.circulationbff.rest.resource</apiPackage>
                             <generateApis>true</generateApis>
                             <generateApiTests>true</generateApiTests>
                             <generateApiDocumentation>true</generateApiDocumentation>

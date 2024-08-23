@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.folio.circulationbff.controller.CirculationBffController;
+import org.folio.circulationbff.controller.TenantController;
 import org.folio.circulationbff.util.WireMockInitializer;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.AfterEach;
@@ -22,7 +23,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = {WireMockInitializer.class})
-@WebMvcTest(CirculationBffController.class)
+@WebMvcTest({CirculationBffController.class, TenantController.class})
 public class BaseIT {
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
