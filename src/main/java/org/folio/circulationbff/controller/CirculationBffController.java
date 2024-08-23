@@ -2,8 +2,8 @@ package org.folio.circulationbff.controller;
 
 import java.util.UUID;
 
-import org.folio.mr.domain.dto.AllowedServicePointsResponse;
-import org.folio.mr.rest.resource.CirculationBffApi;
+import org.folio.circulationbff.domain.dto.AllowedServicePointsResponse;
+import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
