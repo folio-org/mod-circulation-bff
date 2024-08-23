@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
+import lombok.SneakyThrows;
+
 public class TenantApiTest extends BaseIT {
   
   public static final String TENANT_URL_POST = "/_/tenant";
@@ -22,43 +24,38 @@ public class TenantApiTest extends BaseIT {
     "{\"module_to\": \"mod-circulation-bff-1.0.0-SNAPSHOT\"}";
 
   @Test
-  void tenantApiPostRespondsWithNoContent() throws Exception {
-    final HttpHeaders httpHeaders = new HttpHeaders();
-
-    httpHeaders.setContentType(APPLICATION_JSON);
-    httpHeaders.put(XOkapiHeaders.TENANT, List.of(TENANT_ID_CONSORTIUM));
-
+  @SneakyThrows
+  void tenantApiPostRespondsWithNoContent() {
     mockMvc.perform(post(TENANT_URL_POST)
         .content(TENANT_POST_BODY)
-        .headers(httpHeaders)
+        .headers(getDefaultTenantApiHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isNoContent());
   }
 
   @Test
-  void tenantApiGetRespondsWithNoContent() throws Exception {
-    final HttpHeaders httpHeaders = new HttpHeaders();
-
-    httpHeaders.setContentType(APPLICATION_JSON);
-    httpHeaders.put(XOkapiHeaders.TENANT, List.of(TENANT_ID_CONSORTIUM));
-
+  @SneakyThrows
+  void tenantApiGetRespondsWithNoContent() {
     mockMvc.perform(get(TENANT_URL_GET_DELETE)
-        .headers(httpHeaders)
+        .headers(getDefaultTenantApiHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isNoContent());
   }
 
   @Test
-  void tenantApiDeleteRespondsWithNoContent() throws Exception {
-    final HttpHeaders httpHeaders = new HttpHeaders();
-
-    httpHeaders.setContentType(APPLICATION_JSON);
-    httpHeaders.put(XOkapiHeaders.TENANT, List.of(TENANT_ID_CONSORTIUM));
-
+  @SneakyThrows
+  void tenantApiDeleteRespondsWithNoContent() {
     mockMvc.perform(delete(TENANT_URL_GET_DELETE)
-        .headers(httpHeaders)
+        .headers(getDefaultTenantApiHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isNoContent());
+  }
+
+  private HttpHeaders getDefaultTenantApiHeaders() {
+    final HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.setContentType(APPLICATION_JSON);
+    httpHeaders.put(XOkapiHeaders.TENANT, List.of(TENANT_ID_CONSORTIUM));
+    return httpHeaders;
   }
 
 }
