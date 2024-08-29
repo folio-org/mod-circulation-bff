@@ -32,9 +32,11 @@ properties:
   holdingsRecordId:
     description: "The ID of the holdings for the item"
     type: string
+    format: uuid
   instanceId:
     description: "The ID of the instance for the item"
     type: string
+    format: uuid
   barcode:
     description: "The barcode of the item"
     type: string
@@ -73,7 +75,7 @@ properties:
   inTransitDestinationServicePointId:
     description: "Service point an item is intended to be transited to (should only be present when in transit)"
     type: string
-    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    format: uuid
   inTransitDestinationServicePoint:
     description: "Service point an item is intended to be transited to (should only be present when in transit)"
     type: object
