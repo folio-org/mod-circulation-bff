@@ -13,6 +13,14 @@
           "pathPattern": "/circulation-bff/requests/allowed-service-points",
           "permissionsRequired": ["circulation-bff.requests.allowed-service-points.get"],
           "modulePermissions": []
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/requests/search-instances",
+          "permissionsRequired": ["circulation-bff.requests.search-instances.get"],
+          "modulePermissions": ["search.instances.collection.get"]
         }
       ]
     },
@@ -42,6 +50,11 @@
       "permissionName": "circulation-bff.requests.allowed-service-points.get",
       "displayName": "circulation BFF - get allowed pickup service points for request",
       "description": "get allowed pickup service points for request"
+    },
+    {
+      "permissionName": "circulation-bff.requests.search-instances.get",
+      "displayName": "circulation BFF - search instances",
+      "description": "get instances by query and extend with item information from inventory"
     }
   ],
   "requires": [],

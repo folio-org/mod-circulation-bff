@@ -1,0 +1,9 @@
+description: Allowed pickup service points grouped by request type
+type: object
+properties:
+  Page:
+    $ref: '../dto/allowedServicePoint/allowedServicePoints.yaml'
+  Hold:
+    $ref: '../dto/allowedServicePoint/allowedServicePoints.yaml'
+  Recall:
+    $ref: '../dto/allowedServicePoint/allowedServicePoints.yaml'
