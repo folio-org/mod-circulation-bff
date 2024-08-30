@@ -27,6 +27,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 public class BaseIT {
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
+  protected static final String USER_ID = randomId();
 
   @Autowired
   protected MockMvc mockMvc;
@@ -52,7 +53,7 @@ public class BaseIT {
     httpHeaders.setContentType(APPLICATION_JSON);
     httpHeaders.put(XOkapiHeaders.TENANT, List.of(TENANT_ID_CONSORTIUM));
     httpHeaders.add(XOkapiHeaders.TOKEN, TOKEN);
-    httpHeaders.add(XOkapiHeaders.USER_ID, "08d51c7a-0f36-4f3d-9e35-d285612a23df");
+    httpHeaders.add(XOkapiHeaders.USER_ID, USER_ID);
 
     return httpHeaders;
   }

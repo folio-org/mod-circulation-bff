@@ -1,0 +1,19 @@
+get:
+  description: Find instances by query and extend with item information
+  parameters:
+    - $ref: '../../parameters/query.yaml'
+  tags:
+    - getInstancesByQuery
+  responses:
+    '200':
+      description: Instances by query extended with item information
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/response/instanceSearchResult.yaml'
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'

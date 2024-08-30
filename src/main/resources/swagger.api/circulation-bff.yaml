@@ -1,0 +1,9 @@
+openapi: 3.0.0
+info:
+  title: Circulation BFF requests API
+  version: v1
+paths:
+  /circulation-bff/requests/allowed-service-points:
+    $ref: 'paths/allowedServicePoints/allowedServicePoints.yaml'
+  /circulation-bff/requests/search-instances:
+    $ref: 'paths/searchInstances/searchInstances.yaml'

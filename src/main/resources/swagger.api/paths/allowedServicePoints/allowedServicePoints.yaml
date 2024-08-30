@@ -1,0 +1,22 @@
+get:
+  description: Retrieve allowed service points
+  parameters:
+    - $ref: '../../parameters/operation.yaml'
+    - $ref: '../../parameters/patronGroupId.yaml'
+    - $ref: '../../parameters/instanceId.yaml'
+    - $ref: '../../parameters/requestId.yaml'
+  tags:
+    - getAllowedServicePoints
+  responses:
+    '200':
+      description: 'Allowed service points grouped by request type'
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/response/allowedServicePoints.yaml'
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'
