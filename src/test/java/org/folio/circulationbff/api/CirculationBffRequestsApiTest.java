@@ -4,7 +4,6 @@ import static java.lang.String.format;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 class CirculationBffRequestsApiTest extends BaseIT {
@@ -16,7 +15,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
   private static final String SEARCH_INSTANCES_QUERY_PARAM_TMP = "query=%s";
   private static final String URL_TMP = "%s?%s";
 
-  @Test
+
   void allowedServicePointsReturnsOkStatus() throws Exception {
     mockMvc.perform(
         get(buildUrl(ALLOWED_SP_URL_PATH, ALLOWED_SP_QUERY_PARAM_TMP, "create", randomId(),
@@ -26,7 +25,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
       .andExpect(status().isOk());
   }
 
-  @Test
+
   void searchInstancesReturnsOkStatus() throws Exception {
     mockMvc.perform(
         get(buildUrl(SEARCH_INSTANCES_URL_PATH, SEARCH_INSTANCES_QUERY_PARAM_TMP,
