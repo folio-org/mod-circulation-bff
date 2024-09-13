@@ -15,6 +15,7 @@ import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.folio.tenant.domain.dto.TenantAttributes;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +72,11 @@ public class BaseIT {
   static void beforeAll() {
     wireMockServer = new WireMockServer(WIRE_MOCK_PORT);
     wireMockServer.start();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    wireMockServer.stop();;
   }
 
   @DynamicPropertySource
