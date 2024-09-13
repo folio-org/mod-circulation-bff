@@ -28,7 +28,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     if (ecsTlrSettings.getEcsTlrFeatureEnabled()) {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. Getting allowed service " +
         "points from mod-tlr module");
-      return ecsTlrClient.getAllowedServicePoints(operation, patronGroupId, instanceId,
+      return ecsTlrClient.getAllowedServicePoints(operation, instanceId,
         requestId);
     } else {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +

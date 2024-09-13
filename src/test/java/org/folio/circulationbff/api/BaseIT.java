@@ -25,6 +25,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.util.TestSocketUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,6 +47,7 @@ import lombok.SneakyThrows;
 @Testcontainers
 @AutoConfigureMockMvc
 public class BaseIT {
+  protected static final String HEADER_TENANT = "x-okapi-tenant";
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
   protected static final String USER_ID = randomId();
@@ -68,6 +71,11 @@ public class BaseIT {
   static void beforeAll() {
     wireMockServer = new WireMockServer(WIRE_MOCK_PORT);
     wireMockServer.start();
+  }
+
+  @DynamicPropertySource
+  static void overrideProperties(DynamicPropertyRegistry registry) {
+    registry.add("folio.okapi-url", wireMockServer::baseUrl);
   }
 
   @BeforeEach
@@ -137,5 +145,10 @@ public class BaseIT {
     return new HashMap<>(defaultHeaders().entrySet()
       .stream()
       .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+  }
+
+  protected WebTestClient.ResponseSpec doGet(String url) {
+    return buildRequest(HttpMethod.GET, url)
+      .exchange();
   }
 }
