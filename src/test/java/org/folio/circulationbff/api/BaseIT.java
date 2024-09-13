@@ -76,7 +76,7 @@ public class BaseIT {
 
   @AfterAll
   static void tearDown() {
-    wireMockServer.stop();;
+    wireMockServer.stop();
   }
 
   @DynamicPropertySource
