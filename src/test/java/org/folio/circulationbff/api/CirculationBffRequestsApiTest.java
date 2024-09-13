@@ -33,6 +33,8 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
   private static final String TLR_SETTINGS_URL = "/tlr/settings";
   private static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
+  private static final String CIRCULATION_ALLOWED_SERVICE_POINT_URL = "/circulation/requests" +
+    "/allowed-service-points";
 
   @BeforeEach
   public void beforeEach() {
@@ -40,7 +42,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
   }
 
   @Test
-  void allowedServicePointsReturnsOkStatus() {
+  void allowedServicePointsCallsTlrWhenEcsTlrEnabled() {
     TlrSettings tlrSettings = new TlrSettings();
     tlrSettings.setEcsTlrFeatureEnabled(true);
 
@@ -71,6 +73,44 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
     wireMockServer.verify(getRequestedFor(urlPathEqualTo(
       TLR_ALLOWED_SERVICE_POINT_URL))
+      .withQueryParam("requestId", equalTo(requestId.toString()))
+      .withQueryParam("instanceId", equalTo(instanceId.toString()))
+      .withQueryParam("operation", equalTo(operation))
+    );
+  }
+
+  @Test
+  void allowedServicePointsCallsCirculationWhenEcsTlrDisabled() {
+    TlrSettings tlrSettings = new TlrSettings();
+    tlrSettings.setEcsTlrFeatureEnabled(false);
+
+    var allowedSpResponseConsortium = new AllowedServicePoints();
+    allowedSpResponseConsortium.setHold(Set.of(
+      buildAllowedServicePoint("SP_consortium_1"),
+      buildAllowedServicePoint("SP_consortium_2")));
+
+    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
+
+
+    var operation = "create";
+    var instanceId = UUID.randomUUID();
+    var requestId = UUID.randomUUID();
+    var patronGroupId = UUID.randomUUID();
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
+
+    doGet(
+      ALLOWED_SERVICE_POINT_PATH + format("?operation=create&requestId=%s&instanceId=%s&patronGroupId=%s",
+        requestId, instanceId, patronGroupId))
+      .expectStatus().isEqualTo(200)
+      .expectBody().json("{}");
+
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(
+      CIRCULATION_ALLOWED_SERVICE_POINT_URL))
       .withQueryParam("requestId", equalTo(requestId.toString()))
       .withQueryParam("instanceId", equalTo(instanceId.toString()))
       .withQueryParam("operation", equalTo(operation))
