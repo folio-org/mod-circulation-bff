@@ -12,7 +12,11 @@
           ],
           "pathPattern": "/circulation-bff/requests/allowed-service-points",
           "permissionsRequired": ["circulation-bff.requests.allowed-service-points.get"],
-          "modulePermissions": []
+          "modulePermissions": [
+            "tlr.ecs-tlr-allowed-service-points.get",
+            "circulation.requests.allowed-service-points.get",
+            "tlr.settings.get"
+          ]
         },
         {
           "methods": [
