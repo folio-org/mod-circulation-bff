@@ -3,6 +3,7 @@ package org.folio.circulationbff.client.feign;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,6 @@ public interface CirculationClient {
     @RequestParam("patronGroupId") UUID patronGroupId, @RequestParam("instanceId") UUID instanceId,
     @RequestParam("operation") String operation, @RequestParam("requestId") UUID requestId);
 
-
-
+  @GetMapping("/settings?query=name=ecsTlrFeature")
+  CirculationSettingsResponse getEcsTlrCirculationSettings();
 }

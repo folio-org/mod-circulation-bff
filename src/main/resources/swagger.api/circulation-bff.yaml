@@ -11,3 +11,5 @@ components:
   schemas:
     tlr-settings:
       $ref: 'schemas/dto/TlrSettings.yaml#/TlrSettings'
+    circulationSettingsResponse:
+      $ref: 'schemas/response/circulationSettingsResponse.yaml'
