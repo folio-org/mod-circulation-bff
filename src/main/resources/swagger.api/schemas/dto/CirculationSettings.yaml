@@ -10,7 +10,11 @@ CirculationSettings:
       $ref: "common/uuid.yaml"
     value:
       description: "Value of the Circulation Settings"
-      type: string
+      type: object
+      properties:
+        enabled:
+          description: "Whether the setting is enabled"
+          type: boolean
   required:
     - id
     - name

@@ -34,8 +34,7 @@ public class SettingsServiceImpl implements SettingsService {
       if (circulationSettingsResponse.getTotalRecords() > 0) {
         try {
           var circulationSettings = circulationSettingsResponse.getCirculationSettings().get(0);
-          JsonNode jsonNode = new ObjectMapper().readTree(circulationSettings.getValue());
-          return jsonNode.get("enabled").asBoolean();
+          return circulationSettings.getValue().getEnabled();
         } catch (Exception e) {
           log.error("getCirculationSettings:: Failed to parse circulation settings", e);
         }
