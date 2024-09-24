@@ -15,7 +15,7 @@ public interface EcsTlrClient {
   @GetMapping("/allowed-service-points")
   AllowedServicePoints getAllowedServicePoints(@RequestParam("operation") String operation,
     @RequestParam("requesterId") UUID requesterId, @RequestParam("instanceId") UUID instanceId,
-    @RequestParam("requestId") UUID requestId);
+    @RequestParam("requestId") UUID requestId, @RequestParam("itemId") UUID itemId);
 
   @GetMapping("/settings")
   TlrSettings getTlrSettings ();
