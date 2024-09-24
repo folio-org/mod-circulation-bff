@@ -22,12 +22,13 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(
-    String tenantId, String operation, UUID patronGroupId, UUID instanceId, UUID requestId,
+    String operation, String tenantId, UUID patronGroupId, UUID instanceId, UUID requestId,
     UUID requesterId, UUID itemId) {
     log.info("circulationBffRequestsAllowedServicePointsGet:: params: " +
       "patronGroupId={}, operation={}, instanceId={}, requestId={}, requesterId={}, itemId={}",
       patronGroupId, operation, instanceId, requestId, requesterId, itemId);
-    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(tenantId, patronGroupId, operation, instanceId, requestId, requesterId, itemId));
+    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(
+      tenantId, patronGroupId, operation, instanceId, requestId, requesterId, itemId));
   }
 
   @Override
