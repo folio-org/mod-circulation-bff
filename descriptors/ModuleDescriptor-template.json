@@ -17,7 +17,8 @@
             "circulation.requests.allowed-service-points.get",
             "tlr.settings.get",
             "circulation.settings.item.get",
-            "circulation.settings.collection.get"
+            "circulation.settings.collection.get",
+            "user-tenants.collection.get"
           ]
         },
         {
