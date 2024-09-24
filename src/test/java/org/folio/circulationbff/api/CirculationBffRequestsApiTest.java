@@ -10,11 +10,15 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints1Inner;
+import org.folio.circulationbff.domain.dto.CirculationSettings;
+import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
+import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +35,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
   private static final String SEARCH_INSTANCES_QUERY_PARAM_TMP = "query=%s";
   private static final String URL_TMP = "%s?%s";
 
-  private static final String TLR_SETTINGS_URL = "/tlr/settings";
+  private static final String CIRCULATION_SETTINGS_URL = "/settings?query=name=ecsTlrFeature";
   private static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
   private static final String CIRCULATION_ALLOWED_SERVICE_POINT_URL = "/circulation/requests" +
     "/allowed-service-points";
@@ -43,17 +47,23 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
   @Test
   void allowedServicePointsCallsTlrWhenEcsTlrEnabled() {
-    TlrSettings tlrSettings = new TlrSettings();
-    tlrSettings.setEcsTlrFeatureEnabled(true);
+    var circulationSettingsResponse = new CirculationSettingsResponse();
+    circulationSettingsResponse.setTotalRecords(1);
+    circulationSettingsResponse.setCirculationSettings(List.of(
+      new CirculationSettings()
+        .name("ecsTlrFeature")
+        .value(new CirculationSettingsValue().enabled(true))
+    ));
+
 
     var allowedSpResponseConsortium = new AllowedServicePoints();
     allowedSpResponseConsortium.setHold(Set.of(
       buildAllowedServicePoint("SP_consortium_1"),
       buildAllowedServicePoint("SP_consortium_2")));
 
-    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
+    wireMockServer.stubFor(WireMock.get(urlMatching(CIRCULATION_SETTINGS_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
+      .willReturn(jsonResponse(asJsonString(circulationSettingsResponse), SC_OK)));
 
 
     var operation = "create";
@@ -89,7 +99,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
       buildAllowedServicePoint("SP_consortium_1"),
       buildAllowedServicePoint("SP_consortium_2")));
 
-    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
+    wireMockServer.stubFor(WireMock.get(urlMatching(CIRCULATION_SETTINGS_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
 

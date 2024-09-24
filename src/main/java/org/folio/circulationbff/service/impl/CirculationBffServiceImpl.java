@@ -22,13 +22,14 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final SettingsService settingsService;
 
   @Override
-  public AllowedServicePoints getAllowedServicePoints(UUID patronGroupId, String operation,
+  public AllowedServicePoints getAllowedServicePoints(String tenantId, UUID patronGroupId,
+                                                      String operation,
                                                       UUID instanceId, UUID requestId,
                                                       UUID requesterId, UUID itemId) {
     log.info("getAllowedServicePoints:: params: patronGroupId={}, operation={}, instanceId={}, " +
       "requestId={}, requesterId={}, itemId={}", patronGroupId, operation, instanceId, requestId,
       requesterId, itemId);
-    if (settingsService.isEcsTlrFeatureEnabled()) {
+    if (settingsService.isEcsTlrFeatureEnabled(tenantId)) {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. Getting allowed service " +
         "points from mod-tlr module");
       return ecsTlrClient.getAllowedServicePoints(operation, requesterId, instanceId, requestId);

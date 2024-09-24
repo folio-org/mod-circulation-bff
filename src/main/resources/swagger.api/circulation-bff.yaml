@@ -13,3 +13,5 @@ components:
       $ref: 'schemas/dto/TlrSettings.yaml#/TlrSettings'
     circulationSettingsResponse:
       $ref: 'schemas/response/circulationSettingsResponse.yaml'
+    userTenantCollection:
+      $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
