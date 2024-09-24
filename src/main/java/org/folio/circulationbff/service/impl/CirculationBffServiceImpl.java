@@ -22,19 +22,21 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final SettingsService settingsService;
 
   @Override
-  public AllowedServicePoints getAllowedServicePoints(UUID patronGroupId, String operation, UUID instanceId, UUID requestId) {
-    log.info("getAllowedServicePoints:: patronGroupId={}, operation={}, instanceId={}, requestId={}",
-      patronGroupId, operation, instanceId, requestId);
+  public AllowedServicePoints getAllowedServicePoints(UUID patronGroupId, String operation,
+                                                      UUID instanceId, UUID requestId,
+                                                      UUID requesterId, UUID itemId) {
+    log.info("getAllowedServicePoints:: params: patronGroupId={}, operation={}, instanceId={}, " +
+      "requestId={}, requesterId={}, itemId={}", patronGroupId, operation, instanceId, requestId,
+      requesterId, itemId);
     if (settingsService.isEcsTlrFeatureEnabled()) {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. Getting allowed service " +
         "points from mod-tlr module");
-      return ecsTlrClient.getAllowedServicePoints(operation, instanceId,
-        requestId);
+      return ecsTlrClient.getAllowedServicePoints(operation, requesterId, instanceId, requestId);
     } else {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +
         "points from mod-circulation module");
-      return circulationClient.allowedServicePoints(patronGroupId, instanceId,
-        operation, requestId);
+      return circulationClient.allowedServicePoints(operation, requesterId,
+        instanceId, itemId, requestId, patronGroupId);
     }
   }
 }

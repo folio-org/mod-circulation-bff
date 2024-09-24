@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface EcsTlrClient {
 
   @GetMapping("/allowed-service-points")
-  AllowedServicePoints getAllowedServicePoints(
-    @RequestParam("operation") String operation, @RequestParam("instanceId") UUID instanceId,
+  AllowedServicePoints getAllowedServicePoints(@RequestParam("operation") String operation,
+    @RequestParam("requesterId") UUID requesterId, @RequestParam("instanceId") UUID instanceId,
     @RequestParam("requestId") UUID requestId);
 
   @GetMapping("/settings")

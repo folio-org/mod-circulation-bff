@@ -5,6 +5,9 @@ get:
     - $ref: '../../parameters/patronGroupId.yaml'
     - $ref: '../../parameters/instanceId.yaml'
     - $ref: '../../parameters/requestId.yaml'
+    - $ref: '../../parameters/requesterId.yaml'
+    - $ref: '../../parameters/itemId.yaml'
+
   tags:
     - getAllowedServicePoints
   responses:

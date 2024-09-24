@@ -14,8 +14,9 @@ public interface CirculationClient {
 
   @GetMapping("/requests/allowed-service-points")
   AllowedServicePoints allowedServicePoints (
-    @RequestParam("patronGroupId") UUID patronGroupId, @RequestParam("instanceId") UUID instanceId,
-    @RequestParam("operation") String operation, @RequestParam("requestId") UUID requestId);
+    @RequestParam("operation") String operation, @RequestParam("requesterId") UUID requesterId,
+    @RequestParam("instanceId") UUID instanceId, @RequestParam("itemId") UUID itemId,
+    @RequestParam("requestId") UUID requestId, @RequestParam("patronGroupId") UUID patronGroupId);
 
   @GetMapping("/settings?query=name=ecsTlrFeature")
   CirculationSettingsResponse getEcsTlrCirculationSettings();

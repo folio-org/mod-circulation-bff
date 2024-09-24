@@ -21,9 +21,12 @@ public class CirculationBffController implements CirculationBffApi {
   private final CirculationBffService circulationBffService;
 
   @Override
-  public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(UUID patronGroupId, String operation, UUID instanceId, UUID requestId) {
-    log.info("circulationBffRequestsAllowedServicePointsGet:: params: patronGroupId={}, operation={}, instanceId={}, requestId={}", patronGroupId, operation, instanceId, requestId);
-    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(patronGroupId, operation, instanceId, requestId));
+  public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(
+    UUID patronGroupId, String operation, UUID instanceId, UUID requestId, UUID requesterId, UUID itemId) {
+    log.info("circulationBffRequestsAllowedServicePointsGet:: params: " +
+      "patronGroupId={}, operation={}, instanceId={}, requestId={}, requesterId={}, itemId={}",
+      patronGroupId, operation, instanceId, requestId, requesterId, itemId);
+    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(patronGroupId, operation, instanceId, requestId, requesterId, itemId));
   }
 
   @Override
