@@ -3,6 +3,7 @@ package org.folio.circulationbff.api;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.lang.String.format;
@@ -20,11 +21,14 @@ import org.folio.circulationbff.domain.dto.CirculationSettings;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
 import org.folio.circulationbff.domain.dto.TlrSettings;
+import org.folio.circulationbff.domain.dto.UserTenant;
+import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 
 class CirculationBffRequestsApiTest extends BaseIT {
   private static final String SEARCH_INSTANCES_URL_PATH =
@@ -35,7 +39,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
   private static final String SEARCH_INSTANCES_QUERY_PARAM_TMP = "query=%s";
   private static final String URL_TMP = "%s?%s";
 
-  private static final String CIRCULATION_SETTINGS_URL = "/settings?query=name=ecsTlrFeature";
+  private static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
+  private static final String TLR_SETTINGS_URL = "/tlr/settings";
+  private static final String USER_TENANTS_URL = "/user-tenants";
   private static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
   private static final String CIRCULATION_ALLOWED_SERVICE_POINT_URL = "/circulation/requests" +
     "/allowed-service-points";
@@ -46,24 +52,21 @@ class CirculationBffRequestsApiTest extends BaseIT {
   }
 
   @Test
-  void allowedServicePointsCallsTlrWhenEcsTlrEnabled() {
-    var circulationSettingsResponse = new CirculationSettingsResponse();
-    circulationSettingsResponse.setTotalRecords(1);
-    circulationSettingsResponse.setCirculationSettings(List.of(
-      new CirculationSettings()
-        .name("ecsTlrFeature")
-        .value(new CirculationSettingsValue().enabled(true))
-    ));
+  void callsModTlrWhenEcsTlrEnabledInCentralTenant() {
 
-
-    var allowedSpResponseConsortium = new AllowedServicePoints();
-    allowedSpResponseConsortium.setHold(Set.of(
-      buildAllowedServicePoint("SP_consortium_1"),
-      buildAllowedServicePoint("SP_consortium_2")));
-
-    wireMockServer.stubFor(WireMock.get(urlMatching(CIRCULATION_SETTINGS_URL))
+    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(USER_TENANTS_URL))
+      .withQueryParam("limit", matching("\\d*"))  // matches any integer or no value
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(circulationSettingsResponse), SC_OK)));
+      .willReturn(jsonResponse(asJsonString(new UserTenantCollection().addUserTenantsItem(userTenant)),
+        SC_OK)));
+
+    TlrSettings tlrSettings = new TlrSettings();
+    tlrSettings.setEcsTlrFeatureEnabled(true);
+    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
 
 
     var operation = "create";
@@ -71,13 +74,23 @@ class CirculationBffRequestsApiTest extends BaseIT {
     var requestId = UUID.randomUUID();
     var patronGroupId = UUID.randomUUID();
 
+    var allowedSpResponseConsortium = new AllowedServicePoints();
+    allowedSpResponseConsortium.setHold(Set.of(
+      buildAllowedServicePoint("SP_consortium_1"),
+      buildAllowedServicePoint("SP_consortium_2")));
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo(TLR_ALLOWED_SERVICE_POINT_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
 
+    List<StubMapping> stubs = wireMockServer.getStubMappings();
+    // Print all stub mappings
+    for (StubMapping stub : stubs) {
+      System.out.println(stub);
+    }
+
     doGet(
       ALLOWED_SERVICE_POINT_PATH + format("?operation=create&requestId=%s&instanceId=%s&patronGroupId=%s",
-        requestId, instanceId, patronGroupId))
+        requestId, instanceId, patronGroupId), TENANT_ID_CONSORTIUM)
       .expectStatus().isEqualTo(200)
       .expectBody().json("{}");
 
@@ -90,32 +103,44 @@ class CirculationBffRequestsApiTest extends BaseIT {
   }
 
   @Test
-  void allowedServicePointsCallsCirculationWhenEcsTlrDisabled() {
-    TlrSettings tlrSettings = new TlrSettings();
-    tlrSettings.setEcsTlrFeatureEnabled(false);
+  void callsCirculationWhenEcsTlrDisabledOnDataTenant() {
+    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(USER_TENANTS_URL))
+      .withQueryParam("limit", matching("\\d*"))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(new UserTenantCollection().addUserTenantsItem(userTenant)),
+        SC_OK)));
+
+    var circulationSettingsResponse = new CirculationSettingsResponse();
+    circulationSettingsResponse.setTotalRecords(1);
+    circulationSettingsResponse.setCirculationSettings(List.of(
+      new CirculationSettings()
+        .name("ecsTlrFeature")
+        .value(new CirculationSettingsValue().enabled(true))
+    ));
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_SETTINGS_URL))
+      .withQueryParam("query", equalTo("name=ecsTlrFeature"))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(circulationSettingsResponse),
+        SC_OK)));
 
     var allowedSpResponseConsortium = new AllowedServicePoints();
     allowedSpResponseConsortium.setHold(Set.of(
       buildAllowedServicePoint("SP_consortium_1"),
       buildAllowedServicePoint("SP_consortium_2")));
-
-    wireMockServer.stubFor(WireMock.get(urlMatching(CIRCULATION_SETTINGS_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
-
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
 
     var operation = "create";
     var instanceId = UUID.randomUUID();
     var requestId = UUID.randomUUID();
     var patronGroupId = UUID.randomUUID();
 
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
-
     doGet(
       ALLOWED_SERVICE_POINT_PATH + format("?operation=create&requestId=%s&instanceId=%s&patronGroupId=%s",
-        requestId, instanceId, patronGroupId))
+        requestId, instanceId, patronGroupId), TENANT_ID_COLLEGE)
       .expectStatus().isEqualTo(200)
       .expectBody().json("{}");
 

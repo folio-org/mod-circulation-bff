@@ -51,6 +51,7 @@ public class BaseIT {
   protected static final String HEADER_TENANT = "x-okapi-tenant";
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
+  protected static final String TENANT_ID_COLLEGE = "college";
   protected static final String USER_ID = randomId();
   private FolioExecutionContextSetter contextSetter;
   private static final int WIRE_MOCK_PORT = TestSocketUtils.findAvailableTcpPort();
@@ -121,18 +122,18 @@ public class BaseIT {
   }
 
   protected WebTestClient.ResponseSpec doPostWithToken(String url, Object payload, String token) {
-    return buildRequest(HttpMethod.POST, url)
+    return buildRequest(HttpMethod.POST, url, TENANT_ID_CONSORTIUM)
       .cookie("folioAccessToken", token)
       .body(BodyInserters.fromValue(payload))
       .exchange();
   }
 
-  protected WebTestClient.RequestBodySpec buildRequest(HttpMethod method, String uri) {
+  protected WebTestClient.RequestBodySpec buildRequest(HttpMethod method, String uri, String tenantId) {
     return webClient.method(method)
       .uri(uri)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
-      .header(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM)
+      .header(XOkapiHeaders.TENANT, tenantId)
       .header(XOkapiHeaders.URL, wireMockServer.baseUrl())
       .header(XOkapiHeaders.TOKEN, TOKEN)
       .header(XOkapiHeaders.USER_ID, randomId());
@@ -153,8 +154,8 @@ public class BaseIT {
       .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
-  protected WebTestClient.ResponseSpec doGet(String url) {
-    return buildRequest(HttpMethod.GET, url)
+  protected WebTestClient.ResponseSpec doGet(String url, String tenantId) {
+    return buildRequest(HttpMethod.GET, url, tenantId)
       .exchange();
   }
 }
