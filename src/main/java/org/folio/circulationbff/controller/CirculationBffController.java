@@ -2,6 +2,7 @@ package org.folio.circulationbff.controller;
 
 import java.util.UUID;
 
+import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.InstanceSearchResult;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
@@ -24,11 +25,14 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(
     String operation, String tenantId, UUID patronGroupId, UUID instanceId, UUID requestId,
     UUID requesterId, UUID itemId) {
+
     log.info("circulationBffRequestsAllowedServicePointsGet:: params: " +
-      "patronGroupId={}, operation={}, instanceId={}, requestId={}, requesterId={}, itemId={}",
+        "patronGroupId={}, operation={}, instanceId={}, requestId={}, requesterId={}, itemId={}",
       patronGroupId, operation, instanceId, requestId, requesterId, itemId);
+
     return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(
-      tenantId, patronGroupId, operation, instanceId, requestId, requesterId, itemId));
+      new AllowedServicePointParams(operation, patronGroupId, instanceId, requestId, requesterId,
+        itemId), tenantId));
   }
 
   @Override

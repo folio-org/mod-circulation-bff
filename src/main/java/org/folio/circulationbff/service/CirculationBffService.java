@@ -1,10 +1,8 @@
 package org.folio.circulationbff.service;
 
-import java.util.UUID;
-
+import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 
 public interface CirculationBffService {
-  AllowedServicePoints getAllowedServicePoints(String tenantId, UUID patronGroupId, String operation,
-    UUID instanceId, UUID requestId, UUID requesterId, UUID itemId);
+  AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams allowedServicePointParams, String tenantId);
 }

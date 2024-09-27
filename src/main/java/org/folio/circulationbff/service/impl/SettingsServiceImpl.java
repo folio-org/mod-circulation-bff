@@ -14,34 +14,37 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class SettingsServiceImpl implements SettingsService {
 
-    private final EcsTlrClient ecsTlrClient;
-    private final CirculationClient circulationClient;
-    private final UserTenantsService userTenantsService;
+  public static final String ECS_TLR_FEATURE_SETTINGS = "name=ecsTlrFeature";
+  private final EcsTlrClient ecsTlrClient;
+  private final CirculationClient circulationClient;
+  private final UserTenantsService userTenantsService;
 
-    @Override
-    public boolean isEcsTlrFeatureEnabled(String tenantId) {
-      if (userTenantsService.isCentralTenant(tenantId)) {
-        return getTlrSettings();
+  @Override
+  public boolean isEcsTlrFeatureEnabled(String tenantId) {
+    if (userTenantsService.isCentralTenant(tenantId)) {
+      return getTlrSettings();
+    }
+    return getCirculationSettings();
+  }
+
+  private boolean getTlrSettings() {
+    log.debug("getTlrSettings:: Getting TLR settings");
+    return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+  }
+
+  private boolean getCirculationSettings() {
+    log.debug("getCirculationSettings:: Getting circulation settings");
+    var circulationSettingsResponse = circulationClient.getCirculationSettingsByQuery(ECS_TLR_FEATURE_SETTINGS);
+    if (circulationSettingsResponse.getTotalRecords() > 0) {
+      try {
+        var circulationSettings = circulationSettingsResponse.getCirculationSettings().get(0);
+        log.info("getCirculationSettings:: circulation settings: {}",
+          circulationSettings.getValue());
+        return circulationSettings.getValue().getEnabled();
+      } catch (Exception e) {
+        log.error("getCirculationSettings:: Failed to parse circulation settings", e);
       }
-      return getCirculationSettings();
     }
-
-    private boolean getTlrSettings() {
-      log.info("getTlrSettings:: Getting TLR settings");
-      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    }
-
-    private boolean getCirculationSettings() {
-      log.info("getCirculationSettings:: Getting circulation settings");
-      var circulationSettingsResponse = circulationClient.getEcsTlrCirculationSettings();
-      if (circulationSettingsResponse.getTotalRecords() > 0) {
-        try {
-          var circulationSettings = circulationSettingsResponse.getCirculationSettings().get(0);
-          return circulationSettings.getValue().getEnabled();
-        } catch (Exception e) {
-          log.error("getCirculationSettings:: Failed to parse circulation settings", e);
-        }
-      }
-      return false;
-    }
+    return false;
+  }
 }

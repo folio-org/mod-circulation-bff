@@ -18,6 +18,6 @@ public interface CirculationClient {
     @RequestParam("instanceId") UUID instanceId, @RequestParam("itemId") UUID itemId,
     @RequestParam("requestId") UUID requestId, @RequestParam("patronGroupId") UUID patronGroupId);
 
-  @GetMapping("/settings?query=name=ecsTlrFeature")
-  CirculationSettingsResponse getEcsTlrCirculationSettings();
+  @GetMapping(value = "/settings")
+  CirculationSettingsResponse getCirculationSettingsByQuery(@RequestParam("query") String query);
 }
