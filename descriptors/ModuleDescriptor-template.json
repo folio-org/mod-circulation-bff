@@ -57,7 +57,12 @@
       "description": "get instances by query and extend with item information from inventory"
     }
   ],
-  "requires": [],
+  "requires": [
+    {
+      "id": "search",
+      "version": "1.3"
+    }
+  ],
   "launchDescriptor": {
     "dockerImage": "@artifactId@:@version@",
     "dockerPull": false,

@@ -13,7 +13,7 @@ spring:
   mustache:
     check-template-location: false
   jackson:
-    default-property-inclusion: non_empty
+    default-property-inclusion: non_null
     deserialization:
       fail-on-unknown-properties: false
       accept-single-value-as-array: true
