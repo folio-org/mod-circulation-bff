@@ -7,3 +7,11 @@ paths:
     $ref: 'paths/allowedServicePoints/allowedServicePoints.yaml'
   /circulation-bff/requests/search-instances:
     $ref: 'paths/searchInstances/searchInstances.yaml'
+components:
+  schemas:
+    tlr-settings:
+      $ref: 'schemas/dto/TlrSettings.yaml#/TlrSettings'
+    circulationSettingsResponse:
+      $ref: 'schemas/response/circulationSettingsResponse.yaml'
+    userTenantCollection:
+      $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'

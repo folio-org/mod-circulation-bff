@@ -1,0 +1,17 @@
+UserTenantCollection:
+  type: object
+  description: Collection of primary tenant records
+  properties:
+    userTenants:
+      description: List of primary tenant records
+      type: array
+      id: userTenants
+      items:
+        type: object
+        $ref: "UserTenant.yaml#/UserTenant"
+    totalRecords:
+      type: integer
+  additionalProperties: true
+  required:
+    - userTenants
+    - totalRecords

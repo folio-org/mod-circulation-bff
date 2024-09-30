@@ -1,4 +1,4 @@
-name: patronGroupId
+name: itemId
 in: query
 required: false
 schema:
