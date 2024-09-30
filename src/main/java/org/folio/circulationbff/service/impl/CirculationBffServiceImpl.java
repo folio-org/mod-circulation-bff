@@ -28,13 +28,11 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. Getting allowed service " +
         "points from mod-tlr module");
-      return ecsTlrClient.getAllowedServicePoints(params.getOperation(), params.getRequesterId(),
-        params.getInstanceId(), params.getRequestId(), params.getItemId());
+      return ecsTlrClient.getAllowedServicePoints(params);
     } else {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +
         "points from mod-circulation module");
-      return circulationClient.allowedServicePoints(params.getOperation(), params.getRequesterId(),
-        params.getInstanceId(), params.getItemId(), params.getRequestId(), params.getPatronGroupId());
+      return circulationClient.allowedServicePoints(params);
     }
   }
 }

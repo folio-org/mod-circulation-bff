@@ -22,17 +22,12 @@ public class SettingsServiceImpl implements SettingsService {
   @Override
   public boolean isEcsTlrFeatureEnabled(String tenantId) {
     if (userTenantsService.isCentralTenant(tenantId)) {
-      return getTlrSettings();
+      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     }
-    return getCirculationSettings();
+    return isTlrEnabledInCirculationSettings();
   }
 
-  private boolean getTlrSettings() {
-    log.debug("getTlrSettings:: Getting TLR settings");
-    return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-  }
-
-  private boolean getCirculationSettings() {
+  private boolean isTlrEnabledInCirculationSettings() {
     log.debug("getCirculationSettings:: Getting circulation settings");
     var circulationSettingsResponse = circulationClient.getCirculationSettingsByQuery(ECS_TLR_FEATURE_SETTINGS);
     if (circulationSettingsResponse.getTotalRecords() > 0) {

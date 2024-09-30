@@ -31,8 +31,15 @@ public class CirculationBffController implements CirculationBffApi {
       patronGroupId, operation, instanceId, requestId, requesterId, itemId);
 
     return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(
-      new AllowedServicePointParams(operation, patronGroupId, instanceId, requestId, requesterId,
-        itemId), tenantId));
+      AllowedServicePointParams.builder()
+        .operation(operation)
+        .patronGroupId(patronGroupId)
+        .instanceId(instanceId)
+        .requestId(requestId)
+        .requesterId(requestId)
+        .itemId(itemId)
+        .build(),
+      tenantId));
   }
 
   @Override
