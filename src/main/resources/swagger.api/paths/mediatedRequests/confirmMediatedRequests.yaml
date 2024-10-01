@@ -1,13 +1,13 @@
 post:
-  description: Create mediated request
-  operationId: postMediatedRequest
+  description: Confirm mediated request
+  operationId: saveAndConfirmMediatedRequest
   tags:
     - confirmMediatedRequests
   requestBody:
     content:
       application/json:
         schema:
-          $ref: 'mediatedRequest.yaml'
+          $ref: '../../schemas/dto/mediatedRequest/mediatedRequest.yaml'
     required: true
   responses:
     '201':
@@ -15,7 +15,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: 'mediatedRequest.yaml'
+            $ref: '../../schemas/dto/mediatedRequest/mediatedRequest.yaml'
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '404':

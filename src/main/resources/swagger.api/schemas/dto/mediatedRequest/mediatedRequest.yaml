@@ -1,10 +1,8 @@
-MediatedRequest:
   description: Mediated request
   type: object
   properties:
     id:
-      description: ID of the mediated request
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     requestLevel:
       description: Level of the request - Item or Title
       type: string
@@ -21,8 +19,7 @@ MediatedRequest:
       description: Comments made by the patron
       type: string
     requesterId:
-      description: ID of the requesting patron (user)
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     requester:
       description: Copy of some requester data
       type: object
@@ -40,15 +37,13 @@ MediatedRequest:
           description: Barcode of the requester
           type: string
         patronGroupId:
-          description: Patron group ID of the requester
-          $ref: '../../schemas/dto/common/uuid.yaml'
+          $ref: '../common/uuid.yaml'
         patronGroup:
           description: Patron group of the requester
           type: object
           properties:
             id:
-              description: Patron group ID
-              $ref: '../../schemas/dto/common/uuid.yaml'
+              $ref: '../common/uuid.yaml'
             group:
               description: Patron group name
               type: string
@@ -57,8 +52,7 @@ MediatedRequest:
               type: string
       additionalProperties: false
     proxyUserId:
-      description: ID of the proxy user
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     proxy:
       description: Copy of some proxy patron data
       type: object
@@ -76,15 +70,13 @@ MediatedRequest:
           description: Barcode of the proxy patron
           type: string
         patronGroupId:
-          description: Patron group ID of the proxy patron
-          $ref: '../../schemas/dto/common/uuid.yaml'
+          $ref: '../common/uuid.yaml'
         patronGroup:
           description: Patron group of the proxy patron
           type: object
           properties:
             id:
-              description: Patron group ID
-              $ref: '../../schemas/dto/common/uuid.yaml'
+              $ref: '../common/uuid.yaml'
             group:
               description: Patron group name
               type: string
@@ -93,8 +85,7 @@ MediatedRequest:
               type: string
       additionalProperties: false
     instanceId:
-      description: ID of the instance
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     instance:
       description: Copy of some instance data
       type: object
@@ -109,8 +100,7 @@ MediatedRequest:
             type: object
             properties:
               identifierTypeId:
-                description: UUID of resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)
-                $ref: '../../schemas/dto/common/uuid.yaml'
+                $ref: '../common/uuid.yaml'
               value:
                 description: Resource identifier value
                 type: string
@@ -157,11 +147,9 @@ MediatedRequest:
         - title
         - identifiers
     holdingsRecordId:
-      description: ID of the holdings record
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     itemId:
-      description: ID of the item
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     item:
       description: Copy of some item data
       type: object
@@ -237,11 +225,9 @@ MediatedRequest:
               'Closed - Cancelled', 'Closed - Declined', 'Closed - Filled'
       ]
     cancellationReasonId:
-      description: ID of the cancellation reason
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     cancelledByUserId:
-      description: ID of the user that cancelled mediated request
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     cancellationAdditionalInformation:
       description: Additional information about mediated request cancellation
       type: string
@@ -257,8 +243,7 @@ MediatedRequest:
       type: string
       enum: [ 'Hold Shelf', 'Delivery' ]
     deliveryAddressTypeId:
-      description: ID of the delivery address type
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     deliveryAddress:
       description: Delivery address
       type: object
@@ -286,8 +271,7 @@ MediatedRequest:
           type: string
       additionalProperties: false
     pickupServicePointId:
-      description: ID of the pickup service point
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     pickupServicePoint:
       description: Pickup service point
       type: object
@@ -312,8 +296,7 @@ MediatedRequest:
           type: boolean
       additionalProperties: false
     confirmedRequestId:
-      description: Confirmed circulation request ID
-      $ref: '../../schemas/dto/common/uuid.yaml'
+      $ref: '../common/uuid.yaml'
     searchIndex:
       description: Request fields used for search
       type: object
@@ -340,9 +323,7 @@ MediatedRequest:
           type: string
       additionalProperties: false
     metadata:
-      description: Mediated request metadata
-      type: object
-      $ref: '../../schemas/dto/common/metadata.yaml'
+      $ref: '../common/metadata.yaml'
   additionalProperties: false
   required:
     - requestLevel

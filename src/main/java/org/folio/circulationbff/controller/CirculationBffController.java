@@ -1,12 +1,16 @@
 package org.folio.circulationbff.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
+
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
+import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +26,7 @@ public class CirculationBffController implements CirculationBffApi {
 
   private final CirculationBffService circulationBffService;
   private final SearchService searchService;
+  private final MediatedRequestsService mediatedRequestsService;
 
   @Override
   public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(
@@ -51,7 +56,17 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<Object> postMediatedRequest(Object body) {
-    return CirculationBffApi.super.postMediatedRequest(body);
+  public ResponseEntity<MediatedRequest> saveAndConfirmMediatedRequest(MediatedRequest mediatedRequest) {
+    log.info("postMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+
+    var responseEntity = mediatedRequestsService.updateAndConfirmMediatedRequest(mediatedRequest);
+    if (responseEntity.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+      log.info("saveAndConfirmMediatedRequest:: mediated request: {} has been confirmed",
+        mediatedRequest.getId());
+
+      return ResponseEntity.status(CREATED).body(mediatedRequest);
+    }
+
+    return ResponseEntity.status(responseEntity.getStatusCode()).build();
   }
 }
