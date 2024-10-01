@@ -7,3 +7,5 @@ paths:
     $ref: 'paths/allowedServicePoints/allowedServicePoints.yaml'
   /circulation-bff/requests/search-instances:
     $ref: 'paths/searchInstances/searchInstances.yaml'
+  /circulation-bff/mediated-requests/confirm:
+    $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'

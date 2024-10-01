@@ -25,4 +25,9 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<InstanceSearchResult> circulationBffRequestsSearchInstancesGet(String query) {
     return ResponseEntity.status(HttpStatus.OK).body(new InstanceSearchResult());
   }
+
+  @Override
+  public ResponseEntity<Object> postMediatedRequest(Object body) {
+    return CirculationBffApi.super.postMediatedRequest(body);
+  }
 }
