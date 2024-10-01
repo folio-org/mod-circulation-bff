@@ -5,6 +5,14 @@ get:
     - $ref: '../../parameters/patronGroupId.yaml'
     - $ref: '../../parameters/instanceId.yaml'
     - $ref: '../../parameters/requestId.yaml'
+    - $ref: '../../parameters/requesterId.yaml'
+    - $ref: '../../parameters/itemId.yaml'
+    - in: header
+      name: X-Okapi-Tenant
+      required: true
+      schema:
+        type: string
+      description: The tenant ID for the request
   tags:
     - getAllowedServicePoints
   responses:

@@ -12,7 +12,14 @@
           ],
           "pathPattern": "/circulation-bff/requests/allowed-service-points",
           "permissionsRequired": ["circulation-bff.requests.allowed-service-points.get"],
-          "modulePermissions": []
+          "modulePermissions": [
+            "tlr.ecs-tlr-allowed-service-points.get",
+            "circulation.requests.allowed-service-points.get",
+            "tlr.settings.get",
+            "circulation.settings.item.get",
+            "circulation.settings.collection.get",
+            "user-tenants.collection.get"
+          ]
         },
         {
           "methods": [
@@ -57,7 +64,12 @@
       "description": "get instances by query and extend with item information from inventory"
     }
   ],
-  "requires": [],
+  "requires": [
+    {
+      "id": "search",
+      "version": "1.3"
+    }
+  ],
   "launchDescriptor": {
     "dockerImage": "@artifactId@:@version@",
     "dockerPull": false,

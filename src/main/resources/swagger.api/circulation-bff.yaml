@@ -9,3 +9,11 @@ paths:
     $ref: 'paths/searchInstances/searchInstances.yaml'
   /circulation-bff/mediated-requests/confirm:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
+components:
+  schemas:
+    tlr-settings:
+      $ref: 'schemas/dto/TlrSettings.yaml#/TlrSettings'
+    circulationSettingsResponse:
+      $ref: 'schemas/response/circulationSettingsResponse.yaml'
+    userTenantCollection:
+      $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'

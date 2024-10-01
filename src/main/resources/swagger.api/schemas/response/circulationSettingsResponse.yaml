@@ -1,0 +1,11 @@
+description: "Circulation settings search result response"
+type: "object"
+properties:
+  totalRecords:
+    type: "integer"
+    description: "Amount of settings found"
+  circulationSettings:
+    type: "array"
+    description: "List of settings found"
+    items:
+      $ref: "../dto/CirculationSettings.yaml#/CirculationSettings"
