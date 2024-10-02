@@ -147,7 +147,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
           .headers(buildHeaders(TENANT_ID_COLLEGE))
           .contentType(MediaType.APPLICATION_JSON))
       .andExpectAll(status().is4xxClientError(),
-        jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));;
+        jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));
   }
 
   @Test
