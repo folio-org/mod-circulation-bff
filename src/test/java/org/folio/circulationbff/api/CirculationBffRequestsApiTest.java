@@ -130,6 +130,28 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
+  void returnValidationErrorWhenClientThrowsUnprocessableEntity() {
+    mockEcsTlrCirculationSettings(false);
+
+    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    mockUserTenants(userTenant, TENANT_ID_COLLEGE);
+    mockEcsTlrCirculationSettings(true);
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse("{}", HttpStatus.SC_UNPROCESSABLE_ENTITY)));
+
+    mockMvc.perform(
+        get(ALLOWED_SERVICE_POINT_PATH)
+          .queryParam("operation", "create")
+          .headers(buildHeaders(TENANT_ID_COLLEGE))
+          .contentType(MediaType.APPLICATION_JSON))
+      .andExpectAll(status().is4xxClientError(),
+        jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));;
+  }
+
+  @Test
+  @SneakyThrows
   void searchInstancesReturnsOkStatus() {
     String instanceId = randomId();
     InstanceSearchResult mockSearchResponse = new InstanceSearchResult()
