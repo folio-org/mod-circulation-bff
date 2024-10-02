@@ -91,15 +91,16 @@ public class CirculationBffController implements CirculationBffApi {
 
     ResponseEntity<MediatedRequest> createResponse = mediatedRequestsService
       .saveMediatedRequest(mediatedRequest);
-    if (!createResponse.getStatusCode().equals(CREATED)) {
+    var postResponseBody = createResponse.getBody();
+    if (!createResponse.getStatusCode().equals(CREATED) || postResponseBody == null) {
       log.warn("handleNewRequest:: new mediated request has not been created, status: {}, " +
-        "message: {}", createResponse.getStatusCode(), createResponse.getBody());
+        "message: {}", createResponse.getStatusCode(), postResponseBody);
 
       return ResponseEntity.status(createResponse.getStatusCode()).build();
     }
     log.info("handleNewRequest:: mediated request has been created");
 
-    return confirmMediatedRequest(mediatedRequest);
+    return confirmMediatedRequest(postResponseBody);
   }
 
   private ResponseEntity<MediatedRequest> confirmMediatedRequest(MediatedRequest mediatedRequest) {
