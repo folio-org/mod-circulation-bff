@@ -15,3 +15,5 @@ components:
       $ref: 'schemas/response/circulationSettingsResponse.yaml'
     userTenantCollection:
       $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
+    errors:
+      $ref: 'schemas/dto/common/errors.yaml#/Errors'

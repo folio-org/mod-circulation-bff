@@ -1,0 +1,13 @@
+Errors:
+  type: object
+  description: A set of errors
+  properties:
+    errors:
+      type: array
+      description: List of errors
+    items:
+          $ref: "error.yaml#/Error"
+    total_records:
+      type: integer
+      description: Total number of errors
+  additionalProperties: false
