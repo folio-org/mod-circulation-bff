@@ -56,7 +56,7 @@ class CirculationBffControllerTest {
     when(mediatedRequestsService.saveMediatedRequest(mediatedRequest))
       .thenReturn(new ResponseEntity<>(mediatedRequest, CREATED));
     when(mediatedRequestsService.confirmMediatedRequest(mediatedRequest))
-      .thenReturn(new ResponseEntity<>(CREATED));
+      .thenReturn(new ResponseEntity<>(NO_CONTENT));
     ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(mediatedRequest);
 
     assertThat(response.getStatusCode(), is(CREATED));
@@ -83,7 +83,7 @@ class CirculationBffControllerTest {
     when(mediatedRequestsService.updateMediatedRequest(mediatedRequest))
       .thenReturn(new ResponseEntity<>(NO_CONTENT));
     when(mediatedRequestsService.confirmMediatedRequest(mediatedRequest))
-      .thenReturn(new ResponseEntity<>(CREATED));
+      .thenReturn(new ResponseEntity<>(NO_CONTENT));
     ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(
       mediatedRequest);
 
