@@ -18,7 +18,8 @@ public class ExceptionHandlingController {
 
   @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
   @ExceptionHandler(FeignException.UnprocessableEntity.class)
-  public Errors handleUnProcessableEntityErrors(Exception exception) {
+  public Errors handleUnprocessableEntityErrors(Exception exception) {
+    log.warn("handleUnprocessableEntityErrors:: {}", exception.getMessage());
     return createExternalError(exception.getMessage(), VALIDATION_ERROR);
   }
 }
