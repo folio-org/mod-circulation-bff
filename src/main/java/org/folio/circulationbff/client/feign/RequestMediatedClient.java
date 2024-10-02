@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "requests-mediated", url = "requests-mediated", configuration = FeignClientConfiguration.class)
 public interface RequestMediatedClient {
 
+  @PostMapping("/mediated-requests")
+  ResponseEntity<MediatedRequest> postRequestMediated(@RequestBody MediatedRequest mediatedRequest);
+
   @PutMapping("/mediated-requests/{requestId}")
   ResponseEntity<Void> putRequestMediated(@PathVariable String requestId,
     @RequestBody MediatedRequest mediatedRequest);

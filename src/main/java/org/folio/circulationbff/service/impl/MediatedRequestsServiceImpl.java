@@ -3,7 +3,6 @@ package org.folio.circulationbff.service.impl;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.service.MediatedRequestsService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -17,20 +16,23 @@ public class MediatedRequestsServiceImpl implements MediatedRequestsService {
   private final RequestMediatedClient requestMediatedClient;
 
   @Override
-  public ResponseEntity<Void> updateAndConfirmMediatedRequest(MediatedRequest mediatedRequest) {
-    log.debug("updateAndConfirmMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
-    ResponseEntity<Void> putResponse = requestMediatedClient.putRequestMediated(
-      mediatedRequest.getId(), mediatedRequest);
+  public ResponseEntity<Void> updateMediatedRequest(MediatedRequest mediatedRequest) {
+    log.debug("updateMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
 
-    if (putResponse.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-      log.info("updateAndConfirmMediatedRequest:: mediatedRequest: {} has been updated",
-        mediatedRequest.getId());
+    return requestMediatedClient.putRequestMediated(mediatedRequest.getId(), mediatedRequest);
+  }
 
-      return requestMediatedClient.confirmRequestMediated(mediatedRequest.getId(), mediatedRequest);
-    }
-    log.warn("updateAndConfirmMediatedRequest:: request: {} has not been updated: {}",
-      mediatedRequest.getId(), putResponse.getBody());
+  @Override
+  public ResponseEntity<MediatedRequest> saveMediatedRequest(MediatedRequest mediatedRequest) {
+    log.debug("saveMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
 
-    return putResponse;
+    return requestMediatedClient.postRequestMediated(mediatedRequest);
+  }
+
+  @Override
+  public ResponseEntity<Void> confirmMediatedRequest(MediatedRequest mediatedRequest) {
+    log.debug("confirmMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+
+    return requestMediatedClient.confirmRequestMediated(mediatedRequest.getId(), mediatedRequest);
   }
 }

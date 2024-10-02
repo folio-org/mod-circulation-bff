@@ -3,8 +3,11 @@ package org.folio.circulationbff.controller;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.UUID;
 
@@ -47,27 +50,71 @@ class CirculationBffControllerTest {
   }
 
   @Test
-  void saveAndConfirmMediatedRequestShouldReturnCreatedStatus() {
-    MediatedRequest mediatedRequest = new MediatedRequest();
-    mediatedRequest.setId(UUID.randomUUID().toString());
-    ResponseEntity<Void> mockResponseEntity = ResponseEntity.noContent().build();
-    when(mediatedRequestsService.updateAndConfirmMediatedRequest(mediatedRequest)).thenReturn(mockResponseEntity);
+  void shouldCreateNewMediatedRequestAndConfirm() {
+    var mediatedRequest = new MediatedRequest();
+    mediatedRequest.setId(null);
+    when(mediatedRequestsService.saveMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(mediatedRequest, CREATED));
+    when(mediatedRequestsService.confirmMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(CREATED));
     ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(mediatedRequest);
 
-    assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+    assertThat(response.getStatusCode(), is(CREATED));
     assertThat(response.getBody(), is(mediatedRequest));
   }
 
   @Test
-  void saveAndConfirmMediatedRequestShouldReturnBadRequest() {
-    MediatedRequest mediatedRequest = new MediatedRequest();
-    mediatedRequest.setId(UUID.randomUUID().toString());
-    ResponseEntity<Void> mockResponseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+  void shouldFailWithNewRequestCreation() {
+    var mediatedRequest = new MediatedRequest();
+    mediatedRequest.setId(null);
+    when(mediatedRequestsService.saveMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(BAD_REQUEST));
+    ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(
+      mediatedRequest);
 
-    when(mediatedRequestsService.updateAndConfirmMediatedRequest(mediatedRequest)).thenReturn(mockResponseEntity);
+    assertThat(response.getStatusCode(), is(BAD_REQUEST));
+    assertThat(response.getBody(), is(nullValue()));
+  }
+
+  @Test
+  void shouldUpdateExistingMediatedRequestAndConfirm() {
+    var mediatedRequest = new MediatedRequest();
+    mediatedRequest.setId(UUID.randomUUID().toString());
+    when(mediatedRequestsService.updateMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(NO_CONTENT));
+    when(mediatedRequestsService.confirmMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(CREATED));
+    ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(
+      mediatedRequest);
+
+    assertThat(response.getStatusCode(), is(CREATED));
+    assertThat(response.getBody(), is(mediatedRequest));
+  }
+
+  @Test
+  void shouldFailWithExistingRequestUpdate() {
+    var mediatedRequest = new MediatedRequest();
+    mediatedRequest.setId(UUID.randomUUID().toString());
+    when(mediatedRequestsService.updateMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(BAD_REQUEST));
     ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(mediatedRequest);
 
-    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-    assertNull(response.getBody());
+    assertThat(response.getStatusCode(), is(BAD_REQUEST));
+    assertThat(response.getBody(), is(nullValue()));
+  }
+
+  @Test
+  void shouldFailIfExistingRequestSuccessfullyUpdatedButNotConfirmed() {
+    var mediatedRequest = new MediatedRequest();
+    mediatedRequest.setId(UUID.randomUUID().toString());
+    when(mediatedRequestsService.updateMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(NO_CONTENT));
+    when(mediatedRequestsService.confirmMediatedRequest(mediatedRequest))
+      .thenReturn(new ResponseEntity<>(BAD_REQUEST));
+    ResponseEntity<MediatedRequest> response = controller.saveAndConfirmMediatedRequest(
+      mediatedRequest);
+
+    assertThat(response.getStatusCode(), is(BAD_REQUEST));
+    assertThat(response.getBody(), is(nullValue()));
   }
 }

@@ -1,6 +1,7 @@
 package org.folio.circulationbff.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.UUID;
 
@@ -50,23 +51,69 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<InstanceSearchResult> circulationBffRequestsSearchInstancesGet(String query) {
+  public ResponseEntity<InstanceSearchResult> circulationBffRequestsSearchInstancesGet(
+    String query) {
+
     return ResponseEntity.status(HttpStatus.OK)
       .body(searchService.findInstances(query));
   }
 
   @Override
-  public ResponseEntity<MediatedRequest> saveAndConfirmMediatedRequest(MediatedRequest mediatedRequest) {
-    log.info("postMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+  public ResponseEntity<MediatedRequest> saveAndConfirmMediatedRequest(
+    MediatedRequest mediatedRequest) {
 
-    var responseEntity = mediatedRequestsService.updateAndConfirmMediatedRequest(mediatedRequest);
-    if (responseEntity.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-      log.info("saveAndConfirmMediatedRequest:: mediated request: {} has been confirmed",
+    log.info("saveAndConfirmMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+
+    if (mediatedRequest.getId() != null) {
+      return handleExistingRequest(mediatedRequest);
+    } else {
+      return handleNewRequest(mediatedRequest);
+    }
+  }
+
+  private ResponseEntity<MediatedRequest> handleExistingRequest(MediatedRequest mediatedRequest) {
+    log.info("handleExistingRequest:: mediatedRequest: {}", mediatedRequest.getId());
+
+    ResponseEntity<Void> updateResponse = mediatedRequestsService.updateMediatedRequest(mediatedRequest);
+    if (!updateResponse.getStatusCode().equals(NO_CONTENT)) {
+      log.warn("handleExistingRequest:: the mediated request has not been updated, status: {}, " +
+        "message: {}", updateResponse.getStatusCode(), updateResponse.getBody());
+      return ResponseEntity.status(updateResponse.getStatusCode()).build();
+    }
+    log.info("handleExistingRequest:: mediated request {} has been updated",
+      mediatedRequest.getId());
+
+    return confirmMediatedRequest(mediatedRequest);
+  }
+
+  private ResponseEntity<MediatedRequest> handleNewRequest(MediatedRequest mediatedRequest) {
+    log.info("handleNewRequest:: creating new mediated request");
+
+    ResponseEntity<MediatedRequest> createResponse = mediatedRequestsService
+      .saveMediatedRequest(mediatedRequest);
+    if (!createResponse.getStatusCode().equals(CREATED)) {
+      log.warn("handleNewRequest:: new mediated request has not been created, status: {}, " +
+        "message: {}", createResponse.getStatusCode(), createResponse.getBody());
+
+      return ResponseEntity.status(createResponse.getStatusCode()).build();
+    }
+    log.info("handleNewRequest:: mediated request has been created");
+
+    return confirmMediatedRequest(mediatedRequest);
+  }
+
+  private ResponseEntity<MediatedRequest> confirmMediatedRequest(MediatedRequest mediatedRequest) {
+    log.debug("confirmMediatedRequest:: confirming mediated request: {}", mediatedRequest.getId());
+    ResponseEntity<Void> confirmResponse = mediatedRequestsService.confirmMediatedRequest(mediatedRequest);
+    if (!confirmResponse.getStatusCode().equals(CREATED)) {
+      log.info("confirmMediatedRequest:: mediated request: {}, has not been confirmed",
         mediatedRequest.getId());
 
-      return ResponseEntity.status(CREATED).body(mediatedRequest);
+      return ResponseEntity.status(confirmResponse.getStatusCode()).build();
     }
+    log.info("confirmMediatedRequest:: mediated request has been confirmed: {}",
+      mediatedRequest.getId());
 
-    return ResponseEntity.status(responseEntity.getStatusCode()).build();
+    return ResponseEntity.status(CREATED).body(mediatedRequest);
   }
 }
