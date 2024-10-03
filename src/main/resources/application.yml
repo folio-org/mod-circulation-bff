@@ -27,6 +27,12 @@ folio:
       enabled: true
   environment: ${ENV:folio}
   okapi-url: ${OKAPI_URL:http://okapi:9130}
+  system-user:
+    enabled: ${SYSTEM_USER_ENABLED:true}
+    username: ${SYSTEM_USER_NAME:mod-circulation-bff}
+    password: ${SYSTEM_USER_PASSWORD:mod-circulation-bff}
+    lastname: System
+    permissionsFilePath: permissions/mod-circulation-bff.csv
 management:
   endpoints:
     web:
