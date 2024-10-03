@@ -38,7 +38,7 @@ public class CirculationBffController implements CirculationBffApi {
         .patronGroupId(patronGroupId)
         .instanceId(instanceId)
         .requestId(requestId)
-        .requesterId(requestId)
+        .requesterId(requesterId)
         .itemId(itemId)
         .build(),
       tenantId));
