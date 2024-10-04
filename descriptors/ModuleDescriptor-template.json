@@ -34,7 +34,7 @@
             "POST"
           ],
           "pathPattern": "/circulation-bff/mediated-requests/confirm",
-          "permissionsRequired": ["circulation-bff.mediated-requests.confirm.post"],
+          "permissionsRequired": ["circulation-bff.confirm-mediated-request.execute"],
           "modulePermissions": [
             "requests-mediated.mediated-request.item.post",
             "requests-mediated.mediated-request.item.put",
