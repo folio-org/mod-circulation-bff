@@ -85,6 +85,10 @@
     {
       "id": "search",
       "version": "1.3"
+    },
+    {
+      "id": "requests-mediated",
+      "version": "2.0"
     }
   ],
   "launchDescriptor": {
