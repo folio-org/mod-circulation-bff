@@ -1,0 +1,9 @@
+description: Not found
+content:
+  application/json:
+    example:
+      errors:
+        - message: Request not found
+      total_records: 1
+    schema:
+      $ref: "../schemas/response/errorResponse.yaml"
