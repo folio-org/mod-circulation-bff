@@ -1,0 +1,29 @@
+post:
+  operationId: createRequest
+  description: Create ECS TLR or Circulation request
+  parameters:
+    - in: header
+      name: X-Okapi-Tenant
+      required: true
+      schema:
+        type: string
+      description: The tenant ID for the request
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: "../../schemas/dto/request/InputRequest.yaml#/InputRequest"
+    required: true
+  responses:
+    '200':
+      description: Instances by query extended with item information
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/dto/request/Request.yaml#/Request'
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'

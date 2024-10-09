@@ -7,6 +7,8 @@ paths:
     $ref: 'paths/allowedServicePoints/allowedServicePoints.yaml'
   /circulation-bff/requests/search-instances:
     $ref: 'paths/searchInstances/searchInstances.yaml'
+  /circulation-bff/requests:
+    $ref: 'paths/requests/requests.yaml'
 components:
   schemas:
     tlr-settings:

@@ -4,14 +4,15 @@ import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.InputRequest;
 import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SearchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -48,5 +49,11 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<InstanceSearchResult> circulationBffRequestsSearchInstancesGet(String query) {
     return ResponseEntity.status(HttpStatus.OK)
       .body(searchService.findInstances(query));
+  }
+
+  @Override
+  public ResponseEntity<Request> createRequest(String tenantId, InputRequest inputRequest) {
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(circulationBffService.createRequest(inputRequest, tenantId));
   }
 }
