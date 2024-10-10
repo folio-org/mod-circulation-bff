@@ -28,6 +28,23 @@
           "pathPattern": "/circulation-bff/requests/search-instances",
           "permissionsRequired": ["circulation-bff.requests.search-instances.get"],
           "modulePermissions": ["search.instances.collection.get"]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/requests",
+          "permissionsRequired": ["circulation-bff.requests.post"],
+          "modulePermissions": [
+            "tlr.ecs-tlr-allowed-service-points.get",
+            "circulation.requests.allowed-service-points.get",
+            "circulation.requests.item.post",
+            "tlr.ecs-tlr.post",
+            "tlr.settings.get",
+            "circulation.settings.item.get",
+            "circulation.settings.collection.get",
+            "user-tenants.collection.get"
+          ]
         }
       ]
     },
