@@ -42,10 +42,9 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   public Request createRequest(InputRequest request, String tenantId) {
     log.info("createRequest:: request: {}", request);
     if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
-
+      return ecsTlrClient.createRequest(request);
     } else {
       return circulationClient.createRequest(request);
     }
-    return null;
   }
 }
