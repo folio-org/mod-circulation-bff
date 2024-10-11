@@ -3,7 +3,7 @@ content:
   application/json:
     example:
       errors:
-        - message: Request not found
+        - message: Not found
       total_records: 1
     schema:
       $ref: "../schemas/response/errorResponse.yaml"

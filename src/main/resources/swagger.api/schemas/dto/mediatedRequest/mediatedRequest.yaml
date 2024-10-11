@@ -50,7 +50,6 @@
             desc:
               description: Patron group description
               type: string
-      additionalProperties: false
     proxyUserId:
       $ref: '../common/uuid.yaml'
     proxy:
@@ -83,7 +82,6 @@
             desc:
               description: Patron group description
               type: string
-      additionalProperties: false
     instanceId:
       $ref: '../common/uuid.yaml'
     instance:
@@ -104,7 +102,6 @@
               value:
                 description: Resource identifier value
                 type: string
-            additionalProperties: false
             required:
               - identifierTypeId
               - value
@@ -117,7 +114,6 @@
               name:
                 description: Contributor name
                 type: string
-            additionalProperties: false
         publication:
           description: Publication information
           type: array
@@ -136,13 +132,11 @@
               role:
                 description: Role of the publisher
                 type: string
-            additionalProperties: false
         editions:
           description: The edition statement, imprint and other publication source information
           type: array
           items:
             type: string
-      additionalProperties: false
       required:
         - title
         - identifiers
@@ -170,7 +164,6 @@
             code:
               description: Code of the location
               type: string
-          additionalProperties: false
         enumeration:
           description: Enumeration of the item
           type: string
@@ -202,11 +195,9 @@
             suffix:
               description: Suffix of the item's call number
               type: string
-          additionalProperties: false
         copyNumber:
           description: Copy number of the item
           type: string
-      additionalProperties: false
     mediatedWorkflow:
       description: Mediated workflow that mediated request follows
       type: string
@@ -269,7 +260,6 @@
         countryId:
           description: Country ID
           type: string
-      additionalProperties: false
     pickupServicePointId:
       $ref: '../common/uuid.yaml'
     pickupServicePoint:
@@ -294,7 +284,6 @@
         pickupLocation:
           description: Whether pickup service point is a pickup location
           type: boolean
-      additionalProperties: false
     confirmedRequestId:
       $ref: '../common/uuid.yaml'
     searchIndex:
@@ -314,17 +303,14 @@
             suffix:
               description: Effective Call Number Suffix is the suffix of the identifier assigned to an item or its holding and associated with the item
               type: string
-          additionalProperties: false
         shelvingOrder:
           description: A system generated normalization of the call number that allows for call number sorting in reports and search results
           type: string
         pickupServicePointName:
           description: The name of the request pickup service point
           type: string
-      additionalProperties: false
     metadata:
       $ref: '../common/metadata.yaml'
-  additionalProperties: false
   required:
     - requestLevel
     - requestType

@@ -104,10 +104,10 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   private ResponseEntity<MediatedRequest> confirmMediatedRequest(MediatedRequest mediatedRequest) {
-    log.debug("confirmMediatedRequest:: confirming mediated request: {}", mediatedRequest.getId());
+    log.info("confirmMediatedRequest:: confirming mediated request: {}", mediatedRequest.getId());
     ResponseEntity<Void> confirmResponse = mediatedRequestsService.confirmMediatedRequest(mediatedRequest);
     if (!confirmResponse.getStatusCode().equals(NO_CONTENT)) {
-      log.info("confirmMediatedRequest:: mediated request: {}, has not been confirmed",
+      log.info("confirmMediatedRequest:: mediated request {} has not been confirmed",
         mediatedRequest.getId());
 
       return ResponseEntity.status(confirmResponse.getStatusCode()).build();
