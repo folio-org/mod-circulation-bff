@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
-import org.folio.circulationbff.domain.dto.InputRequest;
 import org.folio.circulationbff.domain.dto.InstanceSearchResult;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
@@ -52,8 +51,8 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<Request> createRequest(String tenantId, InputRequest inputRequest) {
+  public ResponseEntity<Request> createRequest(String tenantId, Request request) {
     return ResponseEntity.status(HttpStatus.OK)
-      .body(circulationBffService.createRequest(inputRequest, tenantId));
+      .body(circulationBffService.createRequest(request, tenantId));
   }
 }

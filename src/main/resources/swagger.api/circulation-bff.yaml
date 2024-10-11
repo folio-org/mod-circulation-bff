@@ -17,3 +17,8 @@ components:
       $ref: 'schemas/response/circulationSettingsResponse.yaml'
     userTenantCollection:
       $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
+    bff-request:
+      $ref: 'schemas/dto/request/Request.yaml#/Request'
+  responses:
+    bff-request:
+      $ref: 'schemas/dto/request/Request.yaml#/Request'

@@ -12,7 +12,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: "../../schemas/dto/request/InputRequest.yaml#/InputRequest"
+          $ref: "../../circulation-bff.yaml#/components/schemas/bff-request"
     required: true
   responses:
     '200':
@@ -20,7 +20,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/dto/request/Request.yaml#/Request'
+            $ref: '../../circulation-bff.yaml#/components/responses/bff-request'
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '422':

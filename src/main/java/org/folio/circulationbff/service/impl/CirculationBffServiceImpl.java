@@ -4,7 +4,6 @@ import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
-import org.folio.circulationbff.domain.dto.InputRequest;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
@@ -39,7 +38,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   }
 
   @Override
-  public Request createRequest(InputRequest request, String tenantId) {
+  public Request createRequest(Request request, String tenantId) {
     log.info("createRequest:: request: {}", request);
     if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
       return ecsTlrClient.createRequest(request);

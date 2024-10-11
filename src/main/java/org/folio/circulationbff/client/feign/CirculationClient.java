@@ -3,7 +3,6 @@ package org.folio.circulationbff.client.feign;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
-import org.folio.circulationbff.domain.dto.InputRequest;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -22,5 +21,5 @@ public interface CirculationClient {
   CirculationSettingsResponse getCirculationSettingsByQuery(@RequestParam("query") String query);
 
   @PostMapping("/requests")
-  Request createRequest(InputRequest request);
+  Request createRequest(Request request);
 }
