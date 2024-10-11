@@ -9,6 +9,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "circulation", url = "circulation", configuration = FeignClientConfiguration.class)
@@ -21,5 +22,5 @@ public interface CirculationClient {
   CirculationSettingsResponse getCirculationSettingsByQuery(@RequestParam("query") String query);
 
   @PostMapping("/requests")
-  Request createRequest(Request request);
+  Request createRequest(@RequestBody Request request);
 }
