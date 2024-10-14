@@ -317,7 +317,7 @@ Request:
     metadata:
       description: "Metadata about creation and changes to requests, provided by the server (client should not provide)"
       type: "object"
-      $ref: "../common/uuid.yaml"
+      $ref: "../common/metadata.yaml"
     requestProcessingParameters:
       type: "object"
       description: "Additional parameters used for request processing and discarded afterwards. Not part of request record."
