@@ -30,11 +30,12 @@
             <!-- define sonar exclusions here -->
             src/main/java/org/folio/template/FolioSpringTemplateApplication.java,
         </sonar.exclusions>
-        <argLine/>
 
         <!-- runtime dependencies -->
         <folio-spring-support.version>8.1.2</folio-spring-support.version>
         <openapi-generator.version>7.3.0</openapi-generator.version>
+        <mapstruct.version>1.6.2</mapstruct.version>
+
 
         <!-- test dependencies -->
         <wiremock.version>3.2.0</wiremock.version>
@@ -113,6 +114,17 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webflux</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

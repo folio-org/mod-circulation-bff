@@ -1,8 +1,53 @@
 package org.folio.circulationbff.service.impl;
 
-import org.folio.circulationbff.client.SearchClient;
-import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import static java.util.Collections.emptyList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+import org.folio.circulationbff.client.feign.HoldingsStorageClient;
+import org.folio.circulationbff.client.feign.ItemStorageClient;
+import org.folio.circulationbff.client.feign.LocationClient;
+import org.folio.circulationbff.client.feign.MaterialTypeClient;
+import org.folio.circulationbff.client.feign.SearchClient;
+import org.folio.circulationbff.client.feign.ServicePointClient;
+import org.folio.circulationbff.domain.dto.BffSearchInstance;
+import org.folio.circulationbff.domain.dto.BffSearchItem;
+import org.folio.circulationbff.domain.dto.BffSearchItemCallNumberComponents;
+import org.folio.circulationbff.domain.dto.BffSearchItemInTransitDestinationServicePoint;
+import org.folio.circulationbff.domain.dto.BffSearchItemLocation;
+import org.folio.circulationbff.domain.dto.BffSearchItemMaterialType;
+import org.folio.circulationbff.domain.dto.BffSearchItemStatus;
+import org.folio.circulationbff.domain.dto.Contributor;
+import org.folio.circulationbff.domain.dto.HoldingsRecord;
+import org.folio.circulationbff.domain.dto.HoldingsRecords;
+import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
+import org.folio.circulationbff.domain.dto.Items;
+import org.folio.circulationbff.domain.dto.Location;
+import org.folio.circulationbff.domain.dto.Locations;
+import org.folio.circulationbff.domain.dto.MaterialType;
+import org.folio.circulationbff.domain.dto.MaterialTypes;
+import org.folio.circulationbff.domain.dto.SearchInstance;
+import org.folio.circulationbff.domain.dto.SearchInstances;
+import org.folio.circulationbff.domain.dto.SearchItem;
+import org.folio.circulationbff.domain.dto.ServicePoint;
+import org.folio.circulationbff.domain.dto.ServicePoints;
+import org.folio.circulationbff.domain.mapping.SearchInstanceMapper;
+import org.folio.circulationbff.service.BulkFetchingService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -13,11 +58,290 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class SearchServiceImpl implements SearchService {
 
+  private final ItemStorageClient itemStorageClient;
+  private final HoldingsStorageClient holdingsStorageClient;
+  private final LocationClient locationClient;
+  private final MaterialTypeClient materialTypeClient;
+  private final ServicePointClient servicePointClient;
   private final SearchClient searchClient;
+  private final SystemUserScopedExecutionService executionService;
+  private final BulkFetchingService fetchingService;
+  private final SearchInstanceMapper searchInstanceMapper;
+  private final FolioExecutionContext folioExecutionContext;
 
   @Override
-  public InstanceSearchResult findInstances(String query) {
+  public List<BffSearchInstance> findInstances(String query) {
     log.info("findInstances:: searching instances by query: {}", query);
-    return searchClient.findInstances(query, true);
+    final SearchInstances searchResult = searchClient.findInstances(query, true);
+    final List<SearchInstance> searchInstances = searchResult.getInstances();
+
+    if (searchInstances.isEmpty()) {
+      log.info("findInstances:: no instances found");
+      return emptyList();
+    }
+    log.info("findInstances:: {} instances found", searchInstances::size);
+
+//    if (searchInstances.stream().allMatch(instance -> instance.getItems().isEmpty())) { // TODO: prettify
+//      log.info("findInstances:: no items found in instances");
+//      return searchInstances.stream()
+//        .map(searchInstanceMapper::toBffSearchInstance)
+//        .toList();
+//    }
+
+    Collection<ItemContext> itemContexts = fetchItemDetails(searchInstances);
+
+    return searchInstances.stream()
+      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
+      .toList();
   }
+
+  private List<ItemContext> fetchItemDetails(List<SearchInstance> searchInstances) {
+    Map<String, List<SearchItem>> itemsByTenant =  searchInstances.stream()
+      .map(SearchInstance::getItems)
+      .flatMap(Collection::stream)
+      .collect(groupingBy(SearchItem::getTenantId));
+
+    if (itemsByTenant.isEmpty()) {
+      log.info("fetchItemDetails:: no items found, doing nothing");
+      return emptyList();
+    }
+
+    log.info("fetchItemDetails:: fetching item details from {} tenants: {}", itemsByTenant::size,
+      itemsByTenant::keySet);
+
+//    List<ItemContext> contexts = new ArrayList<>();
+//    for (Map.Entry<String, List<SearchItem>> entry : itemsByTenant.entrySet()) {
+//      Collection<ItemContext> itemContexts = fetchItemDetails(entry.getKey(), entry.getValue());
+//      contexts.addAll(itemContexts);
+//    }
+//    return contexts;
+
+    return itemsByTenant.entrySet()
+      .stream()
+      .map(entry -> fetchItemDetails(entry.getKey(), entry.getValue()))
+      .flatMap(Collection::stream)
+      .toList();
+  }
+
+  private Collection<ItemContext> fetchItemDetails(String tenantId, Collection<SearchItem> items) {
+    log.info("fetchItemDetails:: fetching details for {} items in tenant {}", items.size(), tenantId);
+    return executionService.executeSystemUserScoped(tenantId, () -> buildItemContexts(items));
+  }
+
+  private Collection<ItemContext> buildItemContexts(Collection<SearchItem> searchItems) {
+    Set<String> itemIds = searchItems.stream()
+      .map(SearchItem::getId)
+      .collect(toSet());
+
+    Collection<Item> items = fetchItems(itemIds);
+    Map<String, HoldingsRecord> holdingsRecordsById = fetchHoldingsRecords(items);
+    Map<String, Location> locationsById = fetchLocations(items);
+    Map<String, ServicePoint> servicePointsById = fetchServicePoints(items);
+    Map<String, MaterialType> materialTypesById = fetchMaterialTypes(items);
+
+    return items.stream()
+      .map(item -> new ItemContext(item,
+        holdingsRecordsById.get(item.getHoldingsRecordId()),
+        locationsById.get(item.getEffectiveLocationId()),
+        materialTypesById.get(item.getMaterialTypeId()),
+        servicePointsById.get(item.getInTransitDestinationServicePointId())))
+      .toList();
+  }
+
+  private Collection<Item> fetchItems(Collection<String> ids) {
+    log.info("fetchItems: fetching {} items", ids::size);
+    return fetchingService.fetch(itemStorageClient, ids, Items::getItems);
+  }
+
+  private Map<String, HoldingsRecord> fetchHoldingsRecords(Collection<Item> items) {
+    Collection<String> ids = extractUniqueValues(items, Item::getHoldingsRecordId);
+    log.info("fetchHoldingsRecords: fetching {} holdingsRecords", ids::size);
+    return fetchingService.fetch(holdingsStorageClient, ids, HoldingsRecords::getHoldingsRecords,
+      HoldingsRecord::getId);
+  }
+
+  private Map<String, Location> fetchLocations(Collection<Item> items) {
+    Collection<String> ids = extractUniqueValues(items, Item::getEffectiveLocationId);
+    log.info("fetchLocations: fetching {} locations", ids::size);
+    return fetchingService.fetch(locationClient, ids, Locations::getLocations, Location::getId);
+  }
+
+  private Map<String, ServicePoint> fetchServicePoints(Collection<Item> items) {
+    Collection<String> ids = extractUniqueValues(items, Item::getInTransitDestinationServicePointId);
+    log.info("fetchServicePoints: fetching {} service points", ids::size);
+    return fetchingService.fetch(servicePointClient, ids, ServicePoints::getServicepoints,
+      ServicePoint::getId);
+  }
+
+  private Map<String, MaterialType> fetchMaterialTypes(Collection<Item> items) {
+    Collection<String> ids = extractUniqueValues(items, Item::getMaterialTypeId);
+    log.info("fetchMaterialTypes: fetching {} material types", ids::size);
+    return fetchingService.fetch(materialTypeClient, ids, MaterialTypes::getMtypes,
+      MaterialType::getId);
+  }
+
+  private BffSearchInstance buildBffSearchInstance(SearchInstance searchInstance,
+    Collection<ItemContext> itemContexts) {
+
+    return searchInstanceMapper.toBffSearchInstance(searchInstance)
+      .items(buildBffSearchItems(searchInstance, itemContexts));
+  }
+
+  private static List<BffSearchItem> buildBffSearchItems(SearchInstance searchInstance,
+    Collection<ItemContext> itemContexts) {
+
+    Map<String, ItemContext> itemIdToContext = itemContexts.stream()
+      .collect(toMap(context -> context.item().getId(), identity()));
+
+    return searchInstance.getItems()
+      .stream()
+      .map(item -> buildBffSearchItem(searchInstance, item, itemIdToContext.get(item.getId())))
+      .toList();
+  }
+
+  private static BffSearchItem buildBffSearchItem(SearchInstance searchInstance,
+    SearchItem searchItem, ItemContext itemContext) {
+
+    log.info("buildBffSearchItem:: building search item {}", searchItem::getId);
+    if (itemContext == null) {
+      log.warn("buildBffSearchItem:: context for item {} was not found, skipping", searchItem.getId());
+      return null;
+    }
+
+    final Item item = itemContext.item();
+
+    BffSearchItem bffSearchItem = new BffSearchItem()
+      .id(item.getId())
+      .tenantId(searchItem.getTenantId())
+      .holdingsRecordId(toUUID(searchItem.getHoldingsRecordId()))
+      .instanceId(toUUID(searchInstance.getId()))
+      .title(searchInstance.getTitle())
+      .barcode(item.getBarcode())
+      .enumeration(item.getEnumeration())
+      .chronology(item.getChronology())
+      .displaySummary(item.getDisplaySummary())
+      .volume(item.getVolume())
+      .inTransitDestinationServicePointId(toUUID(item.getInTransitDestinationServicePointId()));
+
+    Optional.ofNullable(searchInstance.getContributors())
+      .map(contributors -> contributors.stream()
+        .map(Contributor::getName)
+        .map(name -> new Contributor().name(name))
+        .toList())
+      .ifPresent(bffSearchItem::setContributors);
+
+    Optional.ofNullable(item.getEffectiveCallNumberComponents())
+      .map(itemCn -> new BffSearchItemCallNumberComponents()
+        .callNumber(itemCn.getCallNumber())
+        .prefix(itemCn.getPrefix())
+        .suffix(itemCn.getSuffix()))
+      .ifPresent(bffSearchItem::setCallNumberComponents);
+
+    Optional.ofNullable(item.getEffectiveCallNumberComponents())
+      .map(ItemEffectiveCallNumberComponents::getCallNumber)
+      .ifPresent(bffSearchItem::setCallNumber);
+
+    Optional.ofNullable(itemContext.servicePoint())
+      .map(sp -> new BffSearchItemInTransitDestinationServicePoint()
+        .id(toUUID(sp.getId()))
+        .name(sp.getName()))
+      .ifPresent(bffSearchItem::setInTransitDestinationServicePoint);
+
+    Optional.ofNullable(itemContext.location())
+      .map(loc -> new BffSearchItemLocation().name(loc.getName()))
+      .ifPresent(bffSearchItem::setLocation);
+
+    Optional.ofNullable(itemContext.materialType())
+      .map(mt -> new BffSearchItemMaterialType().name(mt.getName()))
+      .ifPresent(bffSearchItem::setMaterialType);
+
+    Optional.ofNullable(item.getCopyNumber())
+      .or(() -> Optional.ofNullable(itemContext.holdingsRecord().getCopyNumber()))
+      .ifPresent(bffSearchItem::setCopyNumber);
+
+    Optional.ofNullable(item.getStatus())
+      .map(status -> new BffSearchItemStatus()
+        .name(status.getName().getValue())
+        .date(status.getDate()))
+      .ifPresent(bffSearchItem::setStatus);
+
+    return bffSearchItem;
+  }
+
+//  private static void extendSearchItem(SearchInstance searchInstance, SearchItem searchItem,
+//    Map<String, ItemContext> itemContexts) {
+//
+//    log.info("extendSearchItem:: extending item {}", searchItem::getId);
+//    final ItemContext itemContext = itemContexts.get(searchItem.getId());
+//    if (itemContext == null) {
+//      log.warn("extendSearchItem:: context for item {} was not found, skipping", searchItem.getId());
+//      return;
+//    }
+//
+//    final Item item = itemContext.item();
+//
+//    searchItem
+//      .instanceId(toUUID(searchInstance.getId()))
+//      .title(searchInstance.getTitle())
+//      .enumeration(item.getEnumeration())
+//      .chronology(item.getChronology())
+//      .displaySummary(item.getDisplaySummary())
+//      .volume(item.getVolume())
+//      .inTransitDestinationServicePointId(toUUID(item.getInTransitDestinationServicePointId()));
+//
+//    Optional.ofNullable(searchInstance.getContributors())
+//      .map(contributors -> contributors.stream()
+//        .map(Contributor::getName)
+//        .map(name -> new Contributor().name(name))
+//        .toList())
+//      .ifPresent(searchItem::setContributors);
+//
+//    Optional.ofNullable(item.getEffectiveCallNumberComponents())
+//      .map(itemCn -> new SearchItemCallNumberComponents()
+//        .callNumber(itemCn.getCallNumber())
+//        .prefix(itemCn.getPrefix())
+//        .suffix(itemCn.getSuffix()))
+//      .ifPresent(searchItem::setCallNumberComponents);
+//
+//    Optional.ofNullable(item.getEffectiveCallNumberComponents())
+//      .map(ItemEffectiveCallNumberComponents::getCallNumber)
+//      .ifPresent(searchItem::setCallNumber);
+//
+//    Optional.ofNullable(itemContext.servicePoint())
+//      .map(sp -> new SearchItemInTransitDestinationServicePoint()
+//        .id(toUUID(sp.getId()))
+//        .name(sp.getName()))
+//      .ifPresent(searchItem::setInTransitDestinationServicePoint);
+//
+//    Optional.ofNullable(itemContext.location())
+//      .map(loc -> new SearchItemLocation().name(loc.getName()))
+//      .ifPresent(searchItem::setLocation);
+//
+//    Optional.ofNullable(itemContext.materialType())
+//      .map(mt -> new SearchItemMaterialType().name(mt.getName()))
+//      .ifPresent(searchItem::setMaterialType);
+//
+//    Optional.ofNullable(item.getCopyNumber())
+//      .or(() -> Optional.ofNullable(itemContext.holdingsRecord().getCopyNumber()))
+//      .ifPresent(searchItem::setCopyNumber);
+//  }
+
+  private static UUID toUUID(String uuidString) {
+    return Optional.ofNullable(uuidString)
+      .map(UUID::fromString)
+      .orElse(null);
+  }
+
+  private static <T> Collection<String> extractUniqueValues(Collection<T> objects,
+    Function<T, String> valueExtractor) {
+
+    return objects.stream()
+      .map(valueExtractor)
+      .filter(StringUtils::isNotBlank)
+      .collect(toSet());
+  }
+
+  private record ItemContext(Item item, HoldingsRecord holdingsRecord, Location location,
+    MaterialType materialType, ServicePoint servicePoint) { } // store tenantId?
+
 }

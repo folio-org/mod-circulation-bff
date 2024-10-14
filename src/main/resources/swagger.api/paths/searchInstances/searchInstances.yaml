@@ -10,7 +10,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/response/instanceSearchResult.yaml'
+            $ref: '../../schemas/response/instanceSearchResponse.yaml'
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '422':

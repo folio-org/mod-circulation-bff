@@ -1,10 +1,12 @@
 package org.folio.circulationbff.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
-import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import org.folio.circulationbff.domain.dto.BffSearchInstance;
+import org.folio.circulationbff.domain.dto.InstanceSearchResponse;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SearchService;
@@ -45,8 +47,11 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<InstanceSearchResult> circulationBffRequestsSearchInstancesGet(String query) {
-    return ResponseEntity.status(HttpStatus.OK)
-      .body(searchService.findInstances(query));
+  public ResponseEntity<InstanceSearchResponse> circulationBffRequestsSearchInstancesGet(String query) {
+    List<BffSearchInstance> instances = searchService.findInstances(query);
+    InstanceSearchResponse response = new InstanceSearchResponse().instances(instances)
+      .totalRecords(instances.size());
+
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }
