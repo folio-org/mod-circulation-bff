@@ -1,10 +1,13 @@
 package org.folio.circulationbff.api;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.Collections.emptyList;
+import static org.folio.circulationbff.service.BulkFetchingService.MAX_IDS_PER_QUERY;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -31,7 +34,6 @@ import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.Locations;
 import org.folio.circulationbff.domain.dto.MaterialType;
 import org.folio.circulationbff.domain.dto.MaterialTypes;
-import org.folio.circulationbff.domain.dto.Metadata;
 import org.folio.circulationbff.domain.dto.Publication;
 import org.folio.circulationbff.domain.dto.SearchHolding;
 import org.folio.circulationbff.domain.dto.SearchInstance;
@@ -41,7 +43,6 @@ import org.folio.circulationbff.domain.dto.SearchItemEffectiveCallNumberComponen
 import org.folio.circulationbff.domain.dto.SearchItemStatus;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.dto.ServicePoints;
-import org.folio.circulationbff.domain.dto.Tags;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -75,8 +76,14 @@ class SearchInstancesApiTest extends BaseIT {
           .headers(defaultHeaders())
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("instances", is(emptyIterable())))
-      .andExpect(jsonPath("totalRecords", is(0)));
+      .andExpect(jsonPath("$.instances", is(emptyIterable())))
+      .andExpect(jsonPath("$.totalRecords", is(0)));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(ITEM_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(HOLDINGS_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(LOCATIONS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(SERVICE_POINTS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(MATERIAL_TYPES_URL)));
   }
 
   @Test
@@ -102,30 +109,37 @@ class SearchInstancesApiTest extends BaseIT {
           .headers(defaultHeaders())
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("instances", hasSize(1)))
-      .andExpect(jsonPath("instances[0].id", is(instanceId)))
-      .andExpect(jsonPath("instances[0].items", emptyIterable()))
-      .andExpect(jsonPath("totalRecords", is(1)));
+      .andExpect(jsonPath("$.instances", hasSize(1)))
+      .andExpect(jsonPath("$.instances[0].id", is(instanceId)))
+      .andExpect(jsonPath("$.instances[0].items", emptyIterable()))
+      .andExpect(jsonPath("$.totalRecords", is(1)));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(ITEM_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(HOLDINGS_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(LOCATIONS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(SERVICE_POINTS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(MATERIAL_TYPES_URL)));
   }
 
   @Test
   @SneakyThrows
   void searchInstancesReturnsOkStatus() {
-    SearchHolding searchHolding = buildSearchHolding(TENANT_ID_CONSORTIUM);
-    List<SearchItem> searchItemsInConsortium = buildSearchItems(85, TENANT_ID_CONSORTIUM);
-    List<SearchItem> searchItemsInCollege = buildSearchItems(15, TENANT_ID_COLLEGE);
+    // mock instance search
+
+    SearchHolding searchHoldingInConsortium = buildSearchHolding(TENANT_ID_CONSORTIUM);
+    SearchHolding searchHoldingInCollege = buildSearchHolding(TENANT_ID_COLLEGE);
+
+    List<SearchItem> searchItemsInConsortium = buildSearchItems(MAX_IDS_PER_QUERY, TENANT_ID_CONSORTIUM,
+      searchHoldingInConsortium.getId());
+    List<SearchItem> searchItemsInCollege = buildSearchItems(10, TENANT_ID_COLLEGE,
+      searchHoldingInCollege.getId());
     List<SearchItem> allSearchItems = Stream.concat(searchItemsInConsortium.stream(),
         searchItemsInCollege.stream())
       .toList();
 
-    List<Item> itemsInConsortium = buildItems(searchItemsInConsortium);
-    List<Item> itemsInCollege = buildItems(searchItemsInCollege);
-
     SearchInstance searchInstance = buildSearchInstance(TENANT_ID_CONSORTIUM, allSearchItems,
-      List.of(searchHolding));
+      List.of(searchHoldingInConsortium, searchHoldingInCollege));
     String instanceId = searchInstance.getId();
-
-    // mock instance search
 
     SearchInstances mockSearchResponse = new SearchInstances()
       .addInstancesItem(searchInstance)
@@ -137,6 +151,9 @@ class SearchInstancesApiTest extends BaseIT {
       .willReturn(jsonResponse(mockSearchResponse, HttpStatus.SC_OK)));
 
     // mock items
+
+    List<Item> itemsInConsortium = buildItems(searchItemsInConsortium);
+    List<Item> itemsInCollege = buildItems(searchItemsInCollege);
 
     Items mockGetItemsFromConsortiumResponse = new Items()
       .items(itemsInConsortium)
@@ -201,16 +218,25 @@ class SearchInstancesApiTest extends BaseIT {
     createStubForGetByIds(MATERIAL_TYPES_URL, TENANT_ID_CONSORTIUM, mockGetMaterialTypesFromConsortiumResponse);
     createStubForGetByIds(MATERIAL_TYPES_URL, TENANT_ID_COLLEGE, mockGetMaterialTypesFromCollegeResponse);
 
-
-
     mockMvc.perform(
       get(SEARCH_INSTANCES_URL)
         .queryParam("query", "id==" + instanceId)
         .headers(defaultHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("instances[0].id", is(instanceId)))
-      .andExpect(jsonPath("totalRecords", is(1)));
+      .andExpect(jsonPath("$.totalRecords", is(1)))
+      .andExpect(jsonPath("$.instances", hasSize(1)))
+      .andExpect(jsonPath("$.instances[0].id", is(instanceId)))
+      .andExpect(jsonPath("$.instances[0].holdings", hasSize(2)))
+      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'consortium')]", hasSize(1)))
+      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'college')]", hasSize(1)))
+      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'consortium')].id",
+        containsInAnyOrder(searchHoldingInConsortium.getId())))
+      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'college')].id",
+        containsInAnyOrder(searchHoldingInCollege.getId())))
+      .andExpect(jsonPath("$.instances[0].items", hasSize(90)))
+      .andExpect(jsonPath("$.instances[0].items[?(@.tenantId == 'consortium')]", hasSize(MAX_IDS_PER_QUERY)))
+      .andExpect(jsonPath("$.instances[0].items[?(@.tenantId == 'college')]", hasSize(10)));
   }
 
   private static SearchInstance buildSearchInstance(String tenantId, List<SearchItem> searchItems,
@@ -219,13 +245,12 @@ class SearchInstancesApiTest extends BaseIT {
     return new SearchInstance()
       .id(randomId())
       .tenantId(tenantId)
+      .holdings(searchHoldings)
+      .items(searchItems)
       .shared(true)
       .hrid("test_instance_hrid")
       .source("FOLIO")
-      .statisticalCodeIds(emptyList())
       .title("test title")
-      .series(emptyList())
-      .alternativeTitles(emptyList())
       .identifiers(List.of(
         new Identifier()
           .value("identifier_value_1")
@@ -242,17 +267,6 @@ class SearchInstancesApiTest extends BaseIT {
           .name("Author, Two")
           .contributorNameTypeId(randomId())
           .primary(false)))
-      .subjects(emptyList())
-      .instanceTypeId(randomId())
-      .instanceFormatIds(emptyList())
-      .languages(emptyList())
-      .metadata(new Metadata()
-        .createdDate(new Date().toString())
-        .createdByUserId(randomId())
-        .updatedDate(new Date().toString())
-        .updatedByUserId(randomId()))
-      .administrativeNotes(emptyList())
-      .natureOfContentTermIds(emptyList())
       .publication(List.of(
         new Publication()
           .publisher("publisher_1")
@@ -261,30 +275,21 @@ class SearchInstancesApiTest extends BaseIT {
         new Publication()
           .publisher("publisher_1")
           .dateOfPublication("1950")
-          .place("place_1")))
-      .staffSuppress(false)
-      .discoverySuppress(false)
-      .isBoundWith(false)
-      .tags(new Tags())
-      .classifications(emptyList())
-      .electronicAccess(emptyList())
-      .notes(emptyList())
-      .holdings(searchHoldings)
-      .items(searchItems);
+          .place("place_1")));
   }
 
-  private static List<SearchItem> buildSearchItems(int count, String tenantId) {
+  private static List<SearchItem> buildSearchItems(int count, String tenantId, String holdingsId) {
     return IntStream.range(0, count)
       .boxed()
-      .map(idx -> buildSearchItem(idx, tenantId))
+      .map(idx -> buildSearchItem(idx, tenantId, holdingsId))
       .toList();
   }
 
-  private static SearchItem buildSearchItem(int index, String tenantId) {
+  private static SearchItem buildSearchItem(int index, String tenantId, String holdingsId) {
     return new SearchItem()
       .id(randomId())
       .tenantId(tenantId)
-      .holdingsRecordId(randomId())
+      .holdingsRecordId(holdingsId)
       .hrid("test_item_hrid")
       .barcode("test_item_barcode_" + index)
       .effectiveLocationId(randomId())
@@ -296,19 +301,14 @@ class SearchInstancesApiTest extends BaseIT {
         .prefix("PFX")
         .suffix("SFX")
         .typeId(randomId()))
-      .effectiveShelvingOrder("test_shelving_order")
-      .itemLevelCallNumberTypeId(randomId())
-      .tags(new Tags())
-      .electronicAccess(emptyList())
-      .administrativeNotes(emptyList())
-      .notes(emptyList())
-      .statisticalCodeIds(emptyList())
-      .circulationNotes(emptyList())
-      .metadata(new Metadata()
-        .createdDate(new Date().toString())
-        .createdByUserId(randomId())
-        .updatedDate(new Date().toString())
-        .updatedByUserId(randomId()));
+      .effectiveShelvingOrder("test_shelving_order");
+  }
+
+  private static List<SearchHolding> buildSearchHoldings(int count, String tenantId) {
+    return IntStream.range(0, count)
+      .boxed()
+      .map(idx -> buildSearchHolding(tenantId))
+      .toList();
   }
 
   private static SearchHolding buildSearchHolding(String tenantId) {
@@ -316,20 +316,8 @@ class SearchInstancesApiTest extends BaseIT {
       .id(randomId())
       .tenantId(tenantId)
       .permanentLocationId(randomId())
-      .discoverySuppress(false)
       .hrid("test_holdings_hrid")
-      .sourceId(randomId())
-      .formerIds(emptyList())
-      .statisticalCodeIds(emptyList())
-      .holdingsTypeId(randomId())
-      .electronicAccess(emptyList())
-      .administrativeNotes(emptyList())
-      .notes(emptyList())
-      .metadata(new Metadata()
-        .createdDate(new Date().toString())
-        .createdByUserId(randomId())
-        .updatedDate(new Date().toString())
-        .updatedByUserId(randomId()));
+      .notes(emptyList());
   }
 
   private static List<Item> buildItems(Collection<SearchItem> searchItems) {
@@ -362,49 +350,56 @@ class SearchInstancesApiTest extends BaseIT {
 
   private static List<HoldingsRecord> buildHoldingsRecords(Collection<Item> items) {
     return items.stream()
+      .map(Item::getHoldingsRecordId)
+      .distinct()
       .map(SearchInstancesApiTest::buildHoldingsRecord)
       .toList();
   }
 
-  private static HoldingsRecord buildHoldingsRecord(Item item) {
+  private static HoldingsRecord buildHoldingsRecord(String id) {
     return new HoldingsRecord()
-      .id(item.getHoldingsRecordId())
+      .id(id)
       .copyNumber("test_holding_copy_number");
   }
 
   private static List<Location> buildLocations(Collection<Item> items) {
     return items.stream()
+      .map(Item::getEffectiveLocationId)
+      .distinct()
       .map(SearchInstancesApiTest::buildLocation)
       .toList();
   }
 
-  private static Location buildLocation(Item item) {
+  private static Location buildLocation(String id) {
     return new Location()
-      .id(item.getEffectiveLocationId())
+      .id(id)
       .name("test_location");
   }
 
   private static List<ServicePoint> buildServicePoints(Collection<Item> items) {
     return items.stream()
+      .map(Item::getInTransitDestinationServicePointId)
+      .distinct()
       .map(SearchInstancesApiTest::buildServicePoint)
       .toList();
   }
 
-  private static ServicePoint buildServicePoint(Item item) {
+  private static ServicePoint buildServicePoint(String id) {
     return new ServicePoint()
-      .id(item.getInTransitDestinationServicePointId())
+      .id(id)
       .name("test_service_point");
   }
 
   private static List<MaterialType> buildMaterialTypes(Collection<Item> items) {
     return items.stream()
+      .map(Item::getMaterialTypeId)
       .map(SearchInstancesApiTest::buildMaterialType)
       .toList();
   }
 
-  private static MaterialType buildMaterialType(Item item) {
+  private static MaterialType buildMaterialType(String id) {
     return new MaterialType()
-      .id(item.getMaterialTypeId())
+      .id(id)
       .name("test_material_type");
   }
 

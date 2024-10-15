@@ -22,9 +22,8 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Service
 @Log4j2
-public class BulkFetchingServiceImpl implements BulkFetchingService {
-
-  private static final int MAX_IDS_PER_QUERY = 80;
+public class
+BulkFetchingServiceImpl implements BulkFetchingService {
 
   @Override public <C, E> Collection<E> fetch(GetByQueryClient<C> client, Collection<String> ids,
     Function<C, Collection<E>> collectionExtractor) {

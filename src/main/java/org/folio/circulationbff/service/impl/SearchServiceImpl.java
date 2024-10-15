@@ -46,7 +46,6 @@ import org.folio.circulationbff.domain.dto.ServicePoints;
 import org.folio.circulationbff.domain.mapping.SearchInstanceMapper;
 import org.folio.circulationbff.service.BulkFetchingService;
 import org.folio.circulationbff.service.SearchService;
-import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
@@ -67,10 +66,9 @@ public class SearchServiceImpl implements SearchService {
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
   private final SearchInstanceMapper searchInstanceMapper;
-  private final FolioExecutionContext folioExecutionContext;
 
   @Override
-  public List<BffSearchInstance> findInstances(String query) {
+  public Collection<BffSearchInstance> findInstances(String query) {
     log.info("findInstances:: searching instances by query: {}", query);
     final SearchInstances searchResult = searchClient.findInstances(query, true);
     final List<SearchInstance> searchInstances = searchResult.getInstances();
@@ -79,15 +77,8 @@ public class SearchServiceImpl implements SearchService {
       log.info("findInstances:: no instances found");
       return emptyList();
     }
+
     log.info("findInstances:: {} instances found", searchInstances::size);
-
-//    if (searchInstances.stream().allMatch(instance -> instance.getItems().isEmpty())) { // TODO: prettify
-//      log.info("findInstances:: no items found in instances");
-//      return searchInstances.stream()
-//        .map(searchInstanceMapper::toBffSearchInstance)
-//        .toList();
-//    }
-
     Collection<ItemContext> itemContexts = fetchItemDetails(searchInstances);
 
     return searchInstances.stream()
@@ -95,7 +86,7 @@ public class SearchServiceImpl implements SearchService {
       .toList();
   }
 
-  private List<ItemContext> fetchItemDetails(List<SearchInstance> searchInstances) {
+  private Collection<ItemContext> fetchItemDetails(List<SearchInstance> searchInstances) {
     Map<String, List<SearchItem>> itemsByTenant =  searchInstances.stream()
       .map(SearchInstance::getItems)
       .flatMap(Collection::stream)
@@ -108,13 +99,6 @@ public class SearchServiceImpl implements SearchService {
 
     log.info("fetchItemDetails:: fetching item details from {} tenants: {}", itemsByTenant::size,
       itemsByTenant::keySet);
-
-//    List<ItemContext> contexts = new ArrayList<>();
-//    for (Map.Entry<String, List<SearchItem>> entry : itemsByTenant.entrySet()) {
-//      Collection<ItemContext> itemContexts = fetchItemDetails(entry.getKey(), entry.getValue());
-//      contexts.addAll(itemContexts);
-//    }
-//    return contexts;
 
     return itemsByTenant.entrySet()
       .stream()
@@ -268,64 +252,6 @@ public class SearchServiceImpl implements SearchService {
     return bffSearchItem;
   }
 
-//  private static void extendSearchItem(SearchInstance searchInstance, SearchItem searchItem,
-//    Map<String, ItemContext> itemContexts) {
-//
-//    log.info("extendSearchItem:: extending item {}", searchItem::getId);
-//    final ItemContext itemContext = itemContexts.get(searchItem.getId());
-//    if (itemContext == null) {
-//      log.warn("extendSearchItem:: context for item {} was not found, skipping", searchItem.getId());
-//      return;
-//    }
-//
-//    final Item item = itemContext.item();
-//
-//    searchItem
-//      .instanceId(toUUID(searchInstance.getId()))
-//      .title(searchInstance.getTitle())
-//      .enumeration(item.getEnumeration())
-//      .chronology(item.getChronology())
-//      .displaySummary(item.getDisplaySummary())
-//      .volume(item.getVolume())
-//      .inTransitDestinationServicePointId(toUUID(item.getInTransitDestinationServicePointId()));
-//
-//    Optional.ofNullable(searchInstance.getContributors())
-//      .map(contributors -> contributors.stream()
-//        .map(Contributor::getName)
-//        .map(name -> new Contributor().name(name))
-//        .toList())
-//      .ifPresent(searchItem::setContributors);
-//
-//    Optional.ofNullable(item.getEffectiveCallNumberComponents())
-//      .map(itemCn -> new SearchItemCallNumberComponents()
-//        .callNumber(itemCn.getCallNumber())
-//        .prefix(itemCn.getPrefix())
-//        .suffix(itemCn.getSuffix()))
-//      .ifPresent(searchItem::setCallNumberComponents);
-//
-//    Optional.ofNullable(item.getEffectiveCallNumberComponents())
-//      .map(ItemEffectiveCallNumberComponents::getCallNumber)
-//      .ifPresent(searchItem::setCallNumber);
-//
-//    Optional.ofNullable(itemContext.servicePoint())
-//      .map(sp -> new SearchItemInTransitDestinationServicePoint()
-//        .id(toUUID(sp.getId()))
-//        .name(sp.getName()))
-//      .ifPresent(searchItem::setInTransitDestinationServicePoint);
-//
-//    Optional.ofNullable(itemContext.location())
-//      .map(loc -> new SearchItemLocation().name(loc.getName()))
-//      .ifPresent(searchItem::setLocation);
-//
-//    Optional.ofNullable(itemContext.materialType())
-//      .map(mt -> new SearchItemMaterialType().name(mt.getName()))
-//      .ifPresent(searchItem::setMaterialType);
-//
-//    Optional.ofNullable(item.getCopyNumber())
-//      .or(() -> Optional.ofNullable(itemContext.holdingsRecord().getCopyNumber()))
-//      .ifPresent(searchItem::setCopyNumber);
-//  }
-
   private static UUID toUUID(String uuidString) {
     return Optional.ofNullable(uuidString)
       .map(UUID::fromString)
@@ -342,6 +268,6 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private record ItemContext(Item item, HoldingsRecord holdingsRecord, Location location,
-    MaterialType materialType, ServicePoint servicePoint) { } // store tenantId?
+    MaterialType materialType, ServicePoint servicePoint) { }
 
 }
