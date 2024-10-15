@@ -3,7 +3,6 @@ package org.folio.circulationbff.support;
 import static java.lang.String.format;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,8 +37,4 @@ public record CqlQuery(String query) {
     return query;
   }
 
-  public static void main(String[] args) {
-    CqlQuery cqlQuery = CqlQuery.exactMatchAny("key", List.of("one", "two", "three"));
-    System.out.println(cqlQuery);
-  }
 }

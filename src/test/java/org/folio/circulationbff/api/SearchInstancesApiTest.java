@@ -304,13 +304,6 @@ class SearchInstancesApiTest extends BaseIT {
       .effectiveShelvingOrder("test_shelving_order");
   }
 
-  private static List<SearchHolding> buildSearchHoldings(int count, String tenantId) {
-    return IntStream.range(0, count)
-      .boxed()
-      .map(idx -> buildSearchHolding(tenantId))
-      .toList();
-  }
-
   private static SearchHolding buildSearchHolding(String tenantId) {
     return new SearchHolding()
       .id(randomId())
