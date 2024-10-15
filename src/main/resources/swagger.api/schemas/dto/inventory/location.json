@@ -85,7 +85,7 @@
     "primaryServicePointObject": {
       "type": "object",
       "description": "Dereferenced object for primary service point. This should really just be called 'primaryServicePoint', but the field containing the ID of this object has that name -- it should really be called 'primaryServicePointId' -- so we need something different for this one.",
-      "$ref": "servicepoint.json",
+      "$ref": "servicePoint.json",
       "readonly": true,
       "folio:isVirtual": true,
       "folio:linkBase": "service-points",
