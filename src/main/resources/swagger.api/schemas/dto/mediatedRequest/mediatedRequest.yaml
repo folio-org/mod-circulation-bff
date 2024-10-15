@@ -1,0 +1,320 @@
+  description: Mediated request
+  type: object
+  properties:
+    id:
+      $ref: '../common/uuid.yaml'
+    requestLevel:
+      description: Level of the request - Item or Title
+      type: string
+      enum: [ 'Item', 'Title' ]
+    requestType:
+      description: Whether the item should be held upon return, recalled or paged for
+      type: string
+      enum: [ 'Hold', 'Recall', 'Page' ]
+    requestDate:
+      description: Date when the request was placed
+      type: string
+      format: date-time
+    patronComments:
+      description: Comments made by the patron
+      type: string
+    requesterId:
+      $ref: '../common/uuid.yaml'
+    requester:
+      description: Copy of some requester data
+      type: object
+      properties:
+        firstName:
+          description: First name of the requester
+          type: string
+        lastName:
+          description: Last name of the requester
+          type: string
+        middleName:
+          description: Middle name of the requester
+          type: string
+        barcode:
+          description: Barcode of the requester
+          type: string
+        patronGroupId:
+          $ref: '../common/uuid.yaml'
+        patronGroup:
+          description: Patron group of the requester
+          type: object
+          properties:
+            id:
+              $ref: '../common/uuid.yaml'
+            group:
+              description: Patron group name
+              type: string
+            desc:
+              description: Patron group description
+              type: string
+    proxyUserId:
+      $ref: '../common/uuid.yaml'
+    proxy:
+      description: Copy of some proxy patron data
+      type: object
+      properties:
+        firstName:
+          description: First name of the proxy patron
+          type: string
+        lastName:
+          description: Last name of the proxy patron
+          type: string
+        middleName:
+          description: Middle name of the proxy patron
+          type: string
+        barcode:
+          description: Barcode of the proxy patron
+          type: string
+        patronGroupId:
+          $ref: '../common/uuid.yaml'
+        patronGroup:
+          description: Patron group of the proxy patron
+          type: object
+          properties:
+            id:
+              $ref: '../common/uuid.yaml'
+            group:
+              description: Patron group name
+              type: string
+            desc:
+              description: Patron group description
+              type: string
+    instanceId:
+      $ref: '../common/uuid.yaml'
+    instance:
+      description: Copy of some instance data
+      type: object
+      properties:
+        title:
+          description: Title of the instance",
+          type: string
+        identifiers:
+          description: An extensible set of name-value pairs of identifiers associated with the resource
+          type: array
+          items:
+            type: object
+            properties:
+              identifierTypeId:
+                $ref: '../common/uuid.yaml'
+              value:
+                description: Resource identifier value
+                type: string
+            required:
+              - identifierTypeId
+              - value
+        contributorNames:
+          description: A list of contributor names
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: Contributor name
+                type: string
+        publication:
+          description: Publication information
+          type: array
+          items:
+            type: object
+            properties:
+              publisher:
+                description: Name of the publisher
+                type: string
+              place:
+                description: Place of publication
+                type: string
+              dateOfPublication:
+                description: Date of publication
+                type: string
+              role:
+                description: Role of the publisher
+                type: string
+        editions:
+          description: The edition statement, imprint and other publication source information
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - identifiers
+    holdingsRecordId:
+      $ref: '../common/uuid.yaml'
+    itemId:
+      $ref: '../common/uuid.yaml'
+    item:
+      description: Copy of some item data
+      type: object
+      properties:
+        barcode:
+          description: Barcode of the item
+          type: string
+        location:
+          description: Effective location of the item
+          type: object
+          properties:
+            name:
+              description: Name of the location
+              type: string
+            libraryName:
+              description: Library name of the location
+              type: string
+            code:
+              description: Code of the location
+              type: string
+        enumeration:
+          description: Enumeration of the item
+          type: string
+        volume:
+          description: Volume of the item
+          type: string
+        chronology:
+          description: Chronology of the item
+          type: string
+        displaySummary:
+          description: Display summary of the item
+          type: string
+        status:
+          description: Status of the item
+          type: string
+        callNumber:
+          description: Call number of the item
+          type: string
+        callNumberComponents:
+          description: Components of the item's call number
+          type: object
+          properties:
+            callNumber:
+              description: Call number of the item
+              type: string
+            prefix:
+              description: Prefix of the item's call number
+              type: string
+            suffix:
+              description: Suffix of the item's call number
+              type: string
+        copyNumber:
+          description: Copy number of the item
+          type: string
+    mediatedWorkflow:
+      description: Mediated workflow that mediated request follows
+      type: string
+    mediatedRequestStatus:
+      description: Status of the mediated request
+      type: string
+      enum: [ 'New', 'Open', 'Closed']
+    mediatedRequestStep:
+      description: Step of the mediated request in mediated workflow
+      type: string
+    status:
+      description: Status of the mediated request
+      type: string
+      enum: [ 'New - Awaiting confirmation', 'Open - Not yet filled', 'Open - In transit for approval',
+              'Open - Item arrived', 'Open - In transit to be checked out', 'Open - Awaiting pickup',
+              'Closed - Cancelled', 'Closed - Declined', 'Closed - Filled'
+      ]
+    cancellationReasonId:
+      $ref: '../common/uuid.yaml'
+    cancelledByUserId:
+      $ref: '../common/uuid.yaml'
+    cancellationAdditionalInformation:
+      description: Additional information about mediated request cancellation
+      type: string
+    cancelledDate:
+      description: Date when the request was cancelled
+      type: string
+      format: date-time
+    position:
+      description: Position of the mediated request in the queue
+      type: integer
+    fulfillmentPreference:
+      description: How should the request be fulfilled (whether the item should be kept on the hold shelf for collection or delivered to the requester)
+      type: string
+      enum: [ 'Hold Shelf', 'Delivery' ]
+    deliveryAddressTypeId:
+      $ref: '../common/uuid.yaml'
+    deliveryAddress:
+      description: Delivery address
+      type: object
+      properties:
+        addressTypeId:
+          description: ID of the delivery address type
+          type: string
+        addressLine1:
+          description: Address line 1
+          type: string
+        addressLine2:
+          description: Address line 2
+          type: string
+        city:
+          description: City
+          type: string
+        region:
+          description: Region
+          type: string
+        postalCode:
+          description: Postal code
+          type: string
+        countryId:
+          description: Country ID
+          type: string
+    pickupServicePointId:
+      $ref: '../common/uuid.yaml'
+    pickupServicePoint:
+      description: Pickup service point
+      type: object
+      properties:
+        name:
+          description: Pickup service point name
+          type: string
+        code:
+          description: Pickup service point code
+          type: string
+        discoveryDisplayName:
+          description: Pickup service point discovery display name
+          type: string
+        description:
+          description: Pickup service point description
+          type: string
+        shelvingLagTime:
+          description: Pickup service point description
+          type: integer
+        pickupLocation:
+          description: Whether pickup service point is a pickup location
+          type: boolean
+    confirmedRequestId:
+      $ref: '../common/uuid.yaml'
+    searchIndex:
+      description: Request fields used for search
+      type: object
+      properties:
+        callNumberComponents:
+          description: Effective call number components
+          type: object
+          properties:
+            callNumber:
+              description: Effective Call Number is an identifier assigned to an item or its holding and associated with the item
+              type: string
+            prefix:
+              description: Effective Call Number Prefix is the prefix of the identifier assigned to an item or its holding and associated with the item
+              type: string
+            suffix:
+              description: Effective Call Number Suffix is the suffix of the identifier assigned to an item or its holding and associated with the item
+              type: string
+        shelvingOrder:
+          description: A system generated normalization of the call number that allows for call number sorting in reports and search results
+          type: string
+        pickupServicePointName:
+          description: The name of the request pickup service point
+          type: string
+    metadata:
+      $ref: '../common/metadata.yaml'
+  required:
+    - requestLevel
+    - requestType
+    - requestDate
+    - requesterId
+    - instanceId
+    - fulfillmentPreference

@@ -28,6 +28,18 @@
           "pathPattern": "/circulation-bff/requests/search-instances",
           "permissionsRequired": ["circulation-bff.requests.search-instances.get"],
           "modulePermissions": ["search.instances.collection.get"]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/mediated-requests/confirm",
+          "permissionsRequired": ["circulation-bff.confirm-mediated-request.execute"],
+          "modulePermissions": [
+            "requests-mediated.mediated-request.item.post",
+            "requests-mediated.mediated-request.item.put",
+            "requests-mediated.mediated-request.confirm.post"
+          ]
         }
       ]
     },
@@ -72,12 +84,21 @@
       "permissionName": "circulation-bff.requests.search-instances.get",
       "displayName": "circulation BFF - search instances",
       "description": "get instances by query and extend with item information from inventory"
+    },
+    {
+      "permissionName": "circulation-bff.confirm-mediated-request.execute",
+      "displayName": "circulation BFF - post mediated request to update and confirm",
+      "description": "save and confirm a mediated request"
     }
   ],
   "requires": [
     {
       "id": "search",
       "version": "1.3"
+    },
+    {
+      "id": "requests-mediated",
+      "version": "2.0"
     },
     {
       "id": "users",
