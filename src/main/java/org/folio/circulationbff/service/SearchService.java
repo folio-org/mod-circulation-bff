@@ -1,7 +1,9 @@
 package org.folio.circulationbff.service;
 
-import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import java.util.Collection;
+
+import org.folio.circulationbff.domain.dto.BffSearchInstance;
 
 public interface SearchService {
-  InstanceSearchResult findInstances(String query);
+  Collection<BffSearchInstance> findInstances(String query);
 }
