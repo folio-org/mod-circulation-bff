@@ -13,6 +13,19 @@ properties:
   callNumber:
     description: "The call number from the holdings record"
     type: string
+  callNumberComponents:
+    type: object
+    description: "Elements of a full call number generated from the item or holding"
+    properties:
+      callNumber:
+        type: string
+        description: "Effective Call Number is an identifier assigned to an item or its holding and associated with the item"
+      prefix:
+        type: string
+        description: "Effective Call Number Prefix is the prefix of the identifier assigned to an item or its holding and associated with the item"
+      suffix:
+        type: string
+        description: "Effective Call Number Suffix is the suffix of the identifier assigned to an item or its holding and associated with the item"
   materialType:
     description: "The material type from the item record"
     type: object
@@ -23,11 +36,9 @@ properties:
     additionalProperties: false
   contributors:
     description: "Contributors from the instance record"
-    type: object
-    properties:
-      name:
-        description: "Name of the contributor"
-        type: string
+    type: array
+    items:
+      $ref: "contributor.yaml"
     additionalProperties: false
   holdingsRecordId:
     description: "The ID of the holdings for the item"
@@ -72,6 +83,9 @@ properties:
   displaySummary:
     description: "Display summary about the item"
     type: string
+  copyNumber:
+    description: "Copy number is the piece identifier. The copy number reflects if the library has a copy of a single-volume monograph; one copy of a multi-volume, (e.g. Copy 1, or C.7.)"
+    type: string
   inTransitDestinationServicePointId:
     description: "Service point an item is intended to be transited to (should only be present when in transit)"
     type: string
@@ -80,6 +94,10 @@ properties:
     description: "Service point an item is intended to be transited to (should only be present when in transit)"
     type: object
     properties:
+      id:
+        description: "The ID of the service point"
+        type: string
+        format: uuid
       name:
         description: "Name of the service point"
         type: string
