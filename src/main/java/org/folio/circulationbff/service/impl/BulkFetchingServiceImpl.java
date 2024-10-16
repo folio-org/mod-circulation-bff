@@ -48,13 +48,16 @@ BulkFetchingServiceImpl implements BulkFetchingService {
       log.info("getAsStream:: provided collection of IDs is empty, fetching nothing");
       return Stream.empty();
     }
-    log.debug("getAsStream:: fetching {} objects by IDs: {}", ids.size(), ids);
+    log.info("getAsStream:: fetching {} objects by IDs: {}", ids.size(), ids);
 
     return Lists.partition(new ArrayList<>(ids), MAX_IDS_PER_QUERY)
       .stream()
+      .peek(batch -> log.info("getAsStream:: processing a batch of {} IDs", batch::size))
       .map(CqlQuery::exactMatchAnyId)
+      .peek(query -> log.info("getAsStream:: query: {}", query))
       .map(client::getByQuery)
       .map(collectionExtractor)
+      .peek(batch -> log.info("getAsStream:: fetched a batch of {} objects", batch::size))
       .flatMap(Collection::stream);
   }
 

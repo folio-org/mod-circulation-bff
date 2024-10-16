@@ -118,6 +118,7 @@ public class SearchServiceImpl implements SearchService {
       .collect(toSet());
 
     Collection<Item> items = fetchItems(itemIds);
+    log.info("buildItemContexts:: fetched {} items", items::size);
     Map<String, HoldingsRecord> holdingsRecordsById = fetchHoldingsRecords(items);
     Map<String, Location> locationsById = fetchLocations(items);
     Map<String, ServicePoint> servicePointsById = fetchServicePoints(items);
