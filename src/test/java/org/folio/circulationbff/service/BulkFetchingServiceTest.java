@@ -69,7 +69,7 @@ class BulkFetchingServiceTest {
   private static <T> String idsToQuery(Collection<T> ids) {
     return ids.stream()
       .map(id -> "\"" + id + "\"")
-      .collect(joining(" or ", "id==(", ")"));
+      .collect(joining(" or ", "id==(", ")&limit=" + ids.size()));
   }
 
 }

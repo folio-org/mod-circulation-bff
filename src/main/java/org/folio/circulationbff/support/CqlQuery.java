@@ -29,7 +29,7 @@ public record CqlQuery(String query) {
       .map(value -> StringUtils.wrap(value, "\""))
       .collect(Collectors.joining(" or "));
 
-    return new CqlQuery(format("%s==(%s)", index, joinedValues));
+    return new CqlQuery(format("%s==(%s)&limit=%d", index, joinedValues, values.size()));
   }
 
   @Override
