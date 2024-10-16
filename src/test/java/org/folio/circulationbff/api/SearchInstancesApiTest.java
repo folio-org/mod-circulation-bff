@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,8 +77,7 @@ class SearchInstancesApiTest extends BaseIT {
           .headers(defaultHeaders())
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.instances", is(emptyIterable())))
-      .andExpect(jsonPath("$.totalRecords", is(0)));
+      .andExpect(content().json("{}"));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(ITEM_STORAGE_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(HOLDINGS_STORAGE_URL)));
@@ -109,10 +109,8 @@ class SearchInstancesApiTest extends BaseIT {
           .headers(defaultHeaders())
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.instances", hasSize(1)))
-      .andExpect(jsonPath("$.instances[0].id", is(instanceId)))
-      .andExpect(jsonPath("$.instances[0].items", emptyIterable()))
-      .andExpect(jsonPath("$.totalRecords", is(1)));
+      .andExpect(jsonPath("$.id", is(instanceId)))
+      .andExpect(jsonPath("$.items", emptyIterable()));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(ITEM_STORAGE_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(HOLDINGS_STORAGE_URL)));
@@ -224,19 +222,17 @@ class SearchInstancesApiTest extends BaseIT {
         .headers(defaultHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.totalRecords", is(1)))
-      .andExpect(jsonPath("$.instances", hasSize(1)))
-      .andExpect(jsonPath("$.instances[0].id", is(instanceId)))
-      .andExpect(jsonPath("$.instances[0].holdings", hasSize(2)))
-      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'consortium')]", hasSize(1)))
-      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'college')]", hasSize(1)))
-      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'consortium')].id",
+      .andExpect(jsonPath("$.id", is(instanceId)))
+      .andExpect(jsonPath("$.holdings", hasSize(2)))
+      .andExpect(jsonPath("$.holdings[?(@.tenantId == 'consortium')]", hasSize(1)))
+      .andExpect(jsonPath("$.holdings[?(@.tenantId == 'college')]", hasSize(1)))
+      .andExpect(jsonPath("$.holdings[?(@.tenantId == 'consortium')].id",
         containsInAnyOrder(searchHoldingInConsortium.getId())))
-      .andExpect(jsonPath("$.instances[0].holdings[?(@.tenantId == 'college')].id",
+      .andExpect(jsonPath("$.holdings[?(@.tenantId == 'college')].id",
         containsInAnyOrder(searchHoldingInCollege.getId())))
-      .andExpect(jsonPath("$.instances[0].items", hasSize(90)))
-      .andExpect(jsonPath("$.instances[0].items[?(@.tenantId == 'consortium')]", hasSize(MAX_IDS_PER_QUERY)))
-      .andExpect(jsonPath("$.instances[0].items[?(@.tenantId == 'college')]", hasSize(10)));
+      .andExpect(jsonPath("$.items", hasSize(90)))
+      .andExpect(jsonPath("$.items[?(@.tenantId == 'consortium')]", hasSize(MAX_IDS_PER_QUERY)))
+      .andExpect(jsonPath("$.items[?(@.tenantId == 'college')]", hasSize(10)));
   }
 
   private static SearchInstance buildSearchInstance(String tenantId, List<SearchItem> searchItems,
