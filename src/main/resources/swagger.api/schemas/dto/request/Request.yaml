@@ -143,24 +143,10 @@ Request:
           readonly: true
           $ref: "../common/uuid.yaml"
         patronGroup:
-          description: "record for the user's patron group"
-          type: "object"
-          additionalProperties: false
-          readonly: true
-          properties:
-            id:
-              description: "ID of the patron group"
-              type: "string"
-              readonly: true
-              $ref: "../common/uuid.yaml"
-            group:
-              description: "The unique name of the patron group"
-              type: "string"
-              readonly: true
-            desc:
-              description: "A description of the patron group"
-              type: "string"
-              readonly: true
+          oneOf:
+            - type: string
+            - $ref: "patronGroup.yaml"
+
       additionalProperties: false
     proxy:
       description: "Copy of some proxy patron metadata (used for searching and sorting), will be taken from the user referred to by the proxyUserId"
@@ -292,24 +278,6 @@ Request:
           description: "Is this service point a pickup location?"
           type: "boolean"
           readonly: true
-    primaryRequestId:
-      description: "Primary request ID"
-      $ref: "../common/uuid.yaml"
-    primaryRequestDcbTransactionId:
-      description: "ID of DCB transaction created for primary request"
-      $ref: "../common/uuid.yaml"
-    primaryRequestTenantId:
-      description: "ID of the tenant primary request was created in"
-      type: string
-    secondaryRequestId:
-      description: "Secondary request ID"
-      $ref: "../common/uuid.yaml"
-    secondaryRequestDcbTransactionId:
-      description: "ID of DCB transaction created for secondary request"
-      $ref: "../common/uuid.yaml"
-    secondaryRequestTenantId:
-      description: "ID of the tenant secondary request was created in"
-      type: string
     tags:
       type: "object"
       description: "Tags"
@@ -325,7 +293,7 @@ Request:
         overrideBlocks:
           type: "object"
           description: "Blocks to override if user has corresponding permissions"
-          $ref: "OverrideBlocks.yaml"
+          $ref: "override-blocks.json"
     searchIndex:
       description: "Request fields used for search"
       type: "object"

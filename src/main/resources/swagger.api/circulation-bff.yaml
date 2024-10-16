@@ -34,7 +34,9 @@ components:
     search-instances:
       $ref: 'schemas/dto/search/searchInstances.yaml'
     bff-request:
-      $ref: 'schemas/dto/request/Request.yaml#/Request'
+      allOf:
+        - $ref: 'schemas/dto/request/Request.yaml#/Request'
+        - $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
   responses:
     bff-request:
       $ref: 'schemas/dto/request/Request.yaml#/Request'
