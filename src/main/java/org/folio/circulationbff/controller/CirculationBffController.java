@@ -12,8 +12,6 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
-import org.folio.circulationbff.domain.dto.MediatedRequest;
-import org.folio.circulationbff.domain.dto.InstanceSearchResponse;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
