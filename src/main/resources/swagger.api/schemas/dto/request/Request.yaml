@@ -145,8 +145,24 @@ Request:
         patronGroup:
           oneOf:
             - type: string
-            - $ref: "patronGroup.yaml"
-
+            - type: object
+              description: "record for the user's patron group"
+              additionalProperties: false
+              readonly: true
+              properties:
+                id:
+                  description: "ID of the patron group"
+                  type: "string"
+                  readonly: true
+                  $ref: "../common/uuid.yaml"
+                group:
+                  description: "The unique name of the patron group"
+                  type: "string"
+                  readonly: true
+                desc:
+                  description: "A description of the patron group"
+                  type: "string"
+                  readonly: true
       additionalProperties: false
     proxy:
       description: "Copy of some proxy patron metadata (used for searching and sorting), will be taken from the user referred to by the proxyUserId"
