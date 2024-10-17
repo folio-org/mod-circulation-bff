@@ -24,5 +24,5 @@ public interface CirculationClient {
   CirculationSettingsResponse getCirculationSettingsByQuery(@RequestParam("query") String query);
 
   @PostMapping("/requests")
-  Request createRequest(@RequestBody BffRequest request);
+  BffRequest createRequest(@RequestBody BffRequest request);
 }

@@ -22,5 +22,5 @@ public interface EcsTlrClient {
   TlrSettings getTlrSettings();
 
   @PostMapping("/ecs-tlr")
-  Request createRequest(@RequestBody BffRequest request);
+  BffRequest createRequest(@RequestBody BffRequest request);
 }

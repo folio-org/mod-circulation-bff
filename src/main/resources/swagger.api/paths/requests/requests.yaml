@@ -20,7 +20,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../circulation-bff.yaml#/components/responses/bff-request'
+            $ref: "../../circulation-bff.yaml#/components/schemas/bff-request"
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '422':

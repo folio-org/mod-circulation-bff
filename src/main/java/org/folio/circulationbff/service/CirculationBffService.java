@@ -7,5 +7,5 @@ import org.folio.circulationbff.domain.dto.Request;
 
 public interface CirculationBffService {
   AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams allowedServicePointParams, String tenantId);
-  Request createRequest(BffRequest request, String tenantId);
+  BffRequest createRequest(BffRequest request, String tenantId);
 }

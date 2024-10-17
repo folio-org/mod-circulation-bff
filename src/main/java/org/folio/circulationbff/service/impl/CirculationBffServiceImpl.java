@@ -39,7 +39,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   }
 
   @Override
-  public Request createRequest(BffRequest request, String tenantId) {
+  public BffRequest createRequest(BffRequest request, String tenantId) {
     log.info("createRequest:: request: {}", request);
     if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
       log.info("createRequest:: Ecs TLR Feature is enabled. Creating request in mod-tlr module");
