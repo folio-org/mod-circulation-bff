@@ -4,11 +4,11 @@ import org.folio.circulationbff.support.CqlQuery;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name="get-by-query", configuration = FeignClientConfiguration.class)
 public interface GetByQueryClient<T> {
 
-  @GetMapping("?query={query}")
-  T getByQuery(@PathVariable CqlQuery query);
+  @GetMapping
+  T getByQuery(@RequestParam CqlQuery query, @RequestParam int limit);
 }

@@ -39,7 +39,7 @@ class BulkFetchingServiceTest {
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
-    when(getByQueryClient.getByQuery(any(CqlQuery.class)))
+    when(getByQueryClient.getByQuery(any(CqlQuery.class), any(Integer.class)))
       .thenReturn(firstPage, secondPage);
 
     List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
@@ -51,7 +51,7 @@ class BulkFetchingServiceTest {
       .fetch(getByQueryClient, ids, identity());
 
     assertThat(result, containsInAnyOrder(1, 2, 3, 4));
-    verify(getByQueryClient, times(2)).getByQuery(cqlQueryArgumentCaptor.capture());
+    verify(getByQueryClient, times(2)).getByQuery(cqlQueryArgumentCaptor.capture(), any(Integer.class));
     List<CqlQuery> actualQueries = cqlQueryArgumentCaptor.getAllValues();
     List<String> actualQueryStrings = actualQueries.stream().map(CqlQuery::query).toList();
     String expectedFirstQueryString = idsToQuery(ids.subList(0, MAX_IDS_PER_QUERY));
@@ -63,7 +63,7 @@ class BulkFetchingServiceTest {
   @Test
   void fetchDoesNothingWhenListOfIdsIsEmpty() {
     new BulkFetchingServiceImpl().fetch(getByQueryClient, emptyList(), identity());
-    verify(getByQueryClient, times(0)).getByQuery(any(CqlQuery.class));
+    verify(getByQueryClient, times(0)).getByQuery(any(CqlQuery.class), any(Integer.class));
   }
 
   private static <T> String idsToQuery(Collection<T> ids) {

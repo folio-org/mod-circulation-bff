@@ -1,7 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.util.Collections.emptyList;
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -77,16 +76,13 @@ public class SearchServiceImpl implements SearchService {
       log.info("findInstances:: no instances found");
       return emptyList();
     }
-
     log.info("findInstances:: {} instances found", searchInstances::size);
-    Collection<ItemContext> itemContexts = fetchItemDetails(searchInstances);
 
-    return searchInstances.stream()
-      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
-      .toList();
+    return buildBffSearchInstances(searchInstances);
   }
 
-  private Collection<ItemContext> fetchItemDetails(List<SearchInstance> searchInstances) {
+  private Collection<ItemContext> fetchItemDetails(Collection<SearchInstance> searchInstances) {
+    log.info("fetchItemDetails:: fetching item details for {} instances", searchInstances::size);
     Map<String, List<SearchItem>> itemsByTenant =  searchInstances.stream()
       .map(SearchInstance::getItems)
       .flatMap(Collection::stream)
@@ -122,9 +118,12 @@ public class SearchServiceImpl implements SearchService {
     Map<String, Location> locationsById = fetchLocations(items);
     Map<String, ServicePoint> servicePointsById = fetchServicePoints(items);
     Map<String, MaterialType> materialTypesById = fetchMaterialTypes(items);
+    Map<String, String> itemIdToTenantId = searchItems.stream()
+      .collect(toMap(SearchItem::getId, SearchItem::getTenantId));
 
     return items.stream()
       .map(item -> new ItemContext(item,
+        itemIdToTenantId.get(item.getId()),
         holdingsRecordsById.get(item.getHoldingsRecordId()),
         locationsById.get(item.getEffectiveLocationId()),
         materialTypesById.get(item.getMaterialTypeId()),
@@ -164,6 +163,16 @@ public class SearchServiceImpl implements SearchService {
       MaterialType::getId);
   }
 
+  private Collection<BffSearchInstance> buildBffSearchInstances(
+    Collection<SearchInstance> searchInstances) {
+
+    Collection<ItemContext> itemContexts = fetchItemDetails(searchInstances);
+
+    return searchInstances.stream()
+      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
+      .toList();
+  }
+
   private BffSearchInstance buildBffSearchInstance(SearchInstance searchInstance,
     Collection<ItemContext> itemContexts) {
 
@@ -174,30 +183,25 @@ public class SearchServiceImpl implements SearchService {
   private static List<BffSearchItem> buildBffSearchItems(SearchInstance searchInstance,
     Collection<ItemContext> itemContexts) {
 
-    Map<String, ItemContext> itemIdToContext = itemContexts.stream()
-      .collect(toMap(context -> context.item().getId(), identity()));
-
-    return searchInstance.getItems()
+    Set<String> itemIdsFromCurrentInstance = searchInstance.getItems()
       .stream()
-      .map(item -> buildBffSearchItem(searchInstance, item, itemIdToContext.get(item.getId())))
+      .map(SearchItem::getId)
+      .collect(toSet());
+
+    return itemContexts.stream()
+      .filter(context -> itemIdsFromCurrentInstance.contains(context.item().getId()))
+      .map(context -> buildBffSearchItem(context, searchInstance))
       .toList();
   }
 
-  private static BffSearchItem buildBffSearchItem(SearchInstance searchInstance,
-    SearchItem searchItem, ItemContext itemContext) {
-
-    log.info("buildBffSearchItem:: building search item {}", searchItem::getId);
-    if (itemContext == null) {
-      log.warn("buildBffSearchItem:: context for item {} was not found, skipping", searchItem.getId());
-      return null;
-    }
-
+  private static BffSearchItem buildBffSearchItem(ItemContext itemContext, SearchInstance searchInstance) {
     final Item item = itemContext.item();
+    log.debug("buildBffSearchItem:: building search item {}", item::getId);
 
     BffSearchItem bffSearchItem = new BffSearchItem()
       .id(item.getId())
-      .tenantId(searchItem.getTenantId())
-      .holdingsRecordId(toUUID(searchItem.getHoldingsRecordId()))
+      .tenantId(itemContext.tenantId())
+      .holdingsRecordId(toUUID(item.getHoldingsRecordId()))
       .instanceId(toUUID(searchInstance.getId()))
       .title(searchInstance.getTitle())
       .barcode(item.getBarcode())
@@ -267,7 +271,7 @@ public class SearchServiceImpl implements SearchService {
       .collect(toSet());
   }
 
-  private record ItemContext(Item item, HoldingsRecord holdingsRecord, Location location,
-    MaterialType materialType, ServicePoint servicePoint) { }
+  private record ItemContext(Item item, String tenantId, HoldingsRecord holdingsRecord,
+    Location location, MaterialType materialType, ServicePoint servicePoint) { }
 
 }

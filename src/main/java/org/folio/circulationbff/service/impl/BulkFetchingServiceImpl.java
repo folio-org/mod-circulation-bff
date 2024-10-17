@@ -39,8 +39,6 @@ BulkFetchingServiceImpl implements BulkFetchingService {
       .collect(toMap(keyMapper, identity()));
   }
 
-  // TODO: make async, but mind the warning about FolioExecutionContext in async code:
-  // https://github.com/folio-org/folio-spring-support#execution-context
   private <C, E> Stream<E> getAsStream(GetByQueryClient<C> client, Collection<String> ids,
     Function<C, Collection<E>> collectionExtractor) {
 
@@ -48,14 +46,23 @@ BulkFetchingServiceImpl implements BulkFetchingService {
       log.info("getAsStream:: provided collection of IDs is empty, fetching nothing");
       return Stream.empty();
     }
-    log.debug("getAsStream:: fetching {} objects by IDs: {}", ids.size(), ids);
+    log.info("getAsStream:: fetching objects by {} IDs", ids.size());
+    log.debug("getAsStream:: ids={}", ids);
 
     return Lists.partition(new ArrayList<>(ids), MAX_IDS_PER_QUERY)
       .stream()
-      .map(CqlQuery::exactMatchAnyId)
-      .map(client::getByQuery)
+      .map(batch -> fetchByIds(batch, client))
       .map(collectionExtractor)
+      .peek(batch -> log.info("getAsStream:: found {} objects", batch::size))
       .flatMap(Collection::stream);
+  }
+
+  private <T> T fetchByIds(Collection<String> ids, GetByQueryClient<T> client) {
+    log.info("fetchByIds:: fetching a batch of {} IDs", ids::size);
+    CqlQuery query = CqlQuery.exactMatchAnyId(ids);
+    log.debug("fetchByIds:: query: {}", query);
+
+    return client.getByQuery(query, ids.size());
   }
 
 }
