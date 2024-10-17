@@ -6,8 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(
-  use = JsonTypeInfo.Id.DEDUCTION,
-  include = JsonTypeInfo.As.PROPERTY
+  use = JsonTypeInfo.Id.DEDUCTION
 )
 @JsonSubTypes({
   @JsonSubTypes.Type(value = RequestRequesterPatronGroupOneOf.class, name = "RequestRequesterPatronGroupOneOf"),
