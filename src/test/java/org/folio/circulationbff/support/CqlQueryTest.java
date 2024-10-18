@@ -12,17 +12,21 @@ import org.junit.jupiter.api.Test;
 class CqlQueryTest {
 
   @Test
+  void exactMatchBuildsCorrectQuery() {
+    assertThat( CqlQuery.exactMatch("key", "value"), is(new CqlQuery("key==\"value\"")));
+  }
+
+  @Test
   void exactMatchAnyBuildsCorrectQuery() {
-    assertThat(
-      CqlQuery.exactMatchAny("key", List.of("value1", "value2")),
-      is(new CqlQuery("key==(\"value1\" or \"value2\")"))
-    );
+    assertThat(CqlQuery.exactMatchAny("key", List.of("value1", "value2")),
+      is(new CqlQuery("key==(\"value1\" or \"value2\")")));
   }
 
   @Test
   void exactMatchAnyThrowsExceptionWhenCollectionOfValuesIsEmpty() {
+    List<String> values = emptyList();
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> CqlQuery.exactMatchAny("index", emptyList()));
+      () -> CqlQuery.exactMatchAny("index", values));
     assertThat(exception.getMessage(), is("Values cannot be null or empty"));
   }
 
@@ -35,15 +39,17 @@ class CqlQueryTest {
 
   @Test
   void exactMatchAnyThrowsExceptionWhenIndexIsNull() {
+    List<String> values = List.of("value");
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> CqlQuery.exactMatchAny(null, List.of("value")));
+      () -> CqlQuery.exactMatchAny(null, values));
     assertThat(exception.getMessage(), is("Index cannot be blank"));
   }
 
   @Test
   void exactMatchAnyThrowsExceptionWhenIndexIsEmptyString() {
+    List<String> values = List.of("value");
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> CqlQuery.exactMatchAny("", List.of("value")));
+      () -> CqlQuery.exactMatchAny("", values));
     assertThat(exception.getMessage(), is("Index cannot be blank"));
   }
 
