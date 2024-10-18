@@ -12,6 +12,14 @@ import org.junit.jupiter.api.Test;
 class CqlQueryTest {
 
   @Test
+  void exactMatchAnyBuildsCorrectQuery() {
+    assertThat(
+      CqlQuery.exactMatchAny("key", List.of("value1", "value2")),
+      is(new CqlQuery("key==(\"value1\" or \"value2\")"))
+    );
+  }
+
+  @Test
   void exactMatchAnyThrowsExceptionWhenCollectionOfValuesIsEmpty() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
       () -> CqlQuery.exactMatchAny("index", emptyList()));
