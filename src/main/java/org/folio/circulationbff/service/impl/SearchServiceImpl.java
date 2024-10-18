@@ -176,7 +176,7 @@ public class SearchServiceImpl implements SearchService {
   private BffSearchInstance buildBffSearchInstance(SearchInstance searchInstance,
     Collection<ItemContext> itemContexts) {
 
-    return searchInstanceMapper.toBffSearchInstance(searchInstance)
+    return searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance)
       .items(buildBffSearchItems(searchInstance, itemContexts));
   }
 

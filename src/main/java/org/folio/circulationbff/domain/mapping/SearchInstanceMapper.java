@@ -9,5 +9,5 @@ import org.mapstruct.Mapping;
 public interface SearchInstanceMapper {
 
   @Mapping(target = "items", ignore = true)
-  BffSearchInstance toBffSearchInstance(SearchInstance searchInstance);
+  BffSearchInstance toBffSearchInstanceWithoutItems(SearchInstance searchInstance);
 }
