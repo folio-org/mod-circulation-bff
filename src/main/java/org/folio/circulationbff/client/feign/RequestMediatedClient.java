@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "requests-mediated", url = "requests-mediated", configuration = FeignClientConfiguration.class)
+@FeignClient(name = "requests-mediated", url = "requests-mediated",
+  configuration = FeignClientConfiguration.class)
 public interface RequestMediatedClient {
 
   @PostMapping("/mediated-requests")
