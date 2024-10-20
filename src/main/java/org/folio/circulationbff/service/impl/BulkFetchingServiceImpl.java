@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -28,14 +29,17 @@ BulkFetchingServiceImpl implements BulkFetchingService {
   @Override public <C, E> Collection<E> fetch(GetByQueryClient<C> client, Collection<String> ids,
     Function<C, Collection<E>> collectionExtractor) {
 
-    return getAsStream(client, ids, collectionExtractor)
-      .toList();
+    List<E> result = getAsStream(client, ids, collectionExtractor).toList();
+    log.info("fetch:: fetched {} objects", result::size);
+
+    return result;
   }
 
   @Override public <C, E> Map<String, E> fetch(GetByQueryClient<C> client, Collection<String> ids,
     Function<C, Collection<E>> collectionExtractor, Function<E, String> keyMapper) {
 
-    return getAsStream(client, ids, collectionExtractor)
+    return fetch(client, ids, collectionExtractor)
+      .stream()
       .collect(toMap(keyMapper, identity()));
   }
 
@@ -53,7 +57,6 @@ BulkFetchingServiceImpl implements BulkFetchingService {
       .stream()
       .map(batch -> fetchByIds(batch, client))
       .map(collectionExtractor)
-      .peek(batch -> log.info("getAsStream:: found {} objects", batch::size))
       .flatMap(Collection::stream);
   }
 
