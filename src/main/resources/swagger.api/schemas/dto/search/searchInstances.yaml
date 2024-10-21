@@ -8,4 +8,4 @@ properties:
     type: "array"
     description: "List of instances found"
     items:
-      $ref: "../../schemas/entity/instance.yaml"
+      $ref: "searchInstance.yaml"

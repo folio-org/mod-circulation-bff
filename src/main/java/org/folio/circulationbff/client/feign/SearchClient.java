@@ -1,6 +1,6 @@
-package org.folio.circulationbff.client;
+package org.folio.circulationbff.client.feign;
 
-import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,5 +10,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface SearchClient {
 
   @GetMapping("/instances")
-  InstanceSearchResult findInstances(@RequestParam String query, @RequestParam boolean expandAll);
+  SearchInstances findInstances(@RequestParam String query, @RequestParam boolean expandAll);
 }
