@@ -3,7 +3,6 @@ package org.folio.circulationbff.client.feign;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
-import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;

@@ -5,7 +5,6 @@ import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
-import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;

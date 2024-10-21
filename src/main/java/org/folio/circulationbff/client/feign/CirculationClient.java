@@ -4,7 +4,6 @@ import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
-import org.folio.circulationbff.domain.dto.Request;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
