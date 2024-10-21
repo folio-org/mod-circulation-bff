@@ -36,6 +36,22 @@ class SearchServiceTest {
   private SearchServiceImpl searchService;
 
   @Test
+  void searchFindsNoInstances() {
+    String instanceId = UUID.randomUUID().toString();
+    String query = "id==" + instanceId;
+
+    SearchInstances mockSearchResponse = new SearchInstances()
+      .instances(emptyList())
+      .totalRecords(0);
+
+    when(searchClient.findInstances(query, true))
+      .thenReturn(mockSearchResponse);
+
+    Collection<BffSearchInstance> response = searchService.findInstances(query);
+    assertThat(response, emptyIterable());
+  }
+
+  @Test
   void searchFindsInstanceWithNotItems() {
     String instanceId = UUID.randomUUID().toString();
     String query = "id=="  + UUID.randomUUID();
@@ -93,7 +109,5 @@ class SearchServiceTest {
     assertThat(bffSearchInstance, is(mockBffSearchInstance));
     assertThat(bffSearchInstance.getItems(), emptyIterable());
   }
-
-
 
 }
