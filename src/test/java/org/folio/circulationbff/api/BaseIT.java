@@ -50,7 +50,7 @@ public class BaseIT {
     .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-  protected FolioExecutionContextSetter contextSetter;
+  private FolioExecutionContextSetter contextSetter;
 
   @Autowired
   protected MockMvc mockMvc;

@@ -78,7 +78,10 @@ public class SearchServiceImpl implements SearchService {
     }
     log.info("findInstances:: {} instances found", searchInstances::size);
 
-    return buildBffSearchInstances(searchInstances);
+    Collection<BffSearchInstance> bffSearchInstances = buildBffSearchInstances(searchInstances);
+    log.info("findInstances:: successfully built {} instances", bffSearchInstances::size);
+
+    return bffSearchInstances;
   }
 
   private Collection<ItemContext> fetchItemDetails(Collection<SearchInstance> searchInstances) {
@@ -167,6 +170,7 @@ public class SearchServiceImpl implements SearchService {
     Collection<SearchInstance> searchInstances) {
 
     Collection<ItemContext> itemContexts = fetchItemDetails(searchInstances);
+    log.info("buildBffSearchInstances:: successfully built contexts for {} items", itemContexts::size);
 
     return searchInstances.stream()
       .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
@@ -176,6 +180,7 @@ public class SearchServiceImpl implements SearchService {
   private BffSearchInstance buildBffSearchInstance(SearchInstance searchInstance,
     Collection<ItemContext> itemContexts) {
 
+    log.info("buildBffSearchInstance:: building instance {}", searchInstance::getId);
     return searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance)
       .items(buildBffSearchItems(searchInstance, itemContexts));
   }
@@ -183,6 +188,7 @@ public class SearchServiceImpl implements SearchService {
   private static List<BffSearchItem> buildBffSearchItems(SearchInstance searchInstance,
     Collection<ItemContext> itemContexts) {
 
+    log.info("buildBffSearchItems:: building items for instance {}", searchInstance::getId);
     Set<String> itemIdsFromCurrentInstance = searchInstance.getItems()
       .stream()
       .map(SearchItem::getId)
