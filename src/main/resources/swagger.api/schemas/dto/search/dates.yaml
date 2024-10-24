@@ -1,6 +1,5 @@
 type: object
 description: "Instance Dates"
-additionalProperties: false
 properties:
   dateTypeId:
     type: string
