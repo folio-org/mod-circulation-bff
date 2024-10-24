@@ -9,6 +9,8 @@ paths:
     $ref: 'paths/searchInstances/searchInstances.yaml'
   /circulation-bff/mediated-requests/confirm:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
+  /circulation-bff/requests:
+    $ref: 'paths/requests/requests.yaml'
 components:
   schemas:
     tlr-settings:
@@ -17,3 +19,21 @@ components:
       $ref: 'schemas/response/circulationSettingsResponse.yaml'
     userTenantCollection:
       $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
+    items:
+      $ref: 'schemas/dto/inventory/items.json'
+    holdings-records:
+      $ref: 'schemas/dto/inventory/holdingsRecords.json'
+    instances:
+      $ref: 'schemas/dto/inventory/instances.json'
+    locations:
+      $ref: 'schemas/dto/inventory/locations.json'
+    service-points:
+      $ref: 'schemas/dto/inventory/servicePoints.json'
+    material-types:
+      $ref: 'schemas/dto/inventory/materialTypes.json'
+    search-instances:
+      $ref: 'schemas/dto/search/searchInstances.yaml'
+    bff-request:
+      allOf:
+        - $ref: 'schemas/dto/request/Request.yaml#/Request'
+        - $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'

@@ -3,11 +3,14 @@ package org.folio.circulationbff.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import java.util.Collection;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
-import org.folio.circulationbff.domain.dto.InstanceSearchResult;
+import org.folio.circulationbff.domain.dto.BffRequest;
+import org.folio.circulationbff.domain.dto.BffSearchInstance;
+import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
@@ -51,11 +54,15 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<InstanceSearchResult> circulationBffRequestsSearchInstancesGet(
-    String query) {
+  public ResponseEntity<BffSearchInstance> circulationBffRequestsSearchInstancesGet(String query) {
+    Collection<BffSearchInstance> instances = searchService.findInstances(query);
 
-    return ResponseEntity.status(HttpStatus.OK)
-      .body(searchService.findInstances(query));
+    // frontend expects either a single instance, or an empty JSON
+    BffSearchInstance response = instances.stream()
+      .findFirst()
+      .orElseGet(EmptyBffSearchInstance::new);
+
+    return ResponseEntity.ok(response);
   }
 
   @Override
@@ -116,5 +123,11 @@ public class CirculationBffController implements CirculationBffApi {
       mediatedRequest.getId());
 
     return ResponseEntity.status(CREATED).body(mediatedRequest);
+  }
+
+  @Override
+  public ResponseEntity<BffRequest> createRequest(String tenantId, BffRequest bffRequest) {
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(circulationBffService.createRequest(bffRequest, tenantId));
   }
 }
