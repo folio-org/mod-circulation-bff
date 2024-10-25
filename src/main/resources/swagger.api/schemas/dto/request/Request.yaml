@@ -121,6 +121,11 @@ Request:
       readonly: true
       type: "object"
       properties:
+        id:
+          description: "UUID of the patron"
+          type: "string"
+          readonly: true
+          $ref: "../common/uuid.yaml"
         firstName:
           description: "first name of the patron (read only, defined by the server)"
           type: "string"
