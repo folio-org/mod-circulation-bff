@@ -149,8 +149,8 @@ Request:
           $ref: "../common/uuid.yaml"
         patronGroup:
           oneOf:
-            - type: string
-            - type: object
+            - type: "string"
+            - type: "object"
               description: "record for the user's patron group"
               additionalProperties: false
               readonly: true
