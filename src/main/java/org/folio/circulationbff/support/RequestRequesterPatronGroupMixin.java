@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   use = JsonTypeInfo.Id.DEDUCTION
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = RequestRequesterPatronGroupOneOf.class, name = "RequestRequesterPatronGroupOneOf"),
-  @JsonSubTypes.Type(value = String.class, name = "string")
+  @JsonSubTypes.Type(value = RequestRequesterPatronGroupOneOf.class),
+  @JsonSubTypes.Type(value = String.class)
 })
 public interface RequestRequesterPatronGroupMixin {
 }
