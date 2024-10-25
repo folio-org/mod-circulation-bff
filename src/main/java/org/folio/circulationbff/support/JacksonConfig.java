@@ -14,7 +14,7 @@ public class JacksonConfig {
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.addMixIn(RequestRequesterPatronGroup.class, RequestRequesterPatronGroupMixin.class);
-    objectMapper.addMixIn(BffRequest.class, BffRequestMixin.class);
+    //objectMapper.addMixIn(BffRequest.class, BffRequestMixin.class);
     return objectMapper;
   }
 }
