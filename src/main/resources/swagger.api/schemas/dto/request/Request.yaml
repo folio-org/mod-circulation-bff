@@ -168,7 +168,7 @@ Request:
                   description: "A description of the patron group"
                   type: "string"
                   readonly: true
-      additionalProperties: true
+      additionalProperties: false
     proxy:
       description: "Copy of some proxy patron metadata (used for searching and sorting), will be taken from the user referred to by the proxyUserId"
       readonly: true
@@ -196,26 +196,24 @@ Request:
           readonly: true
           $ref: "../common/uuid.yaml"
         patronGroup:
-          oneOf:
-            - type: string
-            - type: object
-              description: "record for the user's patron group"
-              additionalProperties: false
+          description: "record for the user's patrongroup"
+          type: "object"
+          readonly: true
+          additionalProperties: false
+          properties:
+            id:
+              description: "ID of the patrongroup"
+              type: "string"
               readonly: true
-              properties:
-                id:
-                  description: "ID of the patron group"
-                  type: "string"
-                  readonly: true
-                  $ref: "../common/uuid.yaml"
-                group:
-                  description: "The unique name of the patron group"
-                  type: "string"
-                  readonly: true
-                desc:
-                  description: "A description of the patron group"
-                  type: "string"
-                  readonly: true
+              $ref: "../common/uuid.yaml"
+            group:
+              description: "The unique name of the patrongroup"
+              type: "string"
+              readonly: true
+            desc:
+              description: "A description of the patrongroup"
+              type: "string"
+              readonly: true
     fulfillmentPreference:
       description: "How should the request be fulfilled (whether the item should be kept on the hold shelf for collection or delivered to the requester)"
       type: "string"
