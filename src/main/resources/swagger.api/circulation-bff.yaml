@@ -33,6 +33,8 @@ components:
       $ref: 'schemas/dto/inventory/materialTypes.json'
     search-instances:
       $ref: 'schemas/dto/search/searchInstances.yaml'
+    patronGroup:
+      $ref: 'schemas/dto/request/patronGroup.yaml'
     bff-request:
       allOf:
         - $ref: 'schemas/dto/request/Request.yaml#/Request'
