@@ -104,10 +104,10 @@ Request:
                 type: "string"
                 description: "UUID of resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)"
                 $ref: "../common/uuid.yaml"
-            additionalProperties: false
             required:
               - "value"
               - "identifierTypeId"
+      additionalProperties: true
     item:
       description: "Copy of some item metadata (used for searching and sorting)"
       type: "object"
@@ -115,17 +115,12 @@ Request:
         barcode:
           description: "barcode of the item"
           type: "string"
-      additionalProperties: false
+      additionalProperties: true
     requester:
       description: "Copy of some requesting patron metadata (used for searching and sorting), will be taken from the user referred to by the requesterId"
       readonly: true
       type: "object"
       properties:
-        id:
-          description: "UUID of the patron"
-          type: "string"
-          readonly: true
-          $ref: "../common/uuid.yaml"
         firstName:
           description: "first name of the patron (read only, defined by the server)"
           type: "string"
@@ -181,7 +176,6 @@ Request:
           description: "record for the user's patrongroup"
           type: "object"
           readonly: true
-          additionalProperties: false
           properties:
             id:
               description: "ID of the patrongroup"
@@ -254,7 +248,6 @@ Request:
       $ref: "../common/uuid.yaml"
     pickupServicePoint:
       description: "The full object of the Service Point record from pickupServicePointId"
-      additionalProperties: false
       readonly: true
       properties:
         name:
@@ -301,7 +294,6 @@ Request:
       description: "Request fields used for search"
       type: "object"
       $ref: "request-search-index.json"
-  additionalProperties: false
   required:
     - "requesterId"
     - "requestType"
