@@ -44,6 +44,7 @@ import org.folio.circulationbff.domain.dto.SearchItemEffectiveCallNumberComponen
 import org.folio.circulationbff.domain.dto.SearchItemStatus;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.dto.ServicePoints;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -60,6 +61,11 @@ class SearchInstancesApiTest extends BaseIT {
   private static final String LOCATIONS_URL = "/locations";
   private static final String SERVICE_POINTS_URL = "/service-points";
   private static final String MATERIAL_TYPES_URL = "/material-types";
+
+  @BeforeEach
+  public void beforeEach() {
+    wireMockServer.resetAll();
+  }
 
   @Test
   @SneakyThrows

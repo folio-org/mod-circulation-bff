@@ -1,6 +1,5 @@
 description: "patron group"
 type: "object"
-additionalProperties: false
 properties:
   id:
     description: "ID of the patron group"
