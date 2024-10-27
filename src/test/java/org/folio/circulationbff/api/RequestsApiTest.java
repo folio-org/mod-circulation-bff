@@ -26,6 +26,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 class RequestsApiTest extends BaseIT {
   private static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
   private static final String CIRCULATION_REQUEST_URL = "/circulation/requests";
+  private static final String ECS_TLR_REQUEST_URL = "/tlr/ecs-tlr";
   private static final String TLR_SETTINGS_URL = "/tlr/settings";
   private static final String REQUESTS_PATH = "/circulation-bff/requests";
 
@@ -58,6 +59,29 @@ class RequestsApiTest extends BaseIT {
       .jsonPath("$.id").exists();
 
     wireMockServer.verify(postRequestedFor(urlMatching(CIRCULATION_REQUEST_URL)));
+  }
+
+  @Test
+  void createEcsTlrRequestInCentralTenant() {
+    mockUserTenants(wireMockServer, TENANT_ID_CONSORTIUM, UUID.randomUUID());
+    mockEcsTlrCirculationSettings(true);
+    mockEcsTlrSettings(true);
+
+    var request = new BffRequest()
+      .requesterId(UUID.randomUUID().toString())
+      .requestType(BffRequest.RequestTypeEnum.PAGE)
+      .requestDate(new Date())
+      .requestLevel(BffRequest.RequestLevelEnum.TITLE)
+      .instanceId(UUID.randomUUID().toString())
+      .fulfillmentPreference(BffRequest.FulfillmentPreferenceEnum.HOLD_SHELF);
+
+    doPostWithTenant(REQUESTS_PATH, request, TENANT_ID_CONSORTIUM)
+      .expectStatus().isCreated()
+      .expectBody()
+      .jsonPath("$.id").exists()
+      .jsonPath("$.primaryRequestId").exists();
+
+    wireMockServer.verify(postRequestedFor(urlMatching(ECS_TLR_REQUEST_URL)));
   }
 
   private void mockEcsTlrCirculationSettings(boolean enabled) {
