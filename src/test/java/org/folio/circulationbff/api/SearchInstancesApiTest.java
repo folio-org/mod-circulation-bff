@@ -119,7 +119,7 @@ class SearchInstancesApiTest extends BaseIT {
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(MATERIAL_TYPES_URL)));
   }
 
-  //@Test
+  @Test
   @SneakyThrows
   void searchInstancesReturnsOkStatus() {
     // mock instance search
