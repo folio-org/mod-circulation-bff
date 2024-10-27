@@ -15,7 +15,7 @@ post:
           $ref: "../../circulation-bff.yaml#/components/schemas/bff-request"
     required: true
   responses:
-    '200':
+    '201':
       description: Instances by query extended with item information
       content:
         application/json:

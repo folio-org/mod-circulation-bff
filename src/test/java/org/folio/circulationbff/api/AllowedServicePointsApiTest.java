@@ -31,7 +31,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 
 import lombok.SneakyThrows;
 
-class CirculationBffRequestsApiTest extends BaseIT {
+class AllowedServicePointsApiTest extends BaseIT {
   private static final String ALLOWED_SERVICE_POINT_PATH = "/circulation-bff/requests/allowed" +
     "-service-points";
   private static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";

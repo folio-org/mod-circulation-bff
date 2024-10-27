@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.folio.circulationbff.util.TestUtils;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.scope.FolioExecutionContextSetter;
@@ -22,10 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.reactive.function.BodyInserters;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -57,6 +61,9 @@ public class BaseIT {
 
   @Autowired
   private FolioModuleMetadata moduleMetadata;
+
+  @Autowired
+  private WebTestClient webClient;
 
   protected static WireMockServer wireMockServer = new WireMockServer(findAvailableTcpPort());
   static {
@@ -107,6 +114,28 @@ public class BaseIT {
     httpHeaders.add(XOkapiHeaders.USER_ID, USER_ID);
 
     return httpHeaders;
+  }
+
+  protected WebTestClient.ResponseSpec doPostWithTenant(String url, Object payload, String tenantId) {
+    return doPostWithToken(url, payload, TestUtils.buildToken(tenantId));
+  }
+
+  protected WebTestClient.ResponseSpec doPostWithToken(String url, Object payload, String token) {
+    return buildRequest(HttpMethod.POST, url)
+      .cookie("folioAccessToken", token)
+      .body(BodyInserters.fromValue(payload))
+      .exchange();
+  }
+
+  protected WebTestClient.RequestBodySpec buildRequest(HttpMethod method, String uri) {
+    return webClient.method(method)
+      .uri(uri)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .header(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM)
+      .header(XOkapiHeaders.URL, wireMockServer.baseUrl())
+      .header(XOkapiHeaders.TOKEN, TOKEN)
+      .header(XOkapiHeaders.USER_ID, randomId());
   }
 
   protected FolioExecutionContextSetter initFolioContext() {
