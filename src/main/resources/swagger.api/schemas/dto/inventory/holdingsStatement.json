@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Holdings record statement",
-  "additionalProperties": false,
   "type": "object",
   "properties": {
     "statement": {

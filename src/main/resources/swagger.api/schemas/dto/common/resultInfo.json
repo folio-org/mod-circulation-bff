@@ -42,15 +42,13 @@
                   "description": "Value Object"
                 }
               }
-            },
-            "additionalProperties": false
+            }
           },
           "type": {
             "type": "string",
             "description": "Type of facet"
           }
-        },
-        "additionalProperties": false
+        }
       }
     },
     "diagnostics": {
@@ -87,6 +85,5 @@
         }
       }
     }
-  },
-  "additionalProperties": false
+  }
 }

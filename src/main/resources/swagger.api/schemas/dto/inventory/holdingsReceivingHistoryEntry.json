@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Receiving history entry of holdings record",
-  "additionalProperties": false,
   "type": "object",
   "properties": {
     "publicDisplay": {
