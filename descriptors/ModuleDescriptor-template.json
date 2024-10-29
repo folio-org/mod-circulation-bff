@@ -106,6 +106,11 @@
       "permissionName": "circulation-bff.confirm-mediated-request.execute",
       "displayName": "circulation BFF - post mediated request to update and confirm",
       "description": "save and confirm a mediated request"
+    },
+    {
+      "permissionName": "circulation-bff.requests.post",
+      "displayName": "circulation BFF - post request",
+      "description": "create a EcsTlr or Circulation request"
     }
   ],
   "requires": [
