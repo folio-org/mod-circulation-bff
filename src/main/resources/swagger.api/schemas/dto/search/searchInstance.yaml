@@ -1,0 +1,12 @@
+type: object
+description: "mod-search search instance schema"
+allOf:
+  - $ref: "baseSearchInstance.yaml"
+properties:
+  items:
+    description: "List of instance items"
+    type: array
+    items:
+      $ref: "searchItem.yaml"
+required:
+  - items
