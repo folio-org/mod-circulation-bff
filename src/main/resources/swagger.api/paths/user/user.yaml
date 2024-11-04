@@ -1,0 +1,16 @@
+get:
+  description: Get user by userId and tenantId
+  parameters:
+    - $ref: '../../parameters/userId.yaml'
+    - $ref: '../../parameters/tenantId.yaml'
+  tags:
+    - getUser
+  responses:
+    '200':
+      description: 'User'
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/response/user/user.json'
+    '404':
+      $ref: '../../responses/notFoundResponse.yaml'

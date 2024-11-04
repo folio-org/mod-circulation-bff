@@ -7,6 +7,18 @@
       "version": "1.0",
       "handlers": [
         {
+          "id": "user",
+          "version": "1.0",
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/external-users/{externalUserId}/tenant/{tenantId}",
+          "permissionsRequired": ["circulation-bff.user.get"],
+          "modulePermissions": [
+            "users.collection.get"
+          ]
+        },
+        {
           "methods": [
             "GET"
           ],
@@ -75,6 +87,11 @@
     }
   ],
   "permissionSets" : [
+    {
+      "permissionName": "circulation-bff.user.get",
+      "displayName": "circulation BFF - get user by userId and tenantId",
+      "description": "get user by userId and tenantId"
+    },
     {
       "permissionName": "circulation-bff.requests.allowed-service-points.get",
       "displayName": "circulation BFF - get allowed pickup service points for request",

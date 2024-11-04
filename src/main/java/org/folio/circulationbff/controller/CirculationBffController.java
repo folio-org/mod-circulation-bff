@@ -11,10 +11,12 @@ import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +32,16 @@ public class CirculationBffController implements CirculationBffApi {
   private final CirculationBffService circulationBffService;
   private final SearchService searchService;
   private final MediatedRequestsService mediatedRequestsService;
+  private final UserService userService;
+
+  @Override
+  public ResponseEntity<User> circulationBffExternalUsersExternalUserIdTenantTenantIdGet(
+    UUID userId, UUID tenantId) {
+
+    log.info("circulationBffExternalUsersExternalUserIdTenantTenantIdGet:: userId = {}," +
+      " tenantId = {}", userId, tenantId);
+    return ResponseEntity.ok(userService.getUser(userId, tenantId));
+  }
 
   @Override
   public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(

@@ -9,6 +9,9 @@ paths:
     $ref: 'paths/searchInstances/searchInstances.yaml'
   /circulation-bff/mediated-requests/confirm:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
+  /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
+    $ref: 'paths/user/user.yaml'
+
 components:
   schemas:
     tlr-settings:
