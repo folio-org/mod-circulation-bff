@@ -40,7 +40,7 @@ public class CirculationBffController implements CirculationBffApi {
         "patronGroupId={}, operation={}, instanceId={}, requestId={}, requesterId={}, itemId={}",
       patronGroupId, operation, instanceId, requestId, requesterId, itemId);
 
-    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(
+    AllowedServicePoints allowedServicePoints = circulationBffService.getAllowedServicePoints(
       AllowedServicePointParams.builder()
         .operation(operation)
         .patronGroupId(patronGroupId)
@@ -49,7 +49,8 @@ public class CirculationBffController implements CirculationBffApi {
         .requesterId(requesterId)
         .itemId(itemId)
         .build(),
-      tenantId));
+      tenantId);
+    return ResponseEntity.status(HttpStatus.OK).body(allowedServicePoints);
   }
 
   @Override
