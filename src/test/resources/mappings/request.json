@@ -2,6 +2,19 @@
   "mappings": [
     {
       "request": {
+        "method": "GET",
+        "url": "/circulation/requests/571b0a2c-8883-40b5-a449-d41fe6017083"
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n    \"id\" : \"571b0a2c-8883-40b5-a449-d41fe6017083\"}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "request": {
         "method": "POST",
         "url": "/circulation/requests"
       },

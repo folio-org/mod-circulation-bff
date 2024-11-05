@@ -78,8 +78,7 @@ class RequestsApiTest extends BaseIT {
     doPostWithTenant(REQUESTS_PATH, request, TENANT_ID_CONSORTIUM)
       .expectStatus().isCreated()
       .expectBody()
-      .jsonPath("$.id").exists()
-      .jsonPath("$.primaryRequestId").exists();
+      .jsonPath("$.id").exists();
 
     wireMockServer.verify(postRequestedFor(urlMatching(ECS_TLR_REQUEST_URL)));
   }

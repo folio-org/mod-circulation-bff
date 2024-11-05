@@ -3,6 +3,7 @@ package org.folio.circulationbff.client.feign;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
+import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -21,5 +22,5 @@ public interface EcsTlrClient {
   TlrSettings getTlrSettings();
 
   @PostMapping("/ecs-tlr")
-  BffRequest createRequest(@RequestBody BffRequest request);
+  EcsTlr createRequest(@RequestBody BffRequest request);
 }
