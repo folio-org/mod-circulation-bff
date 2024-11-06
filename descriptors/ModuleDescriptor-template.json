@@ -7,8 +7,6 @@
       "version": "1.0",
       "handlers": [
         {
-          "id": "user",
-          "version": "1.0",
           "methods": [
             "GET"
           ],
