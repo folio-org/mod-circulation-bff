@@ -36,7 +36,7 @@ components:
     patronGroup:
       $ref: 'schemas/dto/request/patronGroup.yaml'
     request:
-      $ref: 'schemas/dto/request/Request.yaml'
+      $ref: 'schemas/dto/request/Request.yaml#/Request'
     bff-request:
       allOf:
         - $ref: 'schemas/dto/request/Request.yaml#/Request'
