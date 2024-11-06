@@ -41,7 +41,7 @@ public class TestUtils {
 
   @SneakyThrows
   public static void mockUserTenants(WireMockServer wireMockServer, String tenantId,
-                                     UUID consortiumId) {
+    UUID consortiumId) {
 
     wireMockServer.stubFor(get(urlEqualTo("/user-tenants?limit=1"))
       .willReturn(okJson(new JSONObject()
