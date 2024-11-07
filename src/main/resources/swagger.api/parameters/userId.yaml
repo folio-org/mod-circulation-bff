@@ -1,5 +1,5 @@
 name: externalUserId
-in: query
+in: path
 required: true
 schema:
   type: string
