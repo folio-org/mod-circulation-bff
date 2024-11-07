@@ -40,4 +40,4 @@ components:
     bff-request:
       $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
     ecs-tlr:
-      $ref: 'schemas/dto/ecs-tlr/ecsTlr.yaml#/EcsTlr'
+      $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
