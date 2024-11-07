@@ -38,6 +38,6 @@ components:
     request:
       $ref: 'schemas/dto/request/Request.yaml#/Request'
     bff-request:
-      allOf:
-        - $ref: 'schemas/dto/request/Request.yaml#/Request'
-        - $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+      $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
+    ecs-tlr:
+      $ref: 'schemas/dto/ecs-tlr/ecsTlr.yaml#/EcsTlr'
