@@ -19,12 +19,6 @@ BffRequest:
       enum:
         - "Item"
         - "Title"
-    ecsRequestPhase:
-      description: "Stage in ECS request process, absence of this field means this is a single-tenant request"
-      type: "string"
-      enum:
-        - "Primary"
-        - "Secondary"
     requestDate:
       description: "Date the request was made"
       type: "string"
@@ -52,62 +46,6 @@ BffRequest:
       description: "ID of the item being requested"
       type: "string"
       $ref: "../common/uuid.yaml"
-    status:
-      description: "Status of the request"
-      type: "string"
-      enum:
-        - "Open - Not yet filled"
-        - "Open - Awaiting pickup"
-        - "Open - In transit"
-        - "Open - Awaiting delivery"
-        - "Closed - Filled"
-        - "Closed - Cancelled"
-        - "Closed - Unfilled"
-        - "Closed - Pickup expired"
-    cancellationReasonId:
-      description: "The id of the request reason"
-      type: "string"
-      $ref: "../common/uuid.yaml"
-    cancelledByUserId:
-      description: "The id of the user that cancelled the request"
-      type: "string"
-      $ref: "../common/uuid.yaml"
-    cancellationAdditionalInformation:
-      description: "Additional information about a cancellation"
-      type: "string"
-    cancelledDate:
-      description: "Date the request was cancelled"
-      type: "string"
-      format: "date-time"
-    position:
-      description: "position of the request in a per-item request queue"
-      type: "integer"
-      minimum: 1
-    instance:
-      description: "Copy of some instance metadata (used for searching and sorting)"
-      type: "object"
-      properties:
-        title:
-          description: "title of the item"
-          type: "string"
-        identifiers:
-          type: "array"
-          description: "An extensible set of name-value pairs of identifiers associated with the resource"
-          minItems: 0
-          items:
-            type: "object"
-            properties:
-              value:
-                type: "string"
-                description: "Resource identifier value"
-              identifierTypeId:
-                type: "string"
-                description: "UUID of resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)"
-                $ref: "../common/uuid.yaml"
-            required:
-              - "value"
-              - "identifierTypeId"
-      additionalProperties: true
     item:
       description: "Copy of some item metadata (used for searching and sorting)"
       type: "object"
@@ -246,34 +184,6 @@ BffRequest:
       description: "The ID of the Service Point where this request can be picked up"
       type: "string"
       $ref: "../common/uuid.yaml"
-    pickupServicePoint:
-      description: "The full object of the Service Point record from pickupServicePointId"
-      readonly: true
-      properties:
-        name:
-          description: "Unique name for the service point"
-          type: "string"
-          readonly: true
-        code:
-          description: "Unique code for the service point"
-          type: "string"
-          readonly: true
-        discoveryDisplayName:
-          description: "Human-readable name for the service point"
-          type: "string"
-          readonly: true
-        description:
-          description: "Description of the service point"
-          type: "string"
-          readonly: true
-        shelvingLagTime:
-          description: "Shelving lag time"
-          type: "integer"
-          readonly: true
-        pickupLocation:
-          description: "Is this service point a pickup location?"
-          type: "boolean"
-          readonly: true
     tags:
       type: "object"
       description: "Tags"
@@ -290,10 +200,6 @@ BffRequest:
           type: "object"
           description: "Blocks to override if user has corresponding permissions"
           $ref: "override-blocks.json"
-    searchIndex:
-      description: "Request fields used for search"
-      type: "object"
-      $ref: "request-search-index.json"
   required:
     - "requesterId"
     - "requestType"
