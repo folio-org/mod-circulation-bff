@@ -1,4 +1,4 @@
-name: userId
+name: externalUserId
 in: query
 required: true
 schema:
