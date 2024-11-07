@@ -110,7 +110,7 @@
     {
       "permissionName": "circulation-bff.requests.post",
       "displayName": "circulation BFF - post request",
-      "description": "create a EcsTlr or Circulation request"
+      "description": "create ECS LTR or Circulation request"
     }
   ],
   "requires": [

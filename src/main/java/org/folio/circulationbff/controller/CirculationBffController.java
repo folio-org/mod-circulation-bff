@@ -128,7 +128,7 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<Request> createRequest(String tenantId, BffRequest bffRequest) {
-    log.info("createRequest:: tenantId: {}, bffRequest: {}", tenantId, bffRequest.getId());
+    log.info("createRequest:: tenantId: {}, requestId: {}", tenantId, bffRequest.getId());
     return ResponseEntity.status(CREATED)
       .body(circulationBffService.createRequest(bffRequest, tenantId));
   }
