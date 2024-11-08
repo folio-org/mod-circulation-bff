@@ -21,9 +21,9 @@ public class UsersServiceImpl implements UserService {
   private final SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Override
-  public User getUser(UUID userId, String tenantId) {
+  public User getUser(UUID userId, UUID tenantId) {
     log.info("getUser:: userId = {}, tenantId = {}", userId, tenantId);
-    return systemUserScopedExecutionService.executeSystemUserScoped(tenantId,
+    return systemUserScopedExecutionService.executeSystemUserScoped(tenantId.toString(),
       () -> client.getUserByQuery(String.format(USER_BY_ID_QUERY, userId)));
   }
 }

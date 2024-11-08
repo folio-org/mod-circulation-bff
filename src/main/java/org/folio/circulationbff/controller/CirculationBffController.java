@@ -36,7 +36,7 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<User> circulationBffExternalUsersExternalUserIdTenantTenantIdGet(
-    UUID userId, String tenantId) {
+    UUID userId, UUID tenantId) {
 
     log.info("circulationBffExternalUsersExternalUserIdTenantTenantIdGet:: userId = {}," +
       " tenantId = {}", userId, tenantId);
