@@ -4,8 +4,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
@@ -14,6 +16,7 @@ import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.User;
+import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.MediatedRequestsService;
@@ -42,7 +45,14 @@ public class CirculationBffController implements CirculationBffApi {
 
     log.info("circulationBffExternalUsersExternalUserIdTenantTenantIdGet:: userId = {}," +
       " tenantId = {}", externalUserId, tenantId);
-    return ResponseEntity.ok(userService.getExternalUser(externalUserId, tenantId));
+    return buildUserResponseEntity(userService.getExternalUser(externalUserId, tenantId));
+  }
+  private ResponseEntity<User> buildUserResponseEntity(UserCollection externalUsers) {
+    List<User> users = externalUsers.getUsers();
+
+    return CollectionUtils.isNotEmpty(users)
+      ? ResponseEntity.ok(users.get(0))
+      : ResponseEntity.notFound().build();
   }
 
   @Override

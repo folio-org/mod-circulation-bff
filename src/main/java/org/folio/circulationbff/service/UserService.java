@@ -1,8 +1,8 @@
 package org.folio.circulationbff.service;
 
-import org.folio.circulationbff.domain.dto.User;
+import org.folio.circulationbff.domain.dto.UserCollection;
 
 public interface UserService {
 
-  User getExternalUser(String externalUserId, String tenantId);
+  UserCollection getExternalUser(String externalUserId, String tenantId);
 }
