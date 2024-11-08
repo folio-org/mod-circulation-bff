@@ -10,7 +10,7 @@ paths:
   /circulation-bff/mediated-requests/confirm:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
   /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
-    $ref: 'paths/user/externalUser.yaml'
+    $ref: 'paths/externalUser/externalUser.yaml'
 
 components:
   schemas:
@@ -20,6 +20,8 @@ components:
       $ref: 'schemas/response/circulationSettingsResponse.yaml'
     userTenantCollection:
       $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
+    userCollection:
+      $ref: 'schemas/dto/userCollection.json'
     items:
       $ref: 'schemas/dto/inventory/items.json'
     holdings-records:

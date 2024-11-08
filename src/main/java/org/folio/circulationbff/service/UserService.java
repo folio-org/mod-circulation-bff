@@ -1,10 +1,8 @@
 package org.folio.circulationbff.service;
 
-import java.util.UUID;
-
-import org.folio.circulationbff.domain.dto.User;
+import org.folio.circulationbff.domain.dto.UserCollection;
 
 public interface UserService {
 
-  User getUser(UUID userId, String tenantId);
+  UserCollection getExternalUser(String externalUserId, String tenantId);
 }

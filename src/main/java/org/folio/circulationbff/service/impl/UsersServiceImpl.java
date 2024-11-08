@@ -1,9 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
-import java.util.UUID;
-
 import org.folio.circulationbff.client.feign.UserClient;
-import org.folio.circulationbff.domain.dto.User;
+import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.service.UserService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
@@ -21,9 +19,9 @@ public class UsersServiceImpl implements UserService {
   private final SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Override
-  public User getUser(UUID userId, String tenantId) {
-    log.info("getUser:: userId = {}, tenantId = {}", userId, tenantId);
+  public UserCollection getExternalUser(String externalUserId, String tenantId) {
+    log.info("getUser:: userId = {}, tenantId = {}", externalUserId, tenantId);
     return systemUserScopedExecutionService.executeSystemUserScoped(tenantId,
-      () -> client.getUserByQuery(String.format(USER_BY_ID_QUERY, userId)));
+      () -> client.getExternalUserByQuery(String.format(USER_BY_ID_QUERY, externalUserId)));
   }
 }
