@@ -64,7 +64,7 @@ class RequestsApiTest extends BaseIT {
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_REQUEST_URL))
         .withRequestBody(equalToJson(asJsonString(request)))
-      .willReturn(jsonResponse(asJsonString(new Request().id(UUID.randomUUID())), SC_CREATED)));
+      .willReturn(jsonResponse(asJsonString(new Request().id(UUID.randomUUID().toString())), SC_CREATED)));
 
     doPostWithTenant(REQUESTS_PATH, request, TENANT_ID_COLLEGE)
       .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -98,7 +98,7 @@ class RequestsApiTest extends BaseIT {
     wireMockServer.stubFor(WireMock.get(urlMatching(String.format("%s/%s",
         CIRCULATION_REQUEST_URL, primaryRequestId)))
       .willReturn(jsonResponse(asJsonString(
-        new Request().id(UUID.randomUUID())), SC_OK)));
+        new Request().id(UUID.randomUUID().toString())), SC_OK)));
 
     doPostWithTenant(REQUESTS_PATH, request, TENANT_ID_CONSORTIUM)
       .andExpect(MockMvcResultMatchers.status().isCreated())
