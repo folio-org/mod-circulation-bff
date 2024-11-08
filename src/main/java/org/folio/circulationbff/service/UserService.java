@@ -6,5 +6,5 @@ import org.folio.circulationbff.domain.dto.User;
 
 public interface UserService {
 
-  User getUser(UUID userId, String tenantId);
+  User getUser(String userId, String tenantId);
 }
