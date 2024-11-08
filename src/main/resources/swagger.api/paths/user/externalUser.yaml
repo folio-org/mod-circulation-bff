@@ -1,10 +1,10 @@
 get:
   description: Get user by userId and tenantId
   parameters:
-    - $ref: '../../parameters/userId.yaml'
+    - $ref: '../../parameters/externalUserId.yaml'
     - $ref: '../../parameters/tenantId.yaml'
   tags:
-    - getUser
+    - getExternalUser
   responses:
     '200':
       description: 'User'

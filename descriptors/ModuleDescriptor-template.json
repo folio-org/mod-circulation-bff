@@ -11,7 +11,7 @@
             "GET"
           ],
           "pathPattern": "/circulation-bff/external-users/{externalUserId}/tenant/{tenantId}",
-          "permissionsRequired": ["circulation-bff.user.get"],
+          "permissionsRequired": ["circulation-bff.externalUser.get"],
           "modulePermissions": [
             "users.collection.get"
           ]
@@ -86,9 +86,9 @@
   ],
   "permissionSets" : [
     {
-      "permissionName": "circulation-bff.user.get",
-      "displayName": "circulation BFF - get user by userId and tenantId",
-      "description": "get user by userId and tenantId"
+      "permissionName": "circulation-bff.externalUser.get",
+      "displayName": "circulation BFF - get externalUser by externalUserId and tenantId",
+      "description": "get external user by externalUserId and tenantId"
     },
     {
       "permissionName": "circulation-bff.requests.allowed-service-points.get",
