@@ -38,11 +38,11 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<User> circulationBffExternalUsersExternalUserIdTenantTenantIdGet(
-    String userId, String tenantId) {
+    String externalUserId, String tenantId) {
 
     log.info("circulationBffExternalUsersExternalUserIdTenantTenantIdGet:: userId = {}," +
-      " tenantId = {}", userId, tenantId);
-    return ResponseEntity.ok(userService.getUser(userId, tenantId));
+      " tenantId = {}", externalUserId, tenantId);
+    return ResponseEntity.ok(userService.getExternalUser(externalUserId, tenantId));
   }
 
   @Override
