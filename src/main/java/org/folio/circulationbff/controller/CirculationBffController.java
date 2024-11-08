@@ -47,6 +47,7 @@ public class CirculationBffController implements CirculationBffApi {
       " tenantId = {}", externalUserId, tenantId);
     return buildUserResponseEntity(userService.getExternalUser(externalUserId, tenantId));
   }
+
   private ResponseEntity<User> buildUserResponseEntity(UserCollection externalUsers) {
     List<User> users = externalUsers.getUsers();
 
