@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -128,12 +127,7 @@ public class BaseIT {
 
   protected MockHttpServletRequestBuilder buildRequest(MockHttpServletRequestBuilder requestBuilder, Object payload) {
     return requestBuilder
-      .contentType(MediaType.APPLICATION_JSON)
-      .accept(MediaType.APPLICATION_JSON)
-      .header(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM)
-      .header(XOkapiHeaders.URL, wireMockServer.baseUrl())
-      .header(XOkapiHeaders.TOKEN, TOKEN)
-      .header(XOkapiHeaders.USER_ID, randomId())
+      .headers(defaultHeaders())
       .content(asJsonString(payload));
   }
 
