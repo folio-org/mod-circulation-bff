@@ -1,0 +1,5 @@
+name: externalUserId
+in: path
+required: true
+schema:
+  type: string
