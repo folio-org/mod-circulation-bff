@@ -23,13 +23,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
+import jakarta.servlet.http.Cookie;
 import lombok.SneakyThrows;
 
 @ActiveProfiles("test")
@@ -61,9 +63,6 @@ public class BaseIT {
 
   @Autowired
   private FolioModuleMetadata moduleMetadata;
-
-  @Autowired
-  private WebTestClient webClient;
 
   protected static WireMockServer wireMockServer = new WireMockServer(findAvailableTcpPort());
   static {
@@ -116,26 +115,26 @@ public class BaseIT {
     return httpHeaders;
   }
 
-  protected WebTestClient.ResponseSpec doPostWithTenant(String url, Object payload, String tenantId) {
-    return doPostWithToken(url, payload, TestUtils.buildToken(tenantId));
+  protected ResultActions doPostWithTenant(String url, Object payload, String tenantId) throws Exception {
+    String token = TestUtils.buildToken(tenantId);
+    return doPostWithToken(url, payload, token);
   }
 
-  protected WebTestClient.ResponseSpec doPostWithToken(String url, Object payload, String token) {
-    return buildRequest(HttpMethod.POST, url)
-      .cookie("folioAccessToken", token)
-      .body(BodyInserters.fromValue(payload))
-      .exchange();
+  protected ResultActions doPostWithToken(String url, Object payload, String token) throws Exception {
+    MockHttpServletRequestBuilder requestBuilder = buildRequest(MockMvcRequestBuilders.post(url), payload);
+    requestBuilder.cookie(new Cookie("folioAccessToken", token));
+    return mockMvc.perform(requestBuilder);
   }
 
-  protected WebTestClient.RequestBodySpec buildRequest(HttpMethod method, String uri) {
-    return webClient.method(method)
-      .uri(uri)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
+  protected MockHttpServletRequestBuilder buildRequest(MockHttpServletRequestBuilder requestBuilder, Object payload) {
+    return requestBuilder
+      .contentType(MediaType.APPLICATION_JSON)
+      .accept(MediaType.APPLICATION_JSON)
       .header(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM)
       .header(XOkapiHeaders.URL, wireMockServer.baseUrl())
       .header(XOkapiHeaders.TOKEN, TOKEN)
-      .header(XOkapiHeaders.USER_ID, randomId());
+      .header(XOkapiHeaders.USER_ID, randomId())
+      .content(asJsonString(payload));
   }
 
   protected FolioExecutionContextSetter initFolioContext() {
