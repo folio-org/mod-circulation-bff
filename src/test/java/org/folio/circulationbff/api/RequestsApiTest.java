@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 
 import lombok.SneakyThrows;
 
@@ -48,10 +47,6 @@ class RequestsApiTest extends BaseIT {
     mockUserTenants(wireMockServer, TENANT_ID_COLLEGE, UUID.randomUUID());
     mockEcsTlrCirculationSettings(true);
     mockEcsTlrSettings(false);
-
-    for (StubMapping mapping : wireMockServer.getStubMappings()) {
-      System.out.println(mapping);
-    }
 
     var request = new BffRequest()
       .requesterId(UUID.randomUUID().toString())
