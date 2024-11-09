@@ -14,6 +14,7 @@ import java.util.List;
 import org.apache.http.HttpStatus;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -50,7 +51,8 @@ class UsersApiTest extends BaseIT {
       .andExpect(content().json(Json.write(users)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(MOD_USERS_URL))
-      .withQueryParam(PARAM_QUERY, equalTo(FILTER_BY_EXTERNAL_SYSTEM_ID_QUERY)));
+      .withQueryParam(PARAM_QUERY, equalTo(FILTER_BY_EXTERNAL_SYSTEM_ID_QUERY))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_PARAM)));
   }
 
 }
