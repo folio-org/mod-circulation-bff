@@ -206,5 +206,5 @@ BffRequest:
     - "requestDate"
     - "fulfillmentPreference"
     - "instanceId"
-    - "level"
+    - "requestLevel"
     - "pickupServicePointId"

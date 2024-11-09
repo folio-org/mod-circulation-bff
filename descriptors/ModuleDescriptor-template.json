@@ -4,14 +4,14 @@
   "provides": [
     {
       "id": "circulation-bff-requests",
-      "version": "2.0",
+      "version": "1.1",
       "handlers": [
         {
           "methods": [
             "GET"
           ],
           "pathPattern": "/circulation-bff/external-users/{externalUserId}/tenant/{tenantId}",
-          "permissionsRequired": ["circulation-bff.external-user.get"],
+          "permissionsRequired": ["circulation-bff.external-users.get"],
           "modulePermissions": [
             "users.collection.get"
           ]
@@ -103,7 +103,7 @@
   ],
   "permissionSets" : [
     {
-      "permissionName": "circulation-bff.external-user.get",
+      "permissionName": "circulation-bff.external-users.get",
       "displayName": "circulation BFF - get externalUser by externalUserId and tenantId",
       "description": "get external user by externalUserId and tenantId"
     },
