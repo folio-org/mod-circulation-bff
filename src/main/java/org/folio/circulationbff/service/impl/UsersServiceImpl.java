@@ -20,7 +20,9 @@ public class UsersServiceImpl implements UserService {
 
   @Override
   public UserCollection getExternalUser(String externalUserId, String tenantId) {
-    log.info("getExternalUser:: externalUserId = {}, tenantId = {}", externalUserId, tenantId);
+    log.info("getExternalUser:: externalUserId = {}, tenantId = {}", externalUserId,
+      tenantId);
+
     return systemUserScopedExecutionService.executeSystemUserScoped(tenantId,
       () -> client.getExternalUserByQuery(String.format(USER_BY_EXTERNAL_SYSTEM_ID_QUERY, externalUserId)));
   }

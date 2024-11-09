@@ -40,7 +40,8 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<User> getExternalUser(String externalUserId, String tenantId) {
-    log.info("getExternalUser:: userId = {}, tenantId = {}", externalUserId, tenantId);
+    log.info("getExternalUser:: externalUserId = {}, tenantId = {}", externalUserId,
+      tenantId);
 
     return buildUserResponseEntity(userService.getExternalUser(externalUserId, tenantId));
   }
