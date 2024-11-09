@@ -43,6 +43,23 @@
           "methods": [
             "POST"
           ],
+          "pathPattern": "/circulation-bff/requests",
+          "permissionsRequired": ["circulation-bff.requests.post"],
+          "modulePermissions": [
+            "tlr.ecs-tlr-allowed-service-points.get",
+            "circulation.requests.allowed-service-points.get",
+            "circulation.requests.item.post",
+            "tlr.ecs-tlr.post",
+            "tlr.settings.get",
+            "circulation.settings.item.get",
+            "circulation.settings.collection.get",
+            "user-tenants.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
           "pathPattern": "/circulation-bff/mediated-requests/confirm",
           "permissionsRequired": ["circulation-bff.confirm-mediated-request.execute"],
           "modulePermissions": [
@@ -104,6 +121,11 @@
       "permissionName": "circulation-bff.confirm-mediated-request.execute",
       "displayName": "circulation BFF - post mediated request to update and confirm",
       "description": "save and confirm a mediated request"
+    },
+    {
+      "permissionName": "circulation-bff.requests.post",
+      "displayName": "circulation BFF - post request",
+      "description": "create ECS LTR or Circulation request"
     }
   ],
   "requires": [

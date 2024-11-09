@@ -4,6 +4,9 @@ import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.BffRequest;
+import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
@@ -33,6 +36,19 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +
         "points from mod-circulation module");
       return circulationClient.allowedServicePoints(params);
+    }
+  }
+
+  @Override
+  public Request createRequest(BffRequest request, String tenantId) {
+    log.info("createRequest:: request: {}", request.getId());
+    if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
+      log.info("createRequest:: ECS TLR Feature is enabled. Creating ECS TLR");
+      EcsTlr tlrRequest = ecsTlrClient.createRequest(request);
+      return circulationClient.getRequestById(tlrRequest.getPrimaryRequestId());
+    } else {
+      log.info("createRequest:: Ecs TLR Feature is disabled. Creating circulation request");
+      return circulationClient.createRequest(request);
     }
   }
 }
