@@ -11,11 +11,11 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.User;
@@ -34,9 +34,6 @@ import org.springframework.http.ResponseEntity;
 @ExtendWith(MockitoExtension.class)
 class CirculationBffControllerTest {
 
-  private static final String EXTERNAL_SYSTEM_ID = "externalSystemId";
-  private static final String EXTERNAL_USER_ID = "externalUserId";
-  private static final String TENANT_ID = "tenantId";
   @Mock
   private SearchService searchService;
 
@@ -51,25 +48,25 @@ class CirculationBffControllerTest {
 
   @Test
   void getExternalUserTestShouldReturnResponseWithBodyAndOkStatus() {
-    User expected = new User();
-    expected.setExternalSystemId(EXTERNAL_SYSTEM_ID);
-    UserCollection userCollection = new UserCollection();
-    userCollection.setUsers(List.of(expected));
-    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+    UserCollection expected = new UserCollection();
+    expected.setUsers(List.of(new User()));
+    when(userService.getExternalUser(anyString(), anyString())).thenReturn(expected);
 
-    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+    ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
+      StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
     assertThat(actual.getBody(), is(expected));
   }
 
   @Test
-  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenCollectionOfUsersNull() {
+  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenCollectionOfUsersIsNull() {
     UserCollection userCollection = new UserCollection();
     userCollection.setUsers(null);
     when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
 
-    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+    ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
+      StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
     assertThat(actual.getBody(), nullValue());
@@ -81,28 +78,12 @@ class CirculationBffControllerTest {
     userCollection.setUsers(Collections.emptyList());
     when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
 
-    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+    ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
+      StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
     assertThat(actual.getBody(), nullValue());
   }
-
-  @Test
-  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenUserIsNull() {
-    UserCollection userCollection = new UserCollection();
-    List<User> users = new ArrayList<>();
-    users.add(null);
-    userCollection.setUsers(users);
-
-    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
-
-    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
-
-    assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
-    assertThat(actual.getBody(), nullValue());
-  }
-
-
 
   @Test
   void instanceFoundSuccessfully() {
