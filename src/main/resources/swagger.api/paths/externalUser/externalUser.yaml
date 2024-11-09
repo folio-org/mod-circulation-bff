@@ -18,4 +18,4 @@ get:
     '422':
       $ref: '../../responses/unprocessableEntityResponse.yaml'
     '500':
-      $ref: '../../responses/internalServerErrorResponse'
+      $ref: '../../responses/internalServerErrorResponse.yaml'

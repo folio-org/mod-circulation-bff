@@ -22,8 +22,6 @@ components:
       $ref: 'schemas/response/circulationSettingsResponse.yaml'
     userTenantCollection:
       $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
-    user:
-      $ref: 'schemas/response/user.json'
     items:
       $ref: 'schemas/dto/inventory/items.json'
     holdings-records:
