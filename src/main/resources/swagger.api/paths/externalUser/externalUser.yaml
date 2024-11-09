@@ -1,5 +1,5 @@
 get:
-  description: Get user by userId and tenantId
+  description: Get user by externalUserId and tenantId
   operationId: getExternalUser
   tags:
     - getExternalUser
@@ -8,10 +8,14 @@ get:
     - $ref: '../../parameters/tenantId.yaml'
   responses:
     '200':
-      description: 'User'
+      description: 'User fetched by externalSystemId in scope of tenant'
       content:
         application/json:
           schema:
             $ref: '../../schemas/response/user/user.json'
     '404':
       $ref: '../../responses/notFoundResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse'
