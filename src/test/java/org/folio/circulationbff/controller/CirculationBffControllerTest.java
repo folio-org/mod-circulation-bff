@@ -34,9 +34,9 @@ import org.springframework.http.ResponseEntity;
 @ExtendWith(MockitoExtension.class)
 class CirculationBffControllerTest {
 
-  public static final String EXTERNAL_SYSTEM_ID = "externalSystemId";
-  public static final String EXTERNAL_USER_ID = "externalUserId";
-  public static final String TENANT_ID = "tenantId";
+  private static final String EXTERNAL_SYSTEM_ID = "externalSystemId";
+  private static final String EXTERNAL_USER_ID = "externalUserId";
+  private static final String TENANT_ID = "tenantId";
   @Mock
   private SearchService searchService;
 

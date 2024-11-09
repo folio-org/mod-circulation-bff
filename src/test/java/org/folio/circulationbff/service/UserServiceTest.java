@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-  public static final String EXTERNAL_SYSTEM_ID = "systemId";
+  private static final String EXTERNAL_SYSTEM_ID = "systemId";
   @Mock
   private SystemUserScopedExecutionService systemUserScopedExecutionService;
   @InjectMocks
