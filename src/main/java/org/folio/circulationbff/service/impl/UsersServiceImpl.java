@@ -14,7 +14,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class UsersServiceImpl implements UserService {
 
-  private static final String USER_BY_ID_QUERY = "externalSystemId==%s";
+  private static final String USER_BY_EXTERNAL_SYSTEM_ID_QUERY = "externalSystemId==%s";
   private final UserClient client;
   private final SystemUserScopedExecutionService systemUserScopedExecutionService;
 
@@ -22,6 +22,6 @@ public class UsersServiceImpl implements UserService {
   public UserCollection getExternalUser(String externalUserId, String tenantId) {
     log.info("getUser:: userId = {}, tenantId = {}", externalUserId, tenantId);
     return systemUserScopedExecutionService.executeSystemUserScoped(tenantId,
-      () -> client.getExternalUserByQuery(String.format(USER_BY_ID_QUERY, externalUserId)));
+      () -> client.getExternalUserByQuery(String.format(USER_BY_EXTERNAL_SYSTEM_ID_QUERY, externalUserId)));
   }
 }
