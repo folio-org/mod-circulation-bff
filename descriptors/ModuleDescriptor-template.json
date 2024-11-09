@@ -103,7 +103,7 @@
   ],
   "permissionSets" : [
     {
-      "permissionName": "circulation-bff.externalUser.get",
+      "permissionName": "circulation-bff.external-user.get",
       "displayName": "circulation BFF - get externalUser by externalUserId and tenantId",
       "description": "get external user by externalUserId and tenantId"
     },
