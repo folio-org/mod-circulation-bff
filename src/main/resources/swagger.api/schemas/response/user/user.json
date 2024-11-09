@@ -29,6 +29,7 @@
       "type": "string"
     },
     "patronGroup": {
+      "description": "UUID of patron group",
       "$ref": "../../dto/common/uuid.yaml"
     },
     "departments": {
@@ -124,6 +125,7 @@
                 "type": "string"
               },
               "addressTypeId": {
+                "description": "UUID of address type",
                 "$ref": "../../dto/common/uuid.yaml"
               },
               "primaryAddress": {
