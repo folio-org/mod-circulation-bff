@@ -31,8 +31,6 @@ class UsersApiTest extends BaseIT {
   private static final String MOD_USERS_PARAM = "externalSystemId==externalUserId";
   private static final String MOD_USERS_URL = "/users";
   private static final String PARAM_QUERY = "query";
-  private static final String MOD_USERS_WITH_PARAM_URL =
-    MOD_USERS_URL + "?" + PARAM_QUERY + "=" + MOD_USERS_PARAM;
 
   @Test
   @SneakyThrows
