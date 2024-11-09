@@ -8,7 +8,7 @@ get:
     - $ref: '../../parameters/tenantId.yaml'
   responses:
     '200':
-      description: 'User fetched by externalSystemId in scope of tenant'
+      description: 'Collection of users that contains user fetched by externalSystemId in scope of tenant'
       content:
         application/json:
           schema:
