@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface UserClient {
 
   @GetMapping
-  UserCollection getExternalUserByQuery(@RequestParam("query") String query);
+  UserCollection getUserByQuery(@RequestParam("query") String query);
 
 }
