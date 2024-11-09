@@ -8,9 +8,11 @@ import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.MediatedRequestsService;
@@ -122,5 +124,12 @@ public class CirculationBffController implements CirculationBffApi {
       mediatedRequest.getId());
 
     return ResponseEntity.status(CREATED).body(mediatedRequest);
+  }
+
+  @Override
+  public ResponseEntity<Request> createRequest(String tenantId, BffRequest bffRequest) {
+    log.info("createRequest:: tenantId: {}, requestId: {}", tenantId, bffRequest.getId());
+    return ResponseEntity.status(CREATED)
+      .body(circulationBffService.createRequest(bffRequest, tenantId));
   }
 }
