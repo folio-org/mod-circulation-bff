@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -38,20 +39,24 @@ public class CirculationBffController implements CirculationBffApi {
   private final UserService userService;
 
   @Override
-  public ResponseEntity<User> circulationBffExternalUsersExternalUserIdTenantTenantIdGet(
-    String externalUserId, String tenantId) {
+  public ResponseEntity<User> getExternalUser(String externalUserId, String tenantId) {
+    log.info("getExternalUser:: userId = {}, tenantId = {}", externalUserId, tenantId);
 
-    log.info("circulationBffExternalUsersExternalUserIdTenantTenantIdGet:: userId = {}," +
-      " tenantId = {}", externalUserId, tenantId);
     return buildUserResponseEntity(userService.getExternalUser(externalUserId, tenantId));
   }
 
   private ResponseEntity<User> buildUserResponseEntity(UserCollection externalUsers) {
     List<User> users = externalUsers.getUsers();
 
-    return CollectionUtils.isNotEmpty(users)
-      ? ResponseEntity.ok(users.get(0))
-      : ResponseEntity.notFound().build();
+    if (CollectionUtils.isEmpty(users)) {
+      return ResponseEntity.notFound().build();
+    }
+
+    User user = users.get(0);
+
+    return Objects.isNull(user)
+      ? ResponseEntity.notFound().build()
+      : ResponseEntity.ok(user);
   }
 
   @Override

@@ -1,7 +1,8 @@
 get:
+  description: Get user by userId and tenantId
+  operationId: getExternalUser
   tags:
     - getExternalUser
-  description: Get user by userId and tenantId
   parameters:
     - $ref: '../../parameters/externalUserId.yaml'
     - $ref: '../../parameters/tenantId.yaml'

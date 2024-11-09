@@ -5,18 +5,24 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.oneOf;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.User;
+import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,14 +34,75 @@ import org.springframework.http.ResponseEntity;
 @ExtendWith(MockitoExtension.class)
 class CirculationBffControllerTest {
 
+  public static final String EXTERNAL_SYSTEM_ID = "externalSystemId";
+  public static final String EXTERNAL_USER_ID = "externalUserId";
+  public static final String TENANT_ID = "tenantId";
   @Mock
   private SearchService searchService;
 
   @Mock
   private MediatedRequestsService mediatedRequestsService;
 
+  @Mock
+  private UserService userService;
+
   @InjectMocks
   private CirculationBffController controller;
+
+  @Test
+  void getExternalUserTestShouldReturnResponseWithBodyAndOkStatus() {
+    User expected = new User();
+    expected.setExternalSystemId(EXTERNAL_SYSTEM_ID);
+    UserCollection userCollection = new UserCollection();
+    userCollection.setUsers(List.of(expected));
+    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+
+    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(expected));
+  }
+
+  @Test
+  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenCollectionOfUsersNull() {
+    UserCollection userCollection = new UserCollection();
+    userCollection.setUsers(null);
+    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+
+    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(actual.getBody(), nullValue());
+  }
+
+  @Test
+  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenCollectionOfUsersIsEmpty() {
+    UserCollection userCollection = new UserCollection();
+    userCollection.setUsers(Collections.emptyList());
+    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+
+    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(actual.getBody(), nullValue());
+  }
+
+  @Test
+  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenUserIsNull() {
+    UserCollection userCollection = new UserCollection();
+    List<User> users = new ArrayList<>();
+    users.add(null);
+    userCollection.setUsers(users);
+
+    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+
+    ResponseEntity<User> actual = controller.getExternalUser(EXTERNAL_USER_ID, TENANT_ID);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(actual.getBody(), nullValue());
+  }
+
+
 
   @Test
   void instanceFoundSuccessfully() {
