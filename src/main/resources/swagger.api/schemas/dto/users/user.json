@@ -10,7 +10,7 @@
       "type": "string"
     },
     "id": {
-      "$ref": "../../dto/common/uuid.yaml"
+      "$ref": "../common/uuid.yaml"
     },
     "externalSystemId": {
       "description": "A unique ID that corresponds to an external authority",
@@ -30,7 +30,7 @@
     },
     "patronGroup": {
       "description": "UUID of patron group",
-      "$ref": "../../dto/common/uuid.yaml"
+      "$ref": "../common/uuid.yaml"
     },
     "departments": {
       "description": "A list of UUIDs corresponding to the departments the user belongs to, see /departments API",
@@ -38,7 +38,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "$ref": "../../dto/common/uuid.yaml"
+        "$ref": "../common/uuid.yaml"
       }
     },
     "meta": {
@@ -126,7 +126,7 @@
               },
               "addressTypeId": {
                 "description": "UUID of address type",
-                "$ref": "../../dto/common/uuid.yaml"
+                "$ref": "../common/uuid.yaml"
               },
               "primaryAddress": {
                 "description": "Is this the user's primary address?",
@@ -176,11 +176,11 @@
     },
     "metadata": {
       "type": "object",
-      "$ref": "../../dto/common/metadata.yaml"
+      "$ref": "../common/metadata.yaml"
     },
     "tags": {
       "type": "object",
-      "$ref": "../../dto/common/tags.yaml"
+      "$ref": "../common/tags.yaml"
     },
     "customFields" : {
       "description": "Object that contains custom field",

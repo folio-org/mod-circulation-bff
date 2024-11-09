@@ -12,7 +12,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/response/user/userCollection.json'
+            $ref: '../../responses/externalUsersResponse.yaml'
     '404':
       $ref: '../../responses/notFoundResponse.yaml'
     '422':

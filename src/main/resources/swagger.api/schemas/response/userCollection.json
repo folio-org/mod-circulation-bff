@@ -9,14 +9,14 @@
       "id": "userCollection",
       "items": {
         "type": "object",
-        "$ref": "user.json"
+        "$ref": "../dto/users/user.json"
       }
     },
     "totalRecords": {
       "type": "integer"
     },
     "resultInfo": {
-      "$ref": "../../dto/common/resultInfo.json",
+      "$ref": "../dto/common/resultInfo.json",
       "readonly": true
     }
   },
