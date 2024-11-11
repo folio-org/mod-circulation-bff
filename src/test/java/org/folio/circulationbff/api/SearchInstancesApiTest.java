@@ -118,7 +118,8 @@ class SearchInstancesApiTest extends BaseIT {
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id", is(instanceId)))
-      .andExpect(jsonPath("$.items", emptyIterable()));
+      .andExpect(jsonPath("$.items", emptyIterable()))
+      .andExpect(jsonPath("$.editions", containsInAnyOrder("1st", "2st")));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(ITEM_STORAGE_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(HOLDINGS_STORAGE_URL)));
@@ -244,7 +245,8 @@ class SearchInstancesApiTest extends BaseIT {
         containsInAnyOrder(searchHoldingInCollege.getId())))
       .andExpect(jsonPath("$.items", hasSize(90)))
       .andExpect(jsonPath("$.items[?(@.tenantId == 'consortium')]", hasSize(MAX_IDS_PER_QUERY)))
-      .andExpect(jsonPath("$.items[?(@.tenantId == 'college')]", hasSize(10)));
+      .andExpect(jsonPath("$.items[?(@.tenantId == 'college')]", hasSize(10)))
+      .andExpect(jsonPath("$.editions", containsInAnyOrder("1st", "2st")));
   }
 
   private static SearchInstance buildSearchInstance(String tenantId, List<SearchItem> searchItems,
