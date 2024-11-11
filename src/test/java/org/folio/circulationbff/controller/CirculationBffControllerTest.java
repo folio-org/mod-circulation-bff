@@ -14,6 +14,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
@@ -25,6 +26,8 @@ import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,30 +62,23 @@ class CirculationBffControllerTest {
     assertThat(actual.getBody(), is(expected));
   }
 
-  @Test
-  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenCollectionOfUsersIsNull() {
-    UserCollection userCollection = new UserCollection();
-    userCollection.setUsers(null);
+  @ParameterizedTest
+  @MethodSource
+  void externalUsersControllerReturnsTheSameUserCollectionAsExternalUserService(List<User> users) {
+    UserCollection userCollection = new UserCollection(users, users == null ? 0 : users.size());
     when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
 
     ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
       StringUtils.EMPTY);
 
-    assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
-    assertThat(actual.getBody(), nullValue());
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(userCollection));
   }
 
-  @Test
-  void getExternalUserTestShouldReturnResponseWithBodyAndNotFoundStatusWhenCollectionOfUsersIsEmpty() {
-    UserCollection userCollection = new UserCollection();
-    userCollection.setUsers(Collections.emptyList());
-    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+  static Stream<List<User>>
+  externalUsersControllerReturnsTheSameUserCollectionAsExternalUserService() {
 
-    ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
-      StringUtils.EMPTY);
-
-    assertThat(actual.getStatusCode(), is(HttpStatus.NOT_FOUND));
-    assertThat(actual.getBody(), nullValue());
+    return Stream.of(null, Collections.emptyList(), List.of(new User()));
   }
 
   @Test
