@@ -6,7 +6,6 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import java.util.Collection;
 import java.util.UUID;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
@@ -38,7 +37,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final UserService userService;
 
   @Override
-  public ResponseEntity<UserCollection> getExternalUser(String externalUserId, String tenantId) {
+  public ResponseEntity<UserCollection> getExternalUsers(String externalUserId, String tenantId) {
     log.info("getExternalUser:: externalUserId = {}, tenantId = {}", externalUserId,
       tenantId);
 

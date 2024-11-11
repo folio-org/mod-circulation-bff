@@ -1,14 +1,14 @@
 get:
-  description: Get user by externalUserId and tenantId
-  operationId: getExternalUser
+  description: Find users by externalSystemId in the specified tenant
+  operationId: getExternalUsers
   tags:
-    - getExternalUser
+    - getExternalUsers
   parameters:
     - $ref: '../../parameters/externalUserId.yaml'
     - $ref: '../../parameters/tenantId.yaml'
   responses:
     '200':
-      description: 'Collection of users that contains user fetched by externalSystemId in scope of tenant'
+      description: 'Collection of users found by externalSystemId in the specified tenant'
       content:
         application/json:
           schema:

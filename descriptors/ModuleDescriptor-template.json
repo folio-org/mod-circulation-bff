@@ -112,7 +112,7 @@
     {
       "permissionName": "circulation-bff.external-users.collection.get",
       "displayName": "circulation BFF - find users by externalSystemId in the specified tenant",
-      "description": "get users by externalSystemId in the specified tenant"
+      "description": "get users by externalSystemId from the specified tenant"
     },
     {
       "permissionName": "circulation-bff.requests.allowed-service-points.get",

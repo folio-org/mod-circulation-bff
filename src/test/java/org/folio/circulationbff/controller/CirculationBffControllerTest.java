@@ -49,35 +49,20 @@ class CirculationBffControllerTest {
   @InjectMocks
   private CirculationBffController controller;
 
-  @Test
-  void getExternalUserTestShouldReturnResponseWithBodyAndOkStatus() {
-    UserCollection expected = new UserCollection();
-    expected.setUsers(List.of(new User()));
-    when(userService.getExternalUser(anyString(), anyString())).thenReturn(expected);
-
-    ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
-      StringUtils.EMPTY);
-
-    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
-    assertThat(actual.getBody(), is(expected));
-  }
-
   @ParameterizedTest
   @MethodSource
-  void externalUsersControllerReturnsTheSameUserCollectionAsExternalUserService(List<User> users) {
+  void externalUsersControllerReturnsTheSameUserCollectionAsUserService(List<User> users) {
     UserCollection userCollection = new UserCollection(users, users == null ? 0 : users.size());
     when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
 
-    ResponseEntity<UserCollection> actual = controller.getExternalUser(StringUtils.EMPTY,
+    ResponseEntity<UserCollection> actual = controller.getExternalUsers(StringUtils.EMPTY,
       StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
     assertThat(actual.getBody(), is(userCollection));
   }
 
-  static Stream<List<User>>
-  externalUsersControllerReturnsTheSameUserCollectionAsExternalUserService() {
-
+  static Stream<List<User>> externalUsersControllerReturnsTheSameUserCollectionAsUserService() {
     return Stream.of(null, Collections.emptyList(), List.of(new User()));
   }
 
