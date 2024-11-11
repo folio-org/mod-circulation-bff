@@ -8,5 +8,11 @@ properties:
     type: array
     items:
       $ref: "bffSearchItem.yaml"
+  editions:
+    description: "List of instance editions"
+    type: array
+    uniqueItems: true
+    items:
+      type: string
 required:
   - items
