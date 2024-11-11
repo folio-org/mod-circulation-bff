@@ -78,6 +78,8 @@ class SearchServiceTest {
 
     Collection<BffSearchInstance> response = searchService.findInstances(query);
     assertThat(response, equalTo(List.of(bffSearchInstance)));
+    assertThat(response.stream().findFirst().orElseThrow().getEditions(),
+      equalTo(instance.getEditions()));
   }
 
   @Test
