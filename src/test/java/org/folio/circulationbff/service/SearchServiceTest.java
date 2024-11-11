@@ -10,10 +10,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.folio.circulationbff.client.feign.InstanceStorageClient;
 import org.folio.circulationbff.client.feign.SearchClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
+import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -31,6 +34,7 @@ class SearchServiceTest {
   @Mock private SearchClient searchClient;
   @Mock private SearchInstanceMapper searchInstanceMapper;
   @Mock private SystemUserScopedExecutionService executionService;
+  @Mock private InstanceStorageClient instanceStorageClient;
 
   @InjectMocks
   private SearchServiceImpl searchService;
@@ -63,6 +67,10 @@ class SearchServiceTest {
 
     when(searchClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
+
+    Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
+    when(instanceStorageClient.findInstance(instanceId))
+      .thenReturn(instance);
 
     BffSearchInstance bffSearchInstance = new BffSearchInstance().id(instanceId);
     when(searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance))

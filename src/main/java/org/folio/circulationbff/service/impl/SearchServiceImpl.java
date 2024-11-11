@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.HoldingsStorageClient;
+import org.folio.circulationbff.client.feign.InstanceStorageClient;
 import org.folio.circulationbff.client.feign.ItemStorageClient;
 import org.folio.circulationbff.client.feign.LocationClient;
 import org.folio.circulationbff.client.feign.MaterialTypeClient;
@@ -30,6 +31,7 @@ import org.folio.circulationbff.domain.dto.BffSearchItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
+import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.Items;
@@ -62,6 +64,7 @@ public class SearchServiceImpl implements SearchService {
   private final MaterialTypeClient materialTypeClient;
   private final ServicePointClient servicePointClient;
   private final SearchClient searchClient;
+  private final InstanceStorageClient instanceStorageClient;
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
   private final SearchInstanceMapper searchInstanceMapper;
@@ -173,8 +176,17 @@ public class SearchServiceImpl implements SearchService {
     log.info("buildBffSearchInstances:: successfully built contexts for {} items", itemContexts::size);
 
     return searchInstances.stream()
-      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
+      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts)).map(this::fetchEditions)
       .toList();
+  }
+
+  private BffSearchInstance fetchEditions(BffSearchInstance bffSearchInstance) {
+    log.info("fetchEditions:: fetching editions for instance {}", bffSearchInstance.getId());
+    Instance instance = instanceStorageClient.findInstance(bffSearchInstance.getId());
+    if (instance != null && instance.getEditions() != null) {
+      bffSearchInstance.setEditions(instance.getEditions());
+    }
+    return bffSearchInstance;
   }
 
   private BffSearchInstance buildBffSearchInstance(SearchInstance searchInstance,
