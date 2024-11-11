@@ -11,6 +11,9 @@ paths:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
   /circulation-bff/requests:
     $ref: 'paths/requests/requests.yaml'
+  /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
+    $ref: 'paths/externalUser/externalUser.yaml'
+
 components:
   schemas:
     tlr-settings:

@@ -3,6 +3,23 @@
   "name": "Folio mod-circulation-bff module",
   "provides": [
     {
+      "id": "circulation-bff-users",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/external-users/{externalUserId}/tenant/{tenantId}",
+          "permissionsRequired": ["circulation-bff.external-users.collection.get"],
+          "modulePermissions": [
+            "users.item.get",
+            "users.collection.get"
+          ]
+        }
+      ]
+    },
+    {
       "id": "circulation-bff-requests",
       "version": "1.1",
       "handlers": [
@@ -92,6 +109,11 @@
     }
   ],
   "permissionSets" : [
+    {
+      "permissionName": "circulation-bff.external-users.collection.get",
+      "displayName": "circulation BFF - find users by externalSystemId in the specified tenant",
+      "description": "get users by externalSystemId from the specified tenant"
+    },
     {
       "permissionName": "circulation-bff.requests.allowed-service-points.get",
       "displayName": "circulation BFF - get allowed pickup service points for request",
