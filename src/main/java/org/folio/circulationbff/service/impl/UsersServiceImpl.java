@@ -24,7 +24,7 @@ public class UsersServiceImpl implements UserService {
       tenantId);
 
     return systemUserScopedExecutionService.executeSystemUserScoped(tenantId,
-      () -> client.getUserByQuery(String.format(USER_BY_EXTERNAL_SYSTEM_ID_QUERY, externalUserId)));
+      () -> client.getUsersByQuery(String.format(USER_BY_EXTERNAL_SYSTEM_ID_QUERY, externalUserId)));
   }
 
 }
