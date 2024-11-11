@@ -2,6 +2,7 @@ package org.folio.circulationbff.service;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -79,7 +80,7 @@ class SearchServiceTest {
     Collection<BffSearchInstance> response = searchService.findInstances(query);
     assertThat(response, equalTo(List.of(bffSearchInstance)));
     assertThat(response.stream().findFirst().orElseThrow().getEditions(),
-      equalTo(instance.getEditions()));
+      containsInAnyOrder("1st", "2st"));
   }
 
   @Test
