@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -27,6 +28,7 @@ import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
 import org.folio.circulationbff.domain.dto.Identifier;
+import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.ItemStatus;
@@ -60,6 +62,8 @@ class SearchInstancesApiTest extends BaseIT {
   private static final String LOCATIONS_URL = "/locations";
   private static final String SERVICE_POINTS_URL = "/service-points";
   private static final String MATERIAL_TYPES_URL = "/material-types";
+
+  private static final String INSTANCE_STORAGE_URL = "/instance-storage/instances";
 
   @Test
   @SneakyThrows
@@ -102,6 +106,10 @@ class SearchInstancesApiTest extends BaseIT {
       .withQueryParam("query", equalTo("id==" + instanceId))
       .withQueryParam("expandAll", equalTo("true"))
       .willReturn(jsonResponse(asJsonString(mockSearchInstancesResponse), HttpStatus.SC_OK)));
+
+    Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
+    wireMockServer.stubFor(WireMock.get(urlPathMatching(String.format("%s/%s", INSTANCE_STORAGE_URL, instanceId)))
+      .willReturn(jsonResponse(asJsonString(instance), HttpStatus.SC_OK)));
 
     mockMvc.perform(
         get(SEARCH_INSTANCES_URL)
@@ -147,6 +155,10 @@ class SearchInstancesApiTest extends BaseIT {
       .withQueryParam("query", equalTo("id==" + instanceId))
       .withQueryParam("expandAll", equalTo("true"))
       .willReturn(jsonResponse(mockSearchResponse, HttpStatus.SC_OK)));
+
+    Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
+    wireMockServer.stubFor(WireMock.get(urlPathMatching(String.format("%s/%s", INSTANCE_STORAGE_URL, instanceId)))
+      .willReturn(jsonResponse(asJsonString(instance), HttpStatus.SC_OK)));
 
     // mock items
 
