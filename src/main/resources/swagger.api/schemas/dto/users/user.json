@@ -136,7 +136,7 @@
             "required":[
               "addressTypeId"
             ],
-            "additionalProperties": false
+            "additionalProperties": true
           }
         },
         "preferredContactTypeId": {
@@ -149,7 +149,7 @@
           "format": "uri"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "lastName"
       ]
@@ -198,5 +198,5 @@
       "description": "Preferred email communication types"
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }
