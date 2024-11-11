@@ -9,7 +9,7 @@ properties:
     items:
       $ref: "bffSearchItem.yaml"
   editions:
-    description: "List of instance editions"
+    description: "The edition statement, imprint and other publication source information"
     type: array
     uniqueItems: true
     items:

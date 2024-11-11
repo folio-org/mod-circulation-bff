@@ -176,7 +176,8 @@ public class SearchServiceImpl implements SearchService {
     log.info("buildBffSearchInstances:: successfully built contexts for {} items", itemContexts::size);
 
     return searchInstances.stream()
-      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts)).map(this::fetchEditions)
+      .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
+      .map(this::fetchEditions)
       .toList();
   }
 
