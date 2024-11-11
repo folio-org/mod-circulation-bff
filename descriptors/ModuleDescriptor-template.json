@@ -13,6 +13,7 @@
           "pathPattern": "/circulation-bff/external-users/{externalUserId}/tenant/{tenantId}",
           "permissionsRequired": ["circulation-bff.external-users.collection.get"],
           "modulePermissions": [
+            "users.item.get",
             "users.collection.get"
           ]
         }
