@@ -50,9 +50,7 @@
             "GET"
           ],
           "pathPattern": "/circulation-bff/external-users/{externalUserId}/tenant/{tenantId}",
-          "permissionsRequired": [
-            "circulation-bff.external-users.collection.get"
-          ],
+          "permissionsRequired": ["circulation-bff.external-users.collection.get"],
           "modulePermissions": [
             "users.item.get",
             "users.collection.get"
@@ -69,9 +67,7 @@
             "GET"
           ],
           "pathPattern": "/circulation-bff/requests/allowed-service-points",
-          "permissionsRequired": [
-            "circulation-bff.requests.allowed-service-points.get"
-          ],
+          "permissionsRequired": ["circulation-bff.requests.allowed-service-points.get"],
           "modulePermissions": [
             "tlr.ecs-tlr-allowed-service-points.get",
             "circulation.requests.allowed-service-points.get",
@@ -86,21 +82,15 @@
             "GET"
           ],
           "pathPattern": "/circulation-bff/requests/search-instances",
-          "permissionsRequired": [
-            "circulation-bff.requests.search-instances.get"
-          ],
-          "modulePermissions": [
-            "search.instances.collection.get"
-          ]
+          "permissionsRequired": ["circulation-bff.requests.search-instances.get"],
+          "modulePermissions": ["search.instances.collection.get"]
         },
         {
           "methods": [
             "POST"
           ],
           "pathPattern": "/circulation-bff/requests",
-          "permissionsRequired": [
-            "circulation-bff.requests.post"
-          ],
+          "permissionsRequired": ["circulation-bff.requests.post"],
           "modulePermissions": [
             "tlr.ecs-tlr-allowed-service-points.get",
             "circulation.requests.allowed-service-points.get",
@@ -117,9 +107,7 @@
             "POST"
           ],
           "pathPattern": "/circulation-bff/mediated-requests/confirm",
-          "permissionsRequired": [
-            "circulation-bff.confirm-mediated-request.execute"
-          ],
+          "permissionsRequired": ["circulation-bff.confirm-mediated-request.execute"],
           "modulePermissions": [
             "requests-mediated.mediated-request.item.post",
             "requests-mediated.mediated-request.item.put",
@@ -159,7 +147,7 @@
       ]
     }
   ],
-  "permissionSets": [
+  "permissionSets" : [
     {
       "permissionName": "circulation-bff.staff-slips.pick-slips.collection.get",
       "displayName": "circulation BFF - pick staff slips by service point id",
@@ -234,7 +222,7 @@
       "version": "3.3"
     },
     {
-      "id": "material-types",
+      "id":  "material-types",
       "version": "2.2"
     }
   ],
@@ -244,20 +232,11 @@
     "dockerArgs": {
       "HostConfig": {
         "Memory": 357913941,
-        "PortBindings": {
-          "8081/tcp": [
-            {
-              "HostPort": "%p"
-            }
-          ]
-        }
+        "PortBindings": { "8081/tcp": [ { "HostPort": "%p" } ] }
       }
     },
     "env": [
-      {
-        "name": "JAVA_OPTIONS",
-        "value": "-XX:MaxRAMPercentage=66.0"
-      }
+      { "name": "JAVA_OPTIONS", "value": "-XX:MaxRAMPercentage=66.0"}
     ]
   }
 }
