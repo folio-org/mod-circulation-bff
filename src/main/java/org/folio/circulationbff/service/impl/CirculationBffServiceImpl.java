@@ -7,9 +7,11 @@ import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
+import org.folio.circulationbff.util.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,28 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final EcsTlrClient ecsTlrClient;
   private final SettingsService settingsService;
   private final UserTenantsService userTenantsService;
+
+  @Override
+  public StaffSlipsCollection pickStaffSlipsByServicePointId(String servicePointId) {
+    log.info("pickStaffSlipsByServicePointId:: servicePointId: {}", servicePointId);
+    var isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    log.info("pickStaffSlipsByServicePointId:: {}",
+      MessageBuilder.buildLogMessageForStaffSlipsFetching(isEcsTlrFeatureEnabled));
+    return isEcsTlrFeatureEnabled
+      ? ecsTlrClient.pickStaffSlips(servicePointId)
+      : circulationClient.pickStaffSlips(servicePointId);
+  }
+
+  @Override
+  public StaffSlipsCollection searchStaffSlipsByServicePointId(String servicePointId) {
+    log.info("searchStaffSlipsByServicePointId:: servicePointId: {}", servicePointId);
+    var isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    log.info("searchStaffSlipsByServicePointId:: {}",
+      MessageBuilder.buildLogMessageForStaffSlipsFetching(isEcsTlrFeatureEnabled));
+    return isEcsTlrFeatureEnabled
+      ? ecsTlrClient.searchStaffSlips(servicePointId)
+      : circulationClient.searchStaffSlips(servicePointId);
+  }
 
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {

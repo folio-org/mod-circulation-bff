@@ -13,6 +13,10 @@ paths:
     $ref: 'paths/requests/requests.yaml'
   /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
     $ref: 'paths/externalUser/externalUser.yaml'
+  /circulation-bff/pick-slips/{servicePointId}:
+    $ref: 'paths/staffSlips/pickStaffSlips.yaml'
+  /circulation-bff/search-slips/{servicePointId}:
+    $ref: 'paths/staffSlips/searchStaffSlips.yaml'
 
 components:
   schemas:

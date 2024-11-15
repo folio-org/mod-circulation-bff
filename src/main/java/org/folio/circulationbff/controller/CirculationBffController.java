@@ -13,6 +13,7 @@ import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
@@ -35,6 +36,17 @@ public class CirculationBffController implements CirculationBffApi {
   private final SearchService searchService;
   private final MediatedRequestsService mediatedRequestsService;
   private final UserService userService;
+
+  @Override
+  public ResponseEntity<StaffSlipsCollection> pickStaffSlips(String servicePointId) {
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(circulationBffService.pickStaffSlipsByServicePointId(servicePointId));
+  }
+
+  @Override
+  public ResponseEntity<StaffSlipsCollection> searchStaffSlips(String servicePointId) {
+    return ResponseEntity.ok(circulationBffService.searchStaffSlipsByServicePointId(servicePointId));
+  }
 
   @Override
   public ResponseEntity<UserCollection> getExternalUsers(String externalUserId, String tenantId) {

@@ -5,6 +5,7 @@ import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
@@ -29,4 +30,10 @@ public interface CirculationClient {
 
   @GetMapping("/requests/{requestId}")
   Request getRequestById(@PathVariable("requestId") String requestId);
+
+  @GetMapping("/pick-slips/{servicePointId}")
+  StaffSlipsCollection pickStaffSlips(@PathVariable ("servicePointId") String servicePointId);
+
+  @GetMapping("/search-slips/{servicePointId}")
+  StaffSlipsCollection searchStaffSlips(@PathVariable ("servicePointId") String servicePointId);
 }
