@@ -30,7 +30,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public StaffSlipsCollection pickStaffSlipsByServicePointId(String servicePointId) {
     log.info("pickStaffSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    var isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    boolean isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     log.info("pickStaffSlipsByServicePointId:: {}",
       MessageBuilder.buildLogMessageForStaffSlipsFetching(isEcsTlrFeatureEnabled));
     return isEcsTlrFeatureEnabled
@@ -41,7 +41,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public StaffSlipsCollection searchStaffSlipsByServicePointId(String servicePointId) {
     log.info("searchStaffSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    var isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    boolean isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     log.info("searchStaffSlipsByServicePointId:: {}",
       MessageBuilder.buildLogMessageForStaffSlipsFetching(isEcsTlrFeatureEnabled));
     return isEcsTlrFeatureEnabled

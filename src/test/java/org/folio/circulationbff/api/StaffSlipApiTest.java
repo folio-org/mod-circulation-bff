@@ -29,7 +29,7 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
 import lombok.SneakyThrows;
 
-public class StaffSlipApiTest extends BaseIT{
+class StaffSlipApiTest extends BaseIT{
   private static final String CIRCULATION_BFF_SEARCH_SLIPS_URL =
     "/circulation-bff/search-slips/{servicePointId}";
   private static final String CIRCULATION_BFF_PICK_SLIPS_URL =
@@ -41,6 +41,7 @@ public class StaffSlipApiTest extends BaseIT{
     "/circulation/pick-slips";
   private static final String TLR_SEARCH_STAFF_SLIPS_URL = "/tlr/search-slips";
   private static final String TLR_PICK_STAFF_SLIPS_URL = "/tlr/pick-slips";
+  private static final String URL_PATTERN = "%s/%s";
 
   @ParameterizedTest()
   @MethodSource("urlToEcsTlrFeatureEnabled")
@@ -52,8 +53,8 @@ public class StaffSlipApiTest extends BaseIT{
     tlrSettings.setEcsTlrFeatureEnabled(isTlrEnabled);
     var staffSlipsCollection = new StaffSlipsCollection(1, List.of(new StaffSlip()));
     var servicePointId = UUID.randomUUID().toString();
-    UrlPathPattern externalModuleUrlPattern = urlPathMatching(String.format(externalModuleUrl +
-      "/%s", servicePointId));
+    UrlPathPattern externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
+      externalModuleUrl, servicePointId));
 
     wireMockServer.stubFor(WireMock.get(externalModuleUrlPattern)
       .willReturn(jsonResponse(staffSlipsCollection, HttpStatus.SC_OK)));
