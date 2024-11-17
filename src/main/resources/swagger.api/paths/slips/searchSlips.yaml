@@ -1,17 +1,17 @@
 get:
-  description: API for picking current staff slips
-  operationId: pickStaffSlips
+  description: API fro get search slips
+  operationId: getSearchSlips
   tags:
-    - pickStaffSlips
+    - getSearchSlips
   parameters:
     - $ref: '../../parameters/servicePointId.yaml'
   responses:
     '200':
-      description: 'A collection of staff slips'
+      description: 'A collection of search slips'
       content:
         application/json:
           schema:
-            $ref: '../../responses/staffSlipsResponse.yaml'
+            $ref: '../../responses/slipsResponse.yaml'
     '404':
       $ref: '../../responses/notFoundResponse.yaml'
     '422':

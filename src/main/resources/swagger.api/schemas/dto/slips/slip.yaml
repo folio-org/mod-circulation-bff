@@ -1,4 +1,4 @@
-description: Staff slip
+description: Slip
 type: object
 properties:
   currentDateTime:

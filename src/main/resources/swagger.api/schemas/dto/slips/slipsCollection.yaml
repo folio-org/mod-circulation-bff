@@ -1,0 +1,13 @@
+description: "Collection slips"
+type: "object"
+properties:
+  totalRecords:
+    type: "integer"
+    description: "Total number of slips"
+  slips:
+    type: "array"
+    items:
+      $ref: "slip.yaml"
+required:
+  - totalRecords
+  - slips

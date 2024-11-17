@@ -20,8 +20,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
-import org.folio.circulationbff.domain.dto.StaffSlip;
-import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
+import org.folio.circulationbff.domain.dto.Slip;
+import org.folio.circulationbff.domain.dto.SlipsCollection;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.service.CirculationBffService;
@@ -74,37 +74,37 @@ class CirculationBffControllerTest {
   }
 
   @ParameterizedTest
-  @MethodSource("staffSlips")
-  void pickStaffSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
-    StaffSlipsCollection staffSlipsCollection = new StaffSlipsCollection(
+  @MethodSource("slips")
+  void pickStaffSlipsControllerReturnsSuccessResponseEntity(List<Slip> staffSlips) {
+    SlipsCollection staffSlipsCollection = new SlipsCollection(
       Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
 
-    when(circulationBffService.pickStaffSlipsByServicePointId(anyString()))
+    when(circulationBffService.fetchPickSlipsByServicePointId(anyString()))
       .thenReturn(staffSlipsCollection);
 
-    ResponseEntity<StaffSlipsCollection> actual = controller.pickStaffSlips(StringUtils.EMPTY);
+    ResponseEntity<SlipsCollection> actual = controller.getPickSlips(StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
     assertThat(actual.getBody(), is(staffSlipsCollection));
   }
 
   @ParameterizedTest
-  @MethodSource("staffSlips")
-  void searchStaffSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
-    StaffSlipsCollection staffSlipsCollection = new StaffSlipsCollection(
-      Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
+  @MethodSource("slips")
+  void searchStaffSlipsControllerReturnsSuccessResponseEntity(List<Slip> slips) {
+    SlipsCollection slipsCollection = new SlipsCollection(
+      Objects.isNull(slips) ? 0 : slips.size(), slips);
 
-    when(circulationBffService.searchStaffSlipsByServicePointId(anyString()))
-      .thenReturn(staffSlipsCollection);
+    when(circulationBffService.fetchSearchSlipsByServicePointId(anyString()))
+      .thenReturn(slipsCollection);
 
-    ResponseEntity<StaffSlipsCollection> actual = controller.searchStaffSlips(StringUtils.EMPTY);
+    ResponseEntity<SlipsCollection> actual = controller.getSearchSlips(StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
-    assertThat(actual.getBody(), is(staffSlipsCollection));
+    assertThat(actual.getBody(), is(slipsCollection));
   }
 
-  private static Stream<List<StaffSlip>> staffSlips() {
-    return Stream.of(null, Collections.emptyList(), List.of(new StaffSlip()));
+  private static Stream<List<Slip>> slips() {
+    return Stream.of(null, Collections.emptyList(), List.of(new Slip()));
   }
 
   @Test

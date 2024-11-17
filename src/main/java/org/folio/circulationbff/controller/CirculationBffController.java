@@ -13,7 +13,7 @@ import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.Request;
-import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
+import org.folio.circulationbff.domain.dto.SlipsCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
@@ -38,14 +38,19 @@ public class CirculationBffController implements CirculationBffApi {
   private final UserService userService;
 
   @Override
-  public ResponseEntity<StaffSlipsCollection> pickStaffSlips(String servicePointId) {
+  public ResponseEntity<SlipsCollection> getPickSlips(String servicePointId) {
+    log.info("getPickSlips:: servicePointId = {}", servicePointId);
+
     return ResponseEntity.status(HttpStatus.OK)
-      .body(circulationBffService.pickStaffSlipsByServicePointId(servicePointId));
+      .body(circulationBffService.fetchPickSlipsByServicePointId(servicePointId));
   }
 
   @Override
-  public ResponseEntity<StaffSlipsCollection> searchStaffSlips(String servicePointId) {
-    return ResponseEntity.ok(circulationBffService.searchStaffSlipsByServicePointId(servicePointId));
+  public ResponseEntity<SlipsCollection> getSearchSlips(String servicePointId) {
+    log.info("getSearchSlips:: servicePointId = {}", servicePointId);
+
+    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService
+      .fetchSearchSlipsByServicePointId(servicePointId));
   }
 
   @Override

@@ -15,8 +15,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpStatus;
-import org.folio.circulationbff.domain.dto.StaffSlip;
-import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
+import org.folio.circulationbff.domain.dto.Slip;
+import org.folio.circulationbff.domain.dto.SlipsCollection;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,35 +29,35 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
 import lombok.SneakyThrows;
 
-class StaffSlipApiTest extends BaseIT{
+class SlipApiTest extends BaseIT{
   private static final String CIRCULATION_BFF_SEARCH_SLIPS_URL =
     "/circulation-bff/search-slips/{servicePointId}";
   private static final String CIRCULATION_BFF_PICK_SLIPS_URL =
     "/circulation-bff/pick-slips/{servicePointId}";
   private static final String TLR_SETTINGS_URL = "/tlr/settings";
-  private static final String CIRCULATION_SEARCH_STAFF_SLIPS_URL =
+  private static final String CIRCULATION_SEARCH_SLIPS_URL =
     "/circulation/search-slips";
-  private static final String CIRCULATION_PICK_STAFF_SLIPS_URL =
+  private static final String CIRCULATION_PICK_SLIPS_URL =
     "/circulation/pick-slips";
-  private static final String TLR_SEARCH_STAFF_SLIPS_URL = "/tlr/search-slips";
-  private static final String TLR_PICK_STAFF_SLIPS_URL = "/tlr/pick-slips";
+  private static final String TLR_SEARCH_SLIPS_URL = "/tlr/search-slips";
+  private static final String TLR_PICK_SLIPS_URL = "/tlr/pick-slips";
   private static final String URL_PATTERN = "%s/%s";
 
   @ParameterizedTest()
   @MethodSource("urlToEcsTlrFeatureEnabled")
   @SneakyThrows
-  void getStaffSlipsFromModTlr(String externalModuleUrl, String circulationBffUrl,
+  void getSlipsApiTest(String externalModuleUrl, String circulationBffUrl,
     boolean isTlrEnabled) {
 
     var tlrSettings = new TlrSettings();
     tlrSettings.setEcsTlrFeatureEnabled(isTlrEnabled);
-    var staffSlipsCollection = new StaffSlipsCollection(1, List.of(new StaffSlip()));
+    var slipsCollection = new SlipsCollection(1, List.of(new Slip()));
     var servicePointId = UUID.randomUUID().toString();
     UrlPathPattern externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
       externalModuleUrl, servicePointId));
 
     wireMockServer.stubFor(WireMock.get(externalModuleUrlPattern)
-      .willReturn(jsonResponse(staffSlipsCollection, HttpStatus.SC_OK)));
+      .willReturn(jsonResponse(slipsCollection, HttpStatus.SC_OK)));
 
     wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
@@ -67,17 +67,17 @@ class StaffSlipApiTest extends BaseIT{
           .headers(defaultHeaders())
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(content().json(Json.write(staffSlipsCollection)));
+      .andExpect(content().json(Json.write(slipsCollection)));
 
     wireMockServer.verify(1, getRequestedFor(externalModuleUrlPattern));
   }
 
   private static Stream<Arguments> urlToEcsTlrFeatureEnabled() {
     return Stream.of(
-      Arguments.of(CIRCULATION_SEARCH_STAFF_SLIPS_URL, CIRCULATION_BFF_SEARCH_SLIPS_URL, false),
-      Arguments.of(CIRCULATION_PICK_STAFF_SLIPS_URL, CIRCULATION_BFF_PICK_SLIPS_URL, false),
-      Arguments.of(TLR_SEARCH_STAFF_SLIPS_URL, CIRCULATION_BFF_SEARCH_SLIPS_URL, true),
-      Arguments.of(TLR_PICK_STAFF_SLIPS_URL, CIRCULATION_BFF_PICK_SLIPS_URL, true)
+      Arguments.of(CIRCULATION_SEARCH_SLIPS_URL, CIRCULATION_BFF_SEARCH_SLIPS_URL, false),
+      Arguments.of(CIRCULATION_PICK_SLIPS_URL, CIRCULATION_BFF_PICK_SLIPS_URL, false),
+      Arguments.of(TLR_SEARCH_SLIPS_URL, CIRCULATION_BFF_SEARCH_SLIPS_URL, true),
+      Arguments.of(TLR_PICK_SLIPS_URL, CIRCULATION_BFF_PICK_SLIPS_URL, true)
     );
   }
 }

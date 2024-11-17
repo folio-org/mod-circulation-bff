@@ -12,7 +12,7 @@
           ],
           "pathPattern": "/circulation-bff/pick-slips/{servicePointId}",
           "permissionsRequired": [
-            "circulation-bff.staff-slips.pick-slips.collection.get"
+            "circulation-bff.pick-slips.collection.get"
           ],
           "modulePermissions": [
             "tlr.staff-slips.pick-slips.get",
@@ -31,7 +31,7 @@
           ],
           "pathPattern": "/circulation-bff/search-slips/{servicePointId}",
           "permissionsRequired": [
-            "circulation-bff.staff-slips.search-slips.collection.get"
+            "circulation-bff.search-slips.collection.get"
           ],
           "modulePermissions": [
             "tlr.staff-slips.search-slips.get",
@@ -149,14 +149,14 @@
   ],
   "permissionSets" : [
     {
-      "permissionName": "circulation-bff.staff-slips.pick-slips.collection.get",
-      "displayName": "circulation BFF - pick staff slips by service point id",
-      "description": "pick staff slips by service point id"
+      "permissionName": "circulation-bff.pick-slips.collection.get",
+      "displayName": "circulation BFF - get pick slips by service point id",
+      "description": "get pick slips by service point id"
     },
     {
-      "permissionName": "circulation-bff.staff-slips.search-slips.collection.get",
-      "displayName": "circulation BFF - search staff slips by service point id",
-      "description": "search staff slips by service point id"
+      "permissionName":  "circulation-bff.search-slips.collection.get",
+      "displayName": "circulation BFF - get search slips by service point id",
+      "description": "get search slips by service point id"
     },
     {
       "permissionName": "circulation-bff.external-users.collection.get",

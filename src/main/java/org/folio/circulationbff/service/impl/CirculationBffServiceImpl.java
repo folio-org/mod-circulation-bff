@@ -7,11 +7,10 @@ import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.Request;
-import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
+import org.folio.circulationbff.domain.dto.SlipsCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
-import org.folio.circulationbff.util.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -28,25 +27,27 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final UserTenantsService userTenantsService;
 
   @Override
-  public StaffSlipsCollection pickStaffSlipsByServicePointId(String servicePointId) {
-    log.info("pickStaffSlipsByServicePointId:: servicePointId: {}", servicePointId);
+  public SlipsCollection fetchPickSlipsByServicePointId(String servicePointId) {
+    log.info("fetchPickSlipsByServicePointId:: servicePointId: {}", servicePointId);
     boolean isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    log.info("pickStaffSlipsByServicePointId:: {}",
-      MessageBuilder.buildLogMessageForStaffSlipsFetching(isEcsTlrFeatureEnabled));
+    log.info("fetchPickSlipsByServicePointId:: isEcsTlrFeatureEnabled: {}",
+      isEcsTlrFeatureEnabled);
+
     return isEcsTlrFeatureEnabled
-      ? ecsTlrClient.pickStaffSlips(servicePointId)
-      : circulationClient.pickStaffSlips(servicePointId);
+      ? ecsTlrClient.getPickSlips(servicePointId)
+      : circulationClient.getPickSlips(servicePointId);
   }
 
   @Override
-  public StaffSlipsCollection searchStaffSlipsByServicePointId(String servicePointId) {
-    log.info("searchStaffSlipsByServicePointId:: servicePointId: {}", servicePointId);
+  public SlipsCollection fetchSearchSlipsByServicePointId(String servicePointId) {
+    log.info("fetchSearchSlipsByServicePointId:: servicePointId: {}", servicePointId);
     boolean isEcsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    log.info("searchStaffSlipsByServicePointId:: {}",
-      MessageBuilder.buildLogMessageForStaffSlipsFetching(isEcsTlrFeatureEnabled));
+    log.info("fetchSearchSlipsByServicePointId:: isEcsTlrFeatureEnabled: {}",
+      isEcsTlrFeatureEnabled);
+
     return isEcsTlrFeatureEnabled
-      ? ecsTlrClient.searchStaffSlips(servicePointId)
-      : circulationClient.searchStaffSlips(servicePointId);
+      ? ecsTlrClient.getSearchSlips(servicePointId)
+      : circulationClient.getSearchSlips(servicePointId);
   }
 
   @Override
