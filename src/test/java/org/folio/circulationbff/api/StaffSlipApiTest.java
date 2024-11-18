@@ -29,7 +29,7 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
 import lombok.SneakyThrows;
 
-class SlipApiTest extends BaseIT{
+class StaffSlipApiTest extends BaseIT{
   private static final String CIRCULATION_BFF_SEARCH_SLIPS_URL =
     "/circulation-bff/search-slips/{servicePointId}";
   private static final String CIRCULATION_BFF_PICK_SLIPS_URL =
@@ -46,18 +46,18 @@ class SlipApiTest extends BaseIT{
   @ParameterizedTest()
   @MethodSource("urlToEcsTlrFeatureEnabled")
   @SneakyThrows
-  void getSlipsApiTest(String externalModuleUrl, String circulationBffUrl,
+  void getStaffSlipsApiTest(String externalModuleUrl, String circulationBffUrl,
     boolean isTlrEnabled) {
 
     var tlrSettings = new TlrSettings();
     tlrSettings.setEcsTlrFeatureEnabled(isTlrEnabled);
-    var slipsCollection = new SlipsCollection(1, List.of(new Slip()));
+    var staffSlipsCollection = new SlipsCollection(1, List.of(new Slip()));
     var servicePointId = UUID.randomUUID().toString();
     UrlPathPattern externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
       externalModuleUrl, servicePointId));
 
     wireMockServer.stubFor(WireMock.get(externalModuleUrlPattern)
-      .willReturn(jsonResponse(slipsCollection, HttpStatus.SC_OK)));
+      .willReturn(jsonResponse(staffSlipsCollection, HttpStatus.SC_OK)));
 
     wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
@@ -67,7 +67,7 @@ class SlipApiTest extends BaseIT{
           .headers(defaultHeaders())
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(content().json(Json.write(slipsCollection)));
+      .andExpect(content().json(Json.write(staffSlipsCollection)));
 
     wireMockServer.verify(1, getRequestedFor(externalModuleUrlPattern));
   }

@@ -74,8 +74,8 @@ class CirculationBffControllerTest {
   }
 
   @ParameterizedTest
-  @MethodSource("slips")
-  void pickStaffSlipsControllerReturnsSuccessResponseEntity(List<Slip> staffSlips) {
+  @MethodSource("staffSlips")
+  void getPickSlipsControllerReturnsSuccessResponseEntity(List<Slip> staffSlips) {
     SlipsCollection staffSlipsCollection = new SlipsCollection(
       Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
 
@@ -89,21 +89,21 @@ class CirculationBffControllerTest {
   }
 
   @ParameterizedTest
-  @MethodSource("slips")
-  void searchStaffSlipsControllerReturnsSuccessResponseEntity(List<Slip> slips) {
-    SlipsCollection slipsCollection = new SlipsCollection(
-      Objects.isNull(slips) ? 0 : slips.size(), slips);
+  @MethodSource("staffSlips")
+  void getSearchSlipsControllerReturnsSuccessResponseEntity(List<Slip> staffSlips) {
+    SlipsCollection staffSlipsCollection = new SlipsCollection(
+      Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
 
     when(circulationBffService.fetchSearchSlipsByServicePointId(anyString()))
-      .thenReturn(slipsCollection);
+      .thenReturn(staffSlipsCollection);
 
     ResponseEntity<SlipsCollection> actual = controller.getSearchSlips(StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
-    assertThat(actual.getBody(), is(slipsCollection));
+    assertThat(actual.getBody(), is(staffSlipsCollection));
   }
 
-  private static Stream<List<Slip>> slips() {
+  private static Stream<List<Slip>> staffSlips() {
     return Stream.of(null, Collections.emptyList(), List.of(new Slip()));
   }
 
