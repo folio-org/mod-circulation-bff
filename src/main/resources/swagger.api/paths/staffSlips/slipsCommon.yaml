@@ -6,7 +6,7 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '../../responses/slipsResponse.yaml'
+          $ref: '../../responses/staffSlipsResponse.yaml'
   '404':
     $ref: '../../responses/notFoundResponse.yaml'
   '422':

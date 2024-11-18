@@ -3,8 +3,8 @@
   "name": "Folio mod-circulation-bff module",
   "provides": [
     {
-      "id": "pick-slips",
-      "version": "1,0",
+      "id": "circulation-bff-pick-slips",
+      "version": "1.0",
       "handlers": [
         {
           "methods": [
@@ -15,14 +15,14 @@
             "circulation-bff.pick-slips.collection.get"
           ],
           "modulePermissions": [
-            "tlr.staff-slips.pick-slips.get",
+            "tlr.pick-slips.collection.get",
             "circulation.pick-slips.get"
           ]
         }
       ]
     },
     {
-      "id": "search-slips",
+      "id": "circulation-bff-search-slips",
       "version": "1.0",
       "handlers": [
         {
@@ -34,7 +34,7 @@
             "circulation-bff.search-slips.collection.get"
           ],
           "modulePermissions": [
-            "tlr.staff-slips.search-slips.get",
+            "tlr.search-slips.collection.get",
             "circulation.search-slips.get"
 
           ]

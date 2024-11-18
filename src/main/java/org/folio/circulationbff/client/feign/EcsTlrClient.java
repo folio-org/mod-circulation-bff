@@ -4,7 +4,7 @@ import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
-import org.folio.circulationbff.domain.dto.SlipsCollection;
+import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -27,8 +27,8 @@ public interface EcsTlrClient {
   EcsTlr createRequest(@RequestBody BffRequest request);
 
   @GetMapping("/pick-slips/{servicePointId}")
-  SlipsCollection getPickSlips(@PathVariable("servicePointId") String servicePointId);
+  StaffSlipsCollection getPickSlips(@PathVariable("servicePointId") String servicePointId);
 
   @GetMapping("/search-slips/{servicePointId}")
-  SlipsCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
+  StaffSlipsCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
 }

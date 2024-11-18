@@ -15,8 +15,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpStatus;
-import org.folio.circulationbff.domain.dto.Slip;
-import org.folio.circulationbff.domain.dto.SlipsCollection;
+import org.folio.circulationbff.domain.dto.StaffSlip;
+import org.folio.circulationbff.domain.dto.StaffSlipsCollection;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -51,7 +51,7 @@ class StaffSlipApiTest extends BaseIT{
 
     var tlrSettings = new TlrSettings();
     tlrSettings.setEcsTlrFeatureEnabled(isTlrEnabled);
-    var staffSlipsCollection = new SlipsCollection(1, List.of(new Slip()));
+    var staffSlipsCollection = new StaffSlipsCollection(1, List.of(new StaffSlip()));
     var servicePointId = UUID.randomUUID().toString();
     UrlPathPattern externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
       externalModuleUrl, servicePointId));
