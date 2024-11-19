@@ -1,5 +1,5 @@
 get:
-  description: API fro get search slips
+  description: API to get search slips
   operationId: getSearchSlips
   tags:
     - getSearchSlips
