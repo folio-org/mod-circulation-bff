@@ -20,19 +20,19 @@ public class UserTenantsServiceImpl implements UserTenantsService {
 
   @Override
   public boolean isCentralTenant() {
-    UserTenant firstUserTenant = getFirstUserTenantOrLogFailure();
+    UserTenant firstUserTenant = getFirstUserTenant();
     if (firstUserTenant == null) {
       return false;
     }
     String centralTenantId = firstUserTenant.getCentralTenantId();
     String tenantId = firstUserTenant.getTenantId();
-    log.info("isCentralTenant:: centralTenantId-{}, tenantId={}", centralTenantId,
+    log.info("isCentralTenant:: centralTenantId={}, tenantId={}", centralTenantId,
       tenantId);
 
     return centralTenantId.equals(tenantId);
   }
 
-  private UserTenant getFirstUserTenantOrLogFailure() {
+  private UserTenant getFirstUserTenant() {
     UserTenant firstUserTenant = findFirstUserTenant();
     if (firstUserTenant == null) {
       log.info("processUserGroupEvent: Failed to get user-tenants info");
@@ -42,7 +42,7 @@ public class UserTenantsServiceImpl implements UserTenantsService {
 
   @Override
   public boolean isCentralTenant(String tenantId) {
-    UserTenant firstUserTenant = getFirstUserTenantOrLogFailure();
+    UserTenant firstUserTenant = getFirstUserTenant();
     if (firstUserTenant == null) {
       return false;
     }
