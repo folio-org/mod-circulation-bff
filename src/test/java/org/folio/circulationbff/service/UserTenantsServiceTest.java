@@ -42,7 +42,8 @@ public class UserTenantsServiceTest {
   private static Stream<Arguments> userTenantCollectionToExpectedValue() {
     return Stream.of(
       Arguments.of(buildCollection(TENANT_ID), false),
-      Arguments.of(buildCollection(CENTRAL_TENANT_ID), true)
+      Arguments.of(buildCollection(CENTRAL_TENANT_ID), true),
+      Arguments.of(null, false)
     );
   }
 
