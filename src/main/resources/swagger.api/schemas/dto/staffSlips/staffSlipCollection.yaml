@@ -1,0 +1,13 @@
+description: Collection of staff slips
+type: object
+properties:
+  totalRecords:
+    type: integer
+    description: Total number of staff slips
+  staffSlips:
+    type: array
+    items:
+      $ref: "staffSlip.yaml"
+required:
+  - totalRecords
+  - staffSlips

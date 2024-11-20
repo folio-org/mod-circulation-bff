@@ -3,6 +3,44 @@
   "name": "Folio mod-circulation-bff module",
   "provides": [
     {
+      "id": "circulation-bff-pick-slips",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/pick-slips/{servicePointId}",
+          "permissionsRequired": [
+            "circulation-bff.pick-slips.collection.get"
+          ],
+          "modulePermissions": [
+            "tlr.pick-slips.collection.get",
+            "circulation.pick-slips.get"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "circulation-bff-search-slips",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/search-slips/{servicePointId}",
+          "permissionsRequired": [
+            "circulation-bff.search-slips.collection.get"
+          ],
+          "modulePermissions": [
+            "tlr.search-slips.collection.get",
+            "circulation.search-slips.get"
+          ]
+        }
+      ]
+    },
+    {
       "id": "circulation-bff-users",
       "version": "1.0",
       "handlers": [
@@ -110,6 +148,16 @@
   ],
   "permissionSets" : [
     {
+      "permissionName": "circulation-bff.pick-slips.collection.get",
+      "displayName": "circulation BFF - get pick slips by service point id",
+      "description": "get pick slips by service point id"
+    },
+    {
+      "permissionName":  "circulation-bff.search-slips.collection.get",
+      "displayName": "circulation BFF - get search slips by service point id",
+      "description": "get search slips by service point id"
+    },
+    {
       "permissionName": "circulation-bff.external-users.collection.get",
       "displayName": "circulation BFF - find users by externalSystemId in the specified tenant",
       "description": "get users by externalSystemId from the specified tenant"
@@ -136,6 +184,18 @@
     }
   ],
   "requires": [
+    {
+      "id": "tlr-staff-slips",
+      "version": "1.0"
+    },
+    {
+      "id": "pick-slips",
+      "version": "0.4"
+    },
+    {
+      "id": "search-slips",
+      "version": "0.1"
+    },
     {
       "id": "search",
       "version": "1.3"

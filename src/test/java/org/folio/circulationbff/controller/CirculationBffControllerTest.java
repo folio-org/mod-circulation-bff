@@ -13,14 +13,18 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.StaffSlip;
+import org.folio.circulationbff.domain.dto.StaffSlipCollection;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;
+import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
@@ -46,6 +50,9 @@ class CirculationBffControllerTest {
   @Mock
   private UserService userService;
 
+  @Mock
+  private CirculationBffService circulationBffService;
+
   @InjectMocks
   private CirculationBffController controller;
 
@@ -64,6 +71,40 @@ class CirculationBffControllerTest {
 
   static Stream<List<User>> externalUsersControllerReturnsTheSameUserCollectionAsUserService() {
     return Stream.of(null, Collections.emptyList(), List.of(new User()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("staffSlips")
+  void getPickSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
+    StaffSlipCollection staffSlipsCollection = new StaffSlipCollection(
+      Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
+
+    when(circulationBffService.fetchPickSlipsByServicePointId(anyString()))
+      .thenReturn(staffSlipsCollection);
+
+    ResponseEntity<StaffSlipCollection> actual = controller.getPickSlips(StringUtils.EMPTY);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(staffSlipsCollection));
+  }
+
+  @ParameterizedTest
+  @MethodSource("staffSlips")
+  void getSearchSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
+    StaffSlipCollection staffSlipsCollection = new StaffSlipCollection(
+      Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
+
+    when(circulationBffService.fetchSearchSlipsByServicePointId(anyString()))
+      .thenReturn(staffSlipsCollection);
+
+    ResponseEntity<StaffSlipCollection> actual = controller.getSearchSlips(StringUtils.EMPTY);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(staffSlipsCollection));
+  }
+
+  private static Stream<List<StaffSlip>> staffSlips() {
+    return Stream.of(null, Collections.emptyList(), List.of(new StaffSlip()));
   }
 
   @Test

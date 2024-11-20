@@ -19,10 +19,31 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   private final UserTenantsClient userTenantsClient;
 
   @Override
-  public boolean isCentralTenant(String tenantId) {
+  public boolean isCentralTenant() {
+    UserTenant firstUserTenant = getFirstUserTenant();
+    if (firstUserTenant == null) {
+      return false;
+    }
+    String centralTenantId = firstUserTenant.getCentralTenantId();
+    String tenantId = firstUserTenant.getTenantId();
+    log.info("isCentralTenant:: centralTenantId={}, tenantId={}", centralTenantId,
+      tenantId);
+
+    return centralTenantId.equals(tenantId);
+  }
+
+  private UserTenant getFirstUserTenant() {
     UserTenant firstUserTenant = findFirstUserTenant();
     if (firstUserTenant == null) {
       log.info("processUserGroupEvent: Failed to get user-tenants info");
+    }
+    return firstUserTenant;
+  }
+
+  @Override
+  public boolean isCentralTenant(String tenantId) {
+    UserTenant firstUserTenant = getFirstUserTenant();
+    if (firstUserTenant == null) {
       return false;
     }
     String centralTenantId = firstUserTenant.getCentralTenantId();

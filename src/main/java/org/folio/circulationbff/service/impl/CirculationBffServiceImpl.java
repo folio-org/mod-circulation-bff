@@ -7,6 +7,7 @@ import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.StaffSlipCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
@@ -24,6 +25,30 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final EcsTlrClient ecsTlrClient;
   private final SettingsService settingsService;
   private final UserTenantsService userTenantsService;
+
+  @Override
+  public StaffSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
+    log.info("fetchPickSlipsByServicePointId:: servicePointId: {}", servicePointId);
+    boolean isEcsTlrFeatureEnabled = settingsService.isEcsTlrFeatureEnabled();
+    log.info("fetchPickSlipsByServicePointId:: isEcsTlrFeatureEnabled: {}",
+      isEcsTlrFeatureEnabled);
+
+    return isEcsTlrFeatureEnabled
+      ? ecsTlrClient.getPickSlips(servicePointId)
+      : circulationClient.getPickSlips(servicePointId);
+  }
+
+  @Override
+  public StaffSlipCollection fetchSearchSlipsByServicePointId(String servicePointId) {
+    log.info("fetchSearchSlipsByServicePointId:: servicePointId: {}", servicePointId);
+    boolean isEcsTlrFeatureEnabled = settingsService.isEcsTlrFeatureEnabled();
+    log.info("fetchSearchSlipsByServicePointId:: isEcsTlrFeatureEnabled: {}",
+      isEcsTlrFeatureEnabled);
+
+    return isEcsTlrFeatureEnabled
+      ? ecsTlrClient.getSearchSlips(servicePointId)
+      : circulationClient.getSearchSlips(servicePointId);
+  }
 
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {

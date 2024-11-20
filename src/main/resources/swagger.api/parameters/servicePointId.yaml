@@ -1,0 +1,5 @@
+name: servicePointId
+in: path
+required: true
+schema:
+  type: string

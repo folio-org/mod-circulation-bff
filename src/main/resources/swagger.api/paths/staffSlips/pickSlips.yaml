@@ -1,0 +1,20 @@
+get:
+  description: API to get pick slips
+  operationId: getPickSlips
+  tags:
+    - getPickSlips
+  parameters:
+    - $ref: '../../parameters/servicePointId.yaml'
+  responses:
+    '200':
+      description: 'A collection of pick slips'
+      content:
+        application/json:
+          schema:
+            $ref: '../../responses/staffSlipsResponse.yaml'
+    '404':
+      $ref: '../../responses/notFoundResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'
