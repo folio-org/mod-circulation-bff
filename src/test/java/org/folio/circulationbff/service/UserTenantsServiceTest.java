@@ -45,7 +45,7 @@ class UserTenantsServiceTest {
       Arguments.of(buildCollection(TENANT_ID), false),
       Arguments.of(buildCollection(CENTRAL_TENANT_ID), true),
       Arguments.of(null, false),
-      Arguments.of(new UserTenantCollection(Collections.emptyList(), 0), false)
+      Arguments.of(new UserTenantCollection().addUserTenantsItem(null), false)
     );
   }
 
