@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -44,6 +43,7 @@ class UserTenantsServiceTest {
     return Stream.of(
       Arguments.of(buildCollection(TENANT_ID), false),
       Arguments.of(buildCollection(CENTRAL_TENANT_ID), true),
+      Arguments.of(buildCollection(null), false),
       Arguments.of(null, false),
       Arguments.of(new UserTenantCollection().addUserTenantsItem(null), false)
     );
