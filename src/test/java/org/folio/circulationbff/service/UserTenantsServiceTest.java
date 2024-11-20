@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -21,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class UserTenantsServiceTest {
+class UserTenantsServiceTest {
   private static final String CENTRAL_TENANT_ID = "consortium";
   private static final String TENANT_ID = "university";
 
@@ -43,7 +44,8 @@ public class UserTenantsServiceTest {
     return Stream.of(
       Arguments.of(buildCollection(TENANT_ID), false),
       Arguments.of(buildCollection(CENTRAL_TENANT_ID), true),
-      Arguments.of(null, false)
+      Arguments.of(null, false),
+      Arguments.of(new UserTenantCollection(Collections.emptyList(), 0), false)
     );
   }
 
