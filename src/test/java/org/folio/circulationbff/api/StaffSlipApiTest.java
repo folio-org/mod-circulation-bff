@@ -3,24 +3,33 @@ package org.folio.circulationbff.api;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.SERVICE_POINT_ID;
+import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildCirculationTlrSettingsResponse;
+import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildStaffSlipCollection;
+import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildUserTenantCollection;
+import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildTlrSettings;
+import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.isCentralTenantToIsTlrEnabledToUrlForStaffSLipsToCircBffUrl;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpStatus;
-import org.folio.circulationbff.domain.dto.StaffSlip;
+import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.StaffSlipCollection;
 import org.folio.circulationbff.domain.dto.TlrSettings;
+import org.folio.circulationbff.domain.dto.UserTenantCollection;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -29,55 +38,81 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
 import lombok.SneakyThrows;
 
-class StaffSlipApiTest extends BaseIT{
-  private static final String CIRCULATION_BFF_SEARCH_SLIPS_URL =
-    "/circulation-bff/search-slips/{servicePointId}";
-  private static final String CIRCULATION_BFF_PICK_SLIPS_URL =
-    "/circulation-bff/pick-slips/{servicePointId}";
-  private static final String TLR_SETTINGS_URL = "/tlr/settings";
-  private static final String CIRCULATION_SEARCH_SLIPS_URL =
-    "/circulation/search-slips";
-  private static final String CIRCULATION_PICK_SLIPS_URL =
-    "/circulation/pick-slips";
-  private static final String TLR_SEARCH_SLIPS_URL = "/tlr/search-slips";
-  private static final String TLR_PICK_SLIPS_URL = "/tlr/pick-slips";
+class StaffSlipApiTest extends BaseIT {
+
   private static final String URL_PATTERN = "%s/%s";
 
+  private static Stream<Arguments> testData() {
+    return isCentralTenantToIsTlrEnabledToUrlForStaffSLipsToCircBffUrl();
+  }
+
   @ParameterizedTest()
-  @MethodSource("urlToEcsTlrFeatureEnabled")
+  @MethodSource("testData")
   @SneakyThrows
-  void getStaffSlipsApiTest(String externalModuleUrl, String circulationBffUrl,
-    boolean isTlrEnabled) {
+  void getStaffSlipsApiTest(boolean isCentralTenant, boolean isTlrEnabled, String externalModuleUrl,
+    String circulationBffUrl) {
 
-    var tlrSettings = new TlrSettings();
-    tlrSettings.setEcsTlrFeatureEnabled(isTlrEnabled);
-    var staffSlipsCollection = new StaffSlipCollection(1, List.of(new StaffSlip()));
-    var servicePointId = UUID.randomUUID().toString();
+    var tenantId = isCentralTenant ? TENANT_ID_CONSORTIUM : TENANT_ID_COLLEGE;
+    StaffSlipCollection staffSlips = buildStaffSlipCollection();
+
     UrlPathPattern externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
-      externalModuleUrl, servicePointId));
+      externalModuleUrl, SERVICE_POINT_ID));
 
-    wireMockServer.stubFor(WireMock.get(externalModuleUrlPattern)
-      .willReturn(jsonResponse(staffSlipsCollection, HttpStatus.SC_OK)));
-
-    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
-
-    mockMvc.perform(get(circulationBffUrl, servicePointId)
-          .headers(defaultHeaders())
-          .contentType(MediaType.APPLICATION_JSON))
-      .andExpect(status().isOk())
-      .andExpect(content().json(Json.write(staffSlipsCollection)));
+    mockUserTenants(buildUserTenantCollection(tenantId), tenantId);
+    mockTleSettings(isCentralTenant, isTlrEnabled, tenantId);
+    mockStaffSlips(staffSlips, externalModuleUrlPattern, tenantId);
+    mockPerform(circulationBffUrl, staffSlips, tenantId);
 
     wireMockServer.verify(1, getRequestedFor(externalModuleUrlPattern));
   }
 
-  private static Stream<Arguments> urlToEcsTlrFeatureEnabled() {
-    return Stream.of(
-      Arguments.of(CIRCULATION_SEARCH_SLIPS_URL, CIRCULATION_BFF_SEARCH_SLIPS_URL, false),
-      Arguments.of(CIRCULATION_PICK_SLIPS_URL, CIRCULATION_BFF_PICK_SLIPS_URL, false),
-      Arguments.of(TLR_SEARCH_SLIPS_URL, CIRCULATION_BFF_SEARCH_SLIPS_URL, true),
-      Arguments.of(TLR_PICK_SLIPS_URL, CIRCULATION_BFF_PICK_SLIPS_URL, true)
-    );
+  @SneakyThrows
+  private void mockPerform(String circulationBffUrl, StaffSlipCollection staffSlips,
+    String tenantId) {
+
+    HttpHeaders httpHeaders = defaultHeaders();
+    httpHeaders.set(XOkapiHeaders.TENANT, tenantId);
+    mockMvc.perform(get(circulationBffUrl, SERVICE_POINT_ID)
+        .headers(httpHeaders)
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(Json.write(staffSlips)));
+  }
+
+  private void mockTleSettings(boolean isCentralTenant, boolean isTlrEnabled, String tenantId) {
+    if (isCentralTenant) {
+      mockEcsTlrSettings(buildTlrSettings(isTlrEnabled), tenantId);
+    } else {
+      mockEcsTlrCirculationSettings(buildCirculationTlrSettingsResponse(isTlrEnabled), tenantId);
+    }
+  }
+
+  private static void mockStaffSlips(StaffSlipCollection staffSlips, UrlPathPattern externalUrl,
+    String requesterTenantId) {
+    wireMockServer.stubFor(WireMock.get(externalUrl)
+      .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
+      .willReturn(jsonResponse(staffSlips, HttpStatus.SC_OK)));
+  }
+
+  private void mockUserTenants(UserTenantCollection userTenants, String requesterTenantId) {
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(USER_TENANTS_URL))
+      .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
+      .withQueryParam("limit", matching("\\d*"))
+      .willReturn(jsonResponse(asJsonString(userTenants), SC_OK)));
+  }
+
+  private void mockEcsTlrCirculationSettings(CirculationSettingsResponse response,
+    String requesterTenantId) {
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_SETTINGS_URL))
+      .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
+      .withQueryParam("query", equalTo("name=ecsTlrFeature"))
+      .willReturn(jsonResponse(asJsonString(response), SC_OK)));
+  }
+
+  private void mockEcsTlrSettings(TlrSettings tlrSettings, String requesterTenantId) {
+    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
+      .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
+      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
   }
 }

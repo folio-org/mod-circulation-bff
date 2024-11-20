@@ -34,9 +34,6 @@ import lombok.SneakyThrows;
 class CirculationBffRequestsApiTest extends BaseIT {
   private static final String ALLOWED_SERVICE_POINT_PATH = "/circulation-bff/requests/allowed" +
     "-service-points";
-  private static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
-  private static final String TLR_SETTINGS_URL = "/tlr/settings";
-  private static final String USER_TENANTS_URL = "/user-tenants";
   private static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
   private static final String CIRCULATION_ALLOWED_SERVICE_POINT_URL = "/circulation/requests" +
     "/allowed-service-points";
