@@ -4,10 +4,10 @@ properties:
   totalRecords:
     type: integer
     description: Total number of pick slips
-  staffSlips:
+  pickSlips:
     type: array
     items:
       $ref: "staffSlip.yaml"
 required:
   - totalRecords
-  - staffSlips
+  - pickSlips

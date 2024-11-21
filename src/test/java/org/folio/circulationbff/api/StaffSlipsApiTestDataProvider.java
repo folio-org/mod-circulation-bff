@@ -22,8 +22,8 @@ public class StaffSlipsApiTestDataProvider {
     "/circulation/search-slips";
   private static final String CIRCULATION_PICK_SLIPS_URL =
     "/circulation/pick-slips";
-  private static final String TLR_SEARCH_SLIPS_URL = "/tlr/search-slips";
-  private static final String TLR_PICK_SLIPS_URL = "/tlr/pick-slips";
+  private static final String TLR_SEARCH_SLIPS_URL = "/tlr/staff-slips/search-slips";
+  private static final String TLR_PICK_SLIPS_URL = "/tlr/staff-slips/pick-slips";
   public static final String CIRCULATION_BFF_SEARCH_SLIPS_URL =
     "/circulation-bff/search-slips/{servicePointId}";
 

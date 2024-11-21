@@ -4,10 +4,10 @@ properties:
   totalRecords:
     type: integer
     description: Total number of search slips
-  staffSlips:
+  searchSlips:
     type: array
     items:
       $ref: "staffSlip.yaml"
 required:
   - totalRecords
-  - staffSlips
+  - searchSlips

@@ -27,9 +27,9 @@ public interface EcsTlrClient {
   @PostMapping("/ecs-tlr")
   EcsTlr createRequest(@RequestBody BffRequest request);
 
-  @GetMapping("/pick-slips/{servicePointId}")
+  @GetMapping("/staff-slips/pick-slips/{servicePointId}")
   PickSlipCollection getPickSlips(@PathVariable("servicePointId") String servicePointId);
 
-  @GetMapping("/search-slips/{servicePointId}")
+  @GetMapping("/staff-slips/search-slips/{servicePointId}")
   SearchSlipCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
 }
