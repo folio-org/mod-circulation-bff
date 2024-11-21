@@ -26,8 +26,8 @@ public class StaffSlipsApiTestDataProvider {
     "/circulation/search-slips";
   private static final String CIRCULATION_PICK_SLIPS_URL =
     "/circulation/pick-slips";
-  private static final String TLR_SEARCH_SLIPS_URL = "/tlr/search-slips";
-  private static final String TLR_PICK_SLIPS_URL = "/tlr/pick-slips";
+  private static final String TLR_SEARCH_SLIPS_URL = "/tlr/staff-slips/search-slips";
+  private static final String TLR_PICK_SLIPS_URL = "/tlr/staff-slips/pick-slips";
   public static final String SERVICE_POINT_ID = UUID.randomUUID().toString();
 
   public static UserTenantCollection buildUserTenantCollection(String tenantId) {
