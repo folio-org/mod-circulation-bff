@@ -185,10 +185,6 @@
   ],
   "requires": [
     {
-      "id": "tlr-staff-slips",
-      "version": "1.0"
-    },
-    {
       "id": "pick-slips",
       "version": "0.4"
     },
@@ -235,6 +231,12 @@
     {
       "id":  "material-types",
       "version": "2.2"
+    }
+  ],
+  "optional": [
+    {
+      "id": "tlr-staff-slips",
+      "version": "1.0"
     }
   ],
   "launchDescriptor": {
