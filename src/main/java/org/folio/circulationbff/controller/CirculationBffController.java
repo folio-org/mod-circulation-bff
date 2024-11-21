@@ -12,8 +12,9 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
-import org.folio.circulationbff.domain.dto.StaffSlipCollection;
+import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
@@ -38,7 +39,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final UserService userService;
 
   @Override
-  public ResponseEntity<StaffSlipCollection> getPickSlips(String servicePointId) {
+  public ResponseEntity<PickSlipCollection> getPickSlips(String servicePointId) {
     log.info("getPickSlips:: servicePointId = {}", servicePointId);
 
     return ResponseEntity.status(HttpStatus.OK)
@@ -46,7 +47,7 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<StaffSlipCollection> getSearchSlips(String servicePointId) {
+  public ResponseEntity<SearchSlipCollection> getSearchSlips(String servicePointId) {
     log.info("getSearchSlips:: servicePointId = {}", servicePointId);
 
     return ResponseEntity.status(HttpStatus.OK).body(circulationBffService
