@@ -54,7 +54,7 @@ public class StaffSlipsApiTestDataProvider {
     return circulationSettingsResponse;
   }
 
-  public static Stream<Arguments> isCentralTenantToIsTlrEnabledToUrlForStaffSLipsPick() {
+  public static Stream<Arguments> pickSlipsTestData() {
     return Stream.of(
       Arguments.of(false, false, CIRCULATION_PICK_SLIPS_URL),
       Arguments.of(true, false, CIRCULATION_PICK_SLIPS_URL),
@@ -63,7 +63,7 @@ public class StaffSlipsApiTestDataProvider {
     );
   }
 
-  public static Stream<Arguments> isCentralTenantToIsTlrEnabledToUrlForStaffSLipsSearch() {
+  public static Stream<Arguments> searchSlipsTestData() {
     return Stream.of(
       Arguments.of(false, false, CIRCULATION_SEARCH_SLIPS_URL),
       Arguments.of(true, false, CIRCULATION_SEARCH_SLIPS_URL),

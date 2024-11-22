@@ -14,8 +14,6 @@ import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.SERVICE
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildCirculationTlrSettingsResponse;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildUserTenantCollection;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildTlrSettings;
-import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.isCentralTenantToIsTlrEnabledToUrlForStaffSLipsPick;
-import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.isCentralTenantToIsTlrEnabledToUrlForStaffSLipsSearch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,16 +45,16 @@ class StaffSlipApiTest extends BaseIT {
 
   private static final String URL_PATTERN = "%s/%s";
 
-  private static Stream<Arguments> testSearchSlipsData() {
-    return isCentralTenantToIsTlrEnabledToUrlForStaffSLipsSearch();
+  private static Stream<Arguments> searchSlipsTestData() {
+    return StaffSlipsApiTestDataProvider.searchSlipsTestData();
   }
 
-  private static Stream<Arguments> testPickSlipsData() {
-    return isCentralTenantToIsTlrEnabledToUrlForStaffSLipsPick();
+  private static Stream<Arguments> pickSlipsTestData() {
+    return StaffSlipsApiTestDataProvider.pickSlipsTestData();
   }
 
   @ParameterizedTest()
-  @MethodSource("testSearchSlipsData")
+  @MethodSource("searchSlipsTestData")
   @SneakyThrows
   void getSearchSlipsApiTest(boolean isCentralTenant, boolean isTlrEnabled,
     String externalModuleUrl) {
@@ -75,7 +73,7 @@ class StaffSlipApiTest extends BaseIT {
   }
 
   @ParameterizedTest()
-  @MethodSource("testPickSlipsData")
+  @MethodSource("pickSlipsTestData")
   @SneakyThrows
   void getPickSlipsApiTest(boolean isCentralTenant, boolean isTlrEnabled,
     String externalModuleUrl) {
