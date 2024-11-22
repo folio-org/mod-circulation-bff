@@ -16,7 +16,11 @@
           ],
           "modulePermissions": [
             "tlr.pick-slips.collection.get",
-            "circulation.pick-slips.get"
+            "tlr.settings.get",
+            "circulation.settings.item.get",
+            "circulation.settings.collection.get",
+            "circulation.pick-slips.get",
+            "user-tenants.collection.get"
           ]
         }
       ]
@@ -35,7 +39,11 @@
           ],
           "modulePermissions": [
             "tlr.search-slips.collection.get",
-            "circulation.search-slips.get"
+            "tlr.settings.get",
+            "circulation.settings.item.get",
+            "circulation.settings.collection.get",
+            "circulation.pick-slips.get",
+            "user-tenants.collection.get"
           ]
         }
       ]
