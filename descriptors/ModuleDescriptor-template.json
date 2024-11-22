@@ -42,7 +42,7 @@
             "tlr.settings.get",
             "circulation.settings.item.get",
             "circulation.settings.collection.get",
-            "circulation.pick-slips.get",
+            "circulation.search-slips.get",
             "user-tenants.collection.get"
           ]
         }
