@@ -93,7 +93,6 @@ class StaffSlipApiTest extends BaseIT {
 
   @SneakyThrows
   private void mockSearchSlipsPerform(SearchSlipCollection searchSlips, String tenantId) {
-
     HttpHeaders httpHeaders = defaultHeaders();
     httpHeaders.set(XOkapiHeaders.TENANT, tenantId);
     mockMvc.perform(get(CIRCULATION_BFF_SEARCH_SLIPS_URL, SERVICE_POINT_ID)
@@ -105,7 +104,6 @@ class StaffSlipApiTest extends BaseIT {
 
   @SneakyThrows
   private void mockPickPerform(PickSlipCollection pickSlips, String tenantId) {
-
     HttpHeaders httpHeaders = defaultHeaders();
     httpHeaders.set(XOkapiHeaders.TENANT, tenantId);
     mockMvc.perform(get(CIRCULATION_BFF_PICK_SLIPS_URL, SERVICE_POINT_ID)
@@ -117,6 +115,7 @@ class StaffSlipApiTest extends BaseIT {
 
   private static void mockSearchSlips(SearchSlipCollection searchSlips, UrlPathPattern externalUrl,
     String requesterTenantId) {
+
     wireMockServer.stubFor(WireMock.get(externalUrl)
       .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
       .willReturn(jsonResponse(searchSlips, HttpStatus.SC_OK)));
@@ -124,6 +123,7 @@ class StaffSlipApiTest extends BaseIT {
 
   private static void mockPickSlips(PickSlipCollection pickSlips, UrlPathPattern externalUrl,
     String requesterTenantId) {
+
     wireMockServer.stubFor(WireMock.get(externalUrl)
       .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
       .willReturn(jsonResponse(pickSlips, HttpStatus.SC_OK)));
