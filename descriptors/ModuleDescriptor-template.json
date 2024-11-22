@@ -209,6 +209,10 @@
       "version": "2.0"
     },
     {
+      "id": "user-tenants",
+      "version": "1.0"
+    },
+    {
       "id": "users",
       "version": "16.0"
     },
