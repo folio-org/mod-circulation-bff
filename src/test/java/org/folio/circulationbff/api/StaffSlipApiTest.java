@@ -11,7 +11,6 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.CIRCULATION_BFF_PICK_SLIPS_URL;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.CIRCULATION_BFF_SEARCH_SLIPS_URL;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.SERVICE_POINT_ID;
-import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildCirculationTlrSettingsResponse;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildUserTenantCollection;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildTlrSettings;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpStatus;
-import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.StaffSlip;
@@ -65,7 +63,7 @@ class StaffSlipApiTest extends BaseIT {
       externalModuleUrl, SERVICE_POINT_ID));
 
     mockUserTenants(buildUserTenantCollection(tenantId), tenantId);
-    mockTlrSettings(isCentralTenant, isTlrEnabled, tenantId);
+    mockEcsTlrSettings(buildTlrSettings(isTlrEnabled), tenantId);
     mockSearchSlips(searchSlips, externalModuleUrlPattern, tenantId);
     mockSearchSlipsPerform(searchSlips, tenantId);
 
@@ -84,7 +82,7 @@ class StaffSlipApiTest extends BaseIT {
       externalModuleUrl, SERVICE_POINT_ID));
 
     mockUserTenants(buildUserTenantCollection(tenantId), tenantId);
-    mockTlrSettings(isCentralTenant, isTlrEnabled, tenantId);
+    mockEcsTlrSettings(buildTlrSettings(isTlrEnabled), tenantId);
     mockPickSlips(pickSlips, externalModuleUrlPattern, tenantId);
     mockPickPerform(pickSlips, tenantId);
 
@@ -134,23 +132,6 @@ class StaffSlipApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
       .withQueryParam("limit", matching("\\d*"))
       .willReturn(jsonResponse(asJsonString(userTenants), SC_OK)));
-  }
-
-  private void mockTlrSettings(boolean isCentralTenant, boolean isTlrEnabled, String tenantId) {
-    if (isCentralTenant) {
-      mockEcsTlrSettings(buildTlrSettings(isTlrEnabled), tenantId);
-    } else {
-      mockEcsTlrCirculationSettings(buildCirculationTlrSettingsResponse(isTlrEnabled), tenantId);
-    }
-  }
-
-  private void mockEcsTlrCirculationSettings(CirculationSettingsResponse response,
-    String requesterTenantId) {
-
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_SETTINGS_URL))
-      .withHeader(HEADER_TENANT, equalTo(requesterTenantId))
-      .withQueryParam("query", equalTo("name=ecsTlrFeature"))
-      .willReturn(jsonResponse(asJsonString(response), SC_OK)));
   }
 
   private void mockEcsTlrSettings(TlrSettings tlrSettings, String requesterTenantId) {
