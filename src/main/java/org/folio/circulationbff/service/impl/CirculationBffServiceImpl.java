@@ -43,16 +43,6 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       : circulationClient.getSearchSlips(servicePointId);
   }
 
-  private boolean shouldFetchStaffSlipsFromModTlr() {
-    boolean isCentralTenant = userTenantsService.isCentralTenant();
-    boolean ecsTlrFeatureIsEnabledInModTlr = false;
-    if (isCentralTenant) {
-      ecsTlrFeatureIsEnabledInModTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    }
-    log.info("shouldFetchStaffSlipsFromModTlr:: {}", ecsTlrFeatureIsEnabledInModTlr);
-    return ecsTlrFeatureIsEnabledInModTlr;
-  }
-
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
     log.info("getAllowedServicePoints:: params: {}", params);
@@ -78,5 +68,15 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       log.info("createRequest:: Ecs TLR Feature is disabled. Creating circulation request");
       return circulationClient.createRequest(request);
     }
+  }
+
+  private boolean shouldFetchStaffSlipsFromModTlr() {
+    boolean isCentralTenant = userTenantsService.isCentralTenant();
+    boolean ecsTlrFeatureIsEnabledInModTlr = false;
+    if (isCentralTenant) {
+      ecsTlrFeatureIsEnabledInModTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    }
+    log.info("shouldFetchStaffSlipsFromModTlr:: {}", ecsTlrFeatureIsEnabledInModTlr);
+    return ecsTlrFeatureIsEnabledInModTlr;
   }
 }
