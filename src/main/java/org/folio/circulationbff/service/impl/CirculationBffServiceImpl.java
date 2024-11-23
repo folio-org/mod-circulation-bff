@@ -11,6 +11,7 @@ import org.folio.circulationbff.domain.dto.StaffSlipCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final EcsTlrClient ecsTlrClient;
   private final SettingsService settingsService;
   private final UserTenantsService userTenantsService;
+  private final SystemUserScopedExecutionService executionService;
 
   @Override
   public StaffSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
@@ -53,10 +55,17 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
     log.info("getAllowedServicePoints:: params: {}", params);
-    if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
-      log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. Getting allowed service " +
-        "points from mod-tlr module");
-      return ecsTlrClient.getAllowedServicePoints(params);
+    if (settingsService.isEcsTlrFeatureEnabled()) {
+      if (userTenantsService.isCentralTenant()) {
+        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
+          "Getting allowed service points from local mod-tlr");
+        return ecsTlrClient.getAllowedServicePoints(params);
+      } else {
+        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
+          "Getting allowed service points from central mod-tlr");
+        return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
+          () -> ecsTlrClient.getAllowedServicePoints(params));
+      }
     } else {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +
         "points from mod-circulation module");
