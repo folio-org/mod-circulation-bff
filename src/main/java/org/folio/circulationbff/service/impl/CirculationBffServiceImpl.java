@@ -30,8 +30,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public PickSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
     log.info("fetchPickSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    boolean isCentralTenant = userTenantsService.isCentralTenant();
-    return  isCentralTenant && ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled()
+    return shouldFetchStaffSlipsFromModTlr()
       ? ecsTlrClient.getPickSlips(servicePointId)
       : circulationClient.getPickSlips(servicePointId);
   }
@@ -39,10 +38,19 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public SearchSlipCollection fetchSearchSlipsByServicePointId(String servicePointId) {
     log.info("fetchSearchSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    boolean isCentralTenant = userTenantsService.isCentralTenant();
-    return  isCentralTenant && ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled()
+    return shouldFetchStaffSlipsFromModTlr()
       ? ecsTlrClient.getSearchSlips(servicePointId)
       : circulationClient.getSearchSlips(servicePointId);
+  }
+
+  private boolean shouldFetchStaffSlipsFromModTlr() {
+    boolean isCentralTenant = userTenantsService.isCentralTenant();
+    boolean ecsTlrFeatureIsEnabledInModTlr = false;
+    if (isCentralTenant) {
+      ecsTlrFeatureIsEnabledInModTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    }
+    log.info("shouldFetchStaffSlipsFromModTlr:: {}", ecsTlrFeatureIsEnabledInModTlr);
+    return ecsTlrFeatureIsEnabledInModTlr;
   }
 
   @Override
