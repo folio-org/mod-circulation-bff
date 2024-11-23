@@ -57,18 +57,18 @@ public class StaffSlipsApiTestDataProvider {
   public static Stream<Arguments> pickSlipsTestData() {
     return Stream.of(
       Arguments.of(false, false, CIRCULATION_PICK_SLIPS_URL),
-      Arguments.of(true, false, CIRCULATION_PICK_SLIPS_URL),
-      Arguments.of(false, true, TLR_PICK_SLIPS_URL),
-      Arguments.of(true, true, TLR_PICK_SLIPS_URL)
+      Arguments.of(false, true, CIRCULATION_PICK_SLIPS_URL),
+      Arguments.of(true, true, TLR_PICK_SLIPS_URL),
+      Arguments.of(true, false, CIRCULATION_PICK_SLIPS_URL)
     );
   }
 
   public static Stream<Arguments> searchSlipsTestData() {
     return Stream.of(
       Arguments.of(false, false, CIRCULATION_SEARCH_SLIPS_URL),
-      Arguments.of(true, false, CIRCULATION_SEARCH_SLIPS_URL),
-      Arguments.of(false, true, TLR_SEARCH_SLIPS_URL),
-      Arguments.of(true, true, TLR_SEARCH_SLIPS_URL)
+      Arguments.of(false, true, CIRCULATION_SEARCH_SLIPS_URL),
+      Arguments.of(true, true, TLR_SEARCH_SLIPS_URL),
+      Arguments.of(true, false, CIRCULATION_SEARCH_SLIPS_URL)
     );
   }
 }
