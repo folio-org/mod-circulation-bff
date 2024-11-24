@@ -30,17 +30,33 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public PickSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
     log.info("fetchPickSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    return shouldFetchStaffSlipsFromModTlr()
-      ? ecsTlrClient.getPickSlips(servicePointId)
-      : circulationClient.getPickSlips(servicePointId);
+    PickSlipCollection pickSlips = null;
+    if(shouldFetchStaffSlipsFromModTlr()) {
+      log.info("fetchPickSlipsByServicePointId:: BEFORE TLR CLIENT client; pickSlips: {}", pickSlips);
+      pickSlips = ecsTlrClient.getPickSlips(servicePointId);
+      log.info("fetchPickSlipsByServicePointId:: AFTER TLR CLIENT client; pickSlips: {}", pickSlips);
+    } else {
+      log.info("fetchPickSlipsByServicePointId:: BEFORE CIRCULATION CLIENT client; pickSlips: {}", pickSlips);
+      pickSlips = ecsTlrClient.getPickSlips(servicePointId);
+      log.info("fetchPickSlipsByServicePointId:: AFTER CIRCULATION CLIENT client; pickSlips: {}", pickSlips);
+    }
+    return pickSlips;
   }
 
   @Override
   public SearchSlipCollection fetchSearchSlipsByServicePointId(String servicePointId) {
     log.info("fetchSearchSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    return shouldFetchStaffSlipsFromModTlr()
-      ? ecsTlrClient.getSearchSlips(servicePointId)
-      : circulationClient.getSearchSlips(servicePointId);
+    SearchSlipCollection searchSlips = null;
+    if(shouldFetchStaffSlipsFromModTlr()) {
+      log.info("fetchSearchSlipsByServicePointId:: BEFORE TLR CLIENT client; searchSlips: {}", searchSlips);
+      searchSlips = ecsTlrClient.getSearchSlips(servicePointId);
+      log.info("fetchSearchSlipsByServicePointId:: AFTER TLR CLIENT client; searchSlips: {}", searchSlips);
+    } else {
+      log.info("fetchSearchSlipsByServicePointId:: BEFORE CIRCULATION CLIENT client; searchSlips: {}", searchSlips);
+      searchSlips = ecsTlrClient.getSearchSlips(servicePointId);
+      log.info("fetchSearchSlipsByServicePointId:: AFTER CIRCULATION CLIENT client; searchSlips: {}", searchSlips);
+    }
+    return searchSlips;
   }
 
   @Override
