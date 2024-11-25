@@ -48,8 +48,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
     log.info("getAllowedServicePoints:: params: {}", params);
-    String centralTenantId = userTenantsService.getCentralTenant();
-    if (settingsService.isEcsTlrFeatureEnabled(centralTenantId)) {
+    if (settingsService.isEcsTlrFeatureEnabled()) {
       if (userTenantsService.isCentralTenant()) {
         log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
           "Getting allowed service points from local mod-tlr");
@@ -57,7 +56,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       } else {
         log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
           "Getting allowed service points from central mod-tlr");
-        return executionService.executeSystemUserScoped(centralTenantId,
+        return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
           () -> ecsTlrClient.getAllowedServicePoints(params));
       }
     } else {
