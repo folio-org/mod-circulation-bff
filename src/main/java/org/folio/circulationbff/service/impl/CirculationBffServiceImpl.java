@@ -37,7 +37,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       log.info("fetchPickSlipsByServicePointId:: AFTER TLR CLIENT client; pickSlips: {}", pickSlips);
     } else {
       log.info("fetchPickSlipsByServicePointId:: BEFORE CIRCULATION CLIENT client; pickSlips: {}", pickSlips);
-      pickSlips = ecsTlrClient.getPickSlips(servicePointId);
+      pickSlips = circulationClient.getPickSlips(servicePointId);
       log.info("fetchPickSlipsByServicePointId:: AFTER CIRCULATION CLIENT client; pickSlips: {}", pickSlips);
     }
     return pickSlips;
@@ -53,7 +53,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       log.info("fetchSearchSlipsByServicePointId:: AFTER TLR CLIENT client; searchSlips: {}", searchSlips);
     } else {
       log.info("fetchSearchSlipsByServicePointId:: BEFORE CIRCULATION CLIENT client; searchSlips: {}", searchSlips);
-      searchSlips = ecsTlrClient.getSearchSlips(servicePointId);
+      searchSlips = circulationClient.getSearchSlips(servicePointId);
       log.info("fetchSearchSlipsByServicePointId:: AFTER CIRCULATION CLIENT client; searchSlips: {}", searchSlips);
     }
     return searchSlips;
