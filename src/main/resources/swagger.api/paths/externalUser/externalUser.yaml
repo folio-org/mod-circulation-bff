@@ -1,0 +1,21 @@
+get:
+  description: Find users by externalSystemId in the specified tenant
+  operationId: getExternalUsers
+  tags:
+    - getExternalUsers
+  parameters:
+    - $ref: '../../parameters/externalUserId.yaml'
+    - $ref: '../../parameters/tenantId.yaml'
+  responses:
+    '200':
+      description: 'Collection of users found by externalSystemId in the specified tenant'
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/response/userCollection.json'
+    '404':
+      $ref: '../../responses/notFoundResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'

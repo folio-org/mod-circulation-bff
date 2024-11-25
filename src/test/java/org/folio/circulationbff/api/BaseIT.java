@@ -44,6 +44,9 @@ import lombok.SneakyThrows;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class BaseIT {
+  protected static final String USER_TENANTS_URL = "/user-tenants";
+  protected static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
+  protected static final String TLR_SETTINGS_URL = "/tlr/settings";
   protected static final String HEADER_TENANT = "x-okapi-tenant";
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";

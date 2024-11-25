@@ -12,11 +12,15 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.SearchSlipCollection;
+import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +36,32 @@ public class CirculationBffController implements CirculationBffApi {
   private final CirculationBffService circulationBffService;
   private final SearchService searchService;
   private final MediatedRequestsService mediatedRequestsService;
+  private final UserService userService;
+
+  @Override
+  public ResponseEntity<PickSlipCollection> getPickSlips(String servicePointId) {
+    log.info("getPickSlips:: servicePointId = {}", servicePointId);
+
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(circulationBffService.fetchPickSlipsByServicePointId(servicePointId));
+  }
+
+  @Override
+  public ResponseEntity<SearchSlipCollection> getSearchSlips(String servicePointId) {
+    log.info("getSearchSlips:: servicePointId = {}", servicePointId);
+
+    return ResponseEntity.status(HttpStatus.OK).body(circulationBffService
+      .fetchSearchSlipsByServicePointId(servicePointId));
+  }
+
+  @Override
+  public ResponseEntity<UserCollection> getExternalUsers(String externalUserId, String tenantId) {
+    log.info("getExternalUser:: externalUserId = {}, tenantId = {}", externalUserId,
+      tenantId);
+
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(userService.getExternalUser(externalUserId, tenantId));
+  }
 
   @Override
   public ResponseEntity<AllowedServicePoints> circulationBffRequestsAllowedServicePointsGet(

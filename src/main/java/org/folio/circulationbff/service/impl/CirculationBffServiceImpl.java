@@ -6,7 +6,9 @@ import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
@@ -24,6 +26,22 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final EcsTlrClient ecsTlrClient;
   private final SettingsService settingsService;
   private final UserTenantsService userTenantsService;
+
+  @Override
+  public PickSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
+    log.info("fetchPickSlipsByServicePointId:: servicePointId: {}", servicePointId);
+    return shouldFetchStaffSlipsFromTlr()
+      ? ecsTlrClient.getPickSlips(servicePointId)
+      : circulationClient.getPickSlips(servicePointId);
+  }
+
+  @Override
+  public SearchSlipCollection fetchSearchSlipsByServicePointId(String servicePointId) {
+    log.info("fetchSearchSlipsByServicePointId:: servicePointId: {}", servicePointId);
+    return shouldFetchStaffSlipsFromTlr()
+      ? ecsTlrClient.getSearchSlips(servicePointId)
+      : circulationClient.getSearchSlips(servicePointId);
+  }
 
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
@@ -50,5 +68,15 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       log.info("createRequest:: Ecs TLR Feature is disabled. Creating circulation request");
       return circulationClient.createRequest(request);
     }
+  }
+
+  private boolean shouldFetchStaffSlipsFromTlr() {
+    boolean isCentralTenant = userTenantsService.isCentralTenant();
+    boolean ecsTlrFeatureIsEnabledInTlr = false;
+    if (isCentralTenant) {
+      ecsTlrFeatureIsEnabledInTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    }
+    log.info("shouldFetchStaffSlipsFromTlr:: {}", ecsTlrFeatureIsEnabledInTlr);
+    return ecsTlrFeatureIsEnabledInTlr;
   }
 }

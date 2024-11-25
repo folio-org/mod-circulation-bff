@@ -1,0 +1,13 @@
+description: Collection of pick slips
+type: object
+properties:
+  totalRecords:
+    type: integer
+    description: Total number of pick slips
+  pickSlips:
+    type: array
+    items:
+      $ref: "staffSlip.yaml"
+required:
+  - totalRecords
+  - pickSlips
