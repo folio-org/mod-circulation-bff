@@ -1,10 +1,12 @@
 package org.folio.circulationbff.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.folio.circulationbff.client.feign.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
+import org.folio.circulationbff.exception.UserTenantException;
 import org.folio.circulationbff.service.UserTenantsService;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,17 @@ import lombok.extern.log4j.Log4j2;
 public class UserTenantsServiceImpl implements UserTenantsService {
 
   private final UserTenantsClient userTenantsClient;
+
+  @Override
+  public String getCentralTenantId() {
+    UserTenant firstUserTenant = findFirstUserTenant();
+    if (Objects.isNull(firstUserTenant)) {
+      String errorMessage = "None user hasn't been found";
+      log.error("getCentralTenantId:: {}", errorMessage);
+      throw new UserTenantException(errorMessage);
+    }
+    return firstUserTenant.getCentralTenantId();
+  }
 
   @Override
   public boolean isCentralTenant() {

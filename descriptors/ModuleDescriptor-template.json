@@ -11,7 +11,7 @@
           "pathPattern": "/circulation-bff/create-ecs-request-external",
           "permissionsRequired": ["circulation-bff.ecs-request-external.post"],
           "modulePermissions": [
-            "tlr.ecs-tlr-allowed-service-points.get",
+            "tlr.ecs-request-external.post",
             "user-tenants.collection.get"
           ]
         }

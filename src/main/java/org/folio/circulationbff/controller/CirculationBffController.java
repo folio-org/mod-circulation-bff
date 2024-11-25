@@ -10,6 +10,8 @@ import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
+import org.folio.circulationbff.domain.dto.EcsRequestExternal;
+import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
@@ -18,6 +20,7 @@ import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CirculationBffService;
+import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
@@ -37,6 +40,14 @@ public class CirculationBffController implements CirculationBffApi {
   private final SearchService searchService;
   private final MediatedRequestsService mediatedRequestsService;
   private final UserService userService;
+  private final EcsRequestExternalService ecsRequestExternalService;
+
+  @Override
+  public ResponseEntity<EcsTlr> postEcsRequestExternal(EcsRequestExternal request) {
+    log.info("postEcsRequestExternal:: parameters ecsRequestExternal: {}", request);
+    return ResponseEntity.status(HttpStatus.OK)
+      .body(ecsRequestExternalService.createEcsRequestExternal(request));
+  }
 
   @Override
   public ResponseEntity<PickSlipCollection> getPickSlips(String servicePointId) {
