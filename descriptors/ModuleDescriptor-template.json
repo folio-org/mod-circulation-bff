@@ -12,6 +12,7 @@
           "permissionsRequired": ["circulation-bff.ecs-request-external.post"],
           "modulePermissions": [
             "tlr.ecs-tlr-allowed-service-points.get",
+            "user-tenants.collection.get"
           ]
         }
       ]
@@ -161,6 +162,11 @@
     }
   ],
   "permissionSets" : [
+    {
+      "permissionName": "circulation-bff.ecs-request-external.post",
+      "displayName": "circulation BFF - create ecs external request",
+      "description": "create ecs external request"
+    },
     {
       "permissionName": "circulation-bff.pick-slips.collection.get",
       "displayName": "circulation BFF - get pick slips by service point id",
