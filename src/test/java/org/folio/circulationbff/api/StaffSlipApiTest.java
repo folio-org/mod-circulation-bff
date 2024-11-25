@@ -84,7 +84,7 @@ class StaffSlipApiTest extends BaseIT {
     mockUserTenants(buildUserTenantCollection(tenantId), tenantId);
     mockEcsTlrSettings(buildTlrSettings(isTlrEnabled), tenantId);
     mockPickSlips(pickSlips, externalModuleUrlPattern, tenantId);
-    mockPickPerform(pickSlips, tenantId);
+    mockPickSlipsPerform(pickSlips, tenantId);
 
     wireMockServer.verify(1, getRequestedFor(externalModuleUrlPattern));
   }
@@ -101,7 +101,7 @@ class StaffSlipApiTest extends BaseIT {
   }
 
   @SneakyThrows
-  private void mockPickPerform(PickSlipCollection pickSlips, String tenantId) {
+  private void mockPickSlipsPerform(PickSlipCollection pickSlips, String tenantId) {
     HttpHeaders httpHeaders = defaultHeaders();
     httpHeaders.set(XOkapiHeaders.TENANT, tenantId);
     mockMvc.perform(get(CIRCULATION_BFF_PICK_SLIPS_URL, SERVICE_POINT_ID)
