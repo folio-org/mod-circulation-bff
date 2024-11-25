@@ -19,9 +19,22 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   private final UserTenantsClient userTenantsClient;
 
   @Override
+  public String getCentralTenant() {
+    UserTenant firstUserTenant = getFirstUserTenant();
+    if (firstUserTenant == null) {
+      log.info("getCentralTenant:: failed to fetch user tenants");
+      return null;
+    }
+    String centralTenantId = firstUserTenant.getCentralTenantId();
+    log.info("getCentralTenant:: centralTenantId={}", centralTenantId);
+    return centralTenantId;
+  }
+
+  @Override
   public boolean isCentralTenant() {
     UserTenant firstUserTenant = getFirstUserTenant();
     if (firstUserTenant == null) {
+      log.info("isCentralTenant:: failed to fetch user tenants");
       return false;
     }
     String centralTenantId = firstUserTenant.getCentralTenantId();
