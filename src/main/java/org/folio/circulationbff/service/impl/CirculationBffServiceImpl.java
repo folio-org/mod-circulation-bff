@@ -72,11 +72,11 @@ public class CirculationBffServiceImpl implements CirculationBffService {
 
   private boolean shouldFetchStaffSlipsFromTlr() {
     boolean isCentralTenant = userTenantsService.isCentralTenant();
-    boolean ecsTlrFeatureIsEnabledInModTlr = false;
+    boolean ecsTlrFeatureIsEnabledInTlr = false;
     if (isCentralTenant) {
-      ecsTlrFeatureIsEnabledInModTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+      ecsTlrFeatureIsEnabledInTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     }
-    log.info("shouldFetchStaffSlipsFromTlr:: {}", ecsTlrFeatureIsEnabledInModTlr);
-    return ecsTlrFeatureIsEnabledInModTlr;
+    log.info("shouldFetchStaffSlipsFromTlr:: {}", ecsTlrFeatureIsEnabledInTlr);
+    return ecsTlrFeatureIsEnabledInTlr;
   }
 }
