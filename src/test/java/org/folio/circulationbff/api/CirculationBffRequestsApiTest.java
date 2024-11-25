@@ -40,7 +40,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void callsModTlrWhenEcsTlrEnabledInCentralTenant() {
+  void callsTlrWhenEcsTlrEnabledInCentralTenant() {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
