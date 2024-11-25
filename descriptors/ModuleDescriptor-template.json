@@ -17,8 +17,6 @@
           "modulePermissions": [
             "tlr.pick-slips.collection.get",
             "tlr.settings.get",
-            "circulation.settings.item.get",
-            "circulation.settings.collection.get",
             "circulation.pick-slips.get",
             "user-tenants.collection.get"
           ]
@@ -40,8 +38,6 @@
           "modulePermissions": [
             "tlr.search-slips.collection.get",
             "tlr.settings.get",
-            "circulation.settings.item.get",
-            "circulation.settings.collection.get",
             "circulation.search-slips.get",
             "user-tenants.collection.get"
           ]

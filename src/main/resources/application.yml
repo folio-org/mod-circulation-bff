@@ -33,6 +33,10 @@ folio:
     password: ${SYSTEM_USER_PASSWORD:mod-circulation-bff}
     lastname: System
     permissionsFilePath: permissions/mod-circulation-bff.csv
+  logging:
+    feign:
+      enabled: true
+      level: full
 management:
   endpoints:
     web:
