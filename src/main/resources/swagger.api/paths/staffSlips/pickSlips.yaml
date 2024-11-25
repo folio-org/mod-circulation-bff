@@ -11,7 +11,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../responses/staffSlipsResponse.yaml'
+            $ref: '../../schemas/dto/staffSlips/pickSlipCollection.yaml'
     '404':
       $ref: '../../responses/notFoundResponse.yaml'
     '422':

@@ -16,7 +16,9 @@
           ],
           "modulePermissions": [
             "tlr.pick-slips.collection.get",
-            "circulation.pick-slips.get"
+            "tlr.settings.get",
+            "circulation.pick-slips.get",
+            "user-tenants.collection.get"
           ]
         }
       ]
@@ -35,7 +37,9 @@
           ],
           "modulePermissions": [
             "tlr.search-slips.collection.get",
-            "circulation.search-slips.get"
+            "tlr.settings.get",
+            "circulation.search-slips.get",
+            "user-tenants.collection.get"
           ]
         }
       ]
@@ -199,6 +203,10 @@
     {
       "id": "requests-mediated",
       "version": "2.0"
+    },
+    {
+      "id": "user-tenants",
+      "version": "1.0"
     },
     {
       "id": "users",
