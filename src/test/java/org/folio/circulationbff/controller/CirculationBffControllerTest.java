@@ -20,8 +20,9 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.PickSlipCollection;
+import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.StaffSlip;
-import org.folio.circulationbff.domain.dto.StaffSlipCollection;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.service.CirculationBffService;
@@ -76,31 +77,31 @@ class CirculationBffControllerTest {
   @ParameterizedTest
   @MethodSource("staffSlips")
   void getPickSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
-    StaffSlipCollection staffSlipsCollection = new StaffSlipCollection(
+    PickSlipCollection pickSlipsCollection = new PickSlipCollection(
       Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
 
     when(circulationBffService.fetchPickSlipsByServicePointId(anyString()))
-      .thenReturn(staffSlipsCollection);
+      .thenReturn(pickSlipsCollection);
 
-    ResponseEntity<StaffSlipCollection> actual = controller.getPickSlips(StringUtils.EMPTY);
+    ResponseEntity<PickSlipCollection> actual = controller.getPickSlips(StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
-    assertThat(actual.getBody(), is(staffSlipsCollection));
+    assertThat(actual.getBody(), is(pickSlipsCollection));
   }
 
   @ParameterizedTest
   @MethodSource("staffSlips")
   void getSearchSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
-    StaffSlipCollection staffSlipsCollection = new StaffSlipCollection(
+    SearchSlipCollection searchSlipCollection = new SearchSlipCollection(
       Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
 
     when(circulationBffService.fetchSearchSlipsByServicePointId(anyString()))
-      .thenReturn(staffSlipsCollection);
+      .thenReturn(searchSlipCollection);
 
-    ResponseEntity<StaffSlipCollection> actual = controller.getSearchSlips(StringUtils.EMPTY);
+    ResponseEntity<SearchSlipCollection> actual = controller.getSearchSlips(StringUtils.EMPTY);
 
     assertThat(actual.getStatusCode(), is(HttpStatus.OK));
-    assertThat(actual.getBody(), is(staffSlipsCollection));
+    assertThat(actual.getBody(), is(searchSlipCollection));
   }
 
   private static Stream<List<StaffSlip>> staffSlips() {
