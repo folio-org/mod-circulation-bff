@@ -3,6 +3,20 @@
   "name": "Folio mod-circulation-bff module",
   "provides": [
     {
+      "id": "circulation-bff-ecs-request-external",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": ["POST"],
+          "pathPattern": "/circulation-bff/create-ecs-request-external",
+          "permissionsRequired": ["circulation-bff.ecs-request-external.post"],
+          "modulePermissions": [
+            "tlr.ecs-tlr-allowed-service-points.get",
+          ]
+        }
+      ]
+    },
+    {
       "id": "circulation-bff-pick-slips",
       "version": "1.0",
       "handlers": [
@@ -203,6 +217,10 @@
     {
       "id": "users",
       "version": "16.0"
+    },
+    {
+      "id": "user-tenants",
+      "version": "1.0"
     },
     {
       "id": "login",
