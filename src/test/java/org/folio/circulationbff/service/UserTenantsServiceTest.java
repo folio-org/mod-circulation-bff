@@ -2,6 +2,7 @@ package org.folio.circulationbff.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +12,9 @@ import java.util.stream.Stream;
 import org.folio.circulationbff.client.feign.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
+import org.folio.circulationbff.exception.UserTenantException;
 import org.folio.circulationbff.service.impl.UserTenantsServiceImpl;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -38,6 +41,23 @@ class UserTenantsServiceTest {
 
     assertThat(userTenantsService.isCentralTenant(), equalTo(expectedValue));
   }
+
+  @Test
+  void getCentralTenantIdTest() {
+    when(userTenantsClient.getUserTenants(anyInt())).thenReturn(new UserTenantCollection()
+      .addUserTenantsItem(new UserTenant().centralTenantId(CENTRAL_TENANT_ID)));
+
+    assertThat(userTenantsService.getCentralTenantId(), equalTo(CENTRAL_TENANT_ID));
+  }
+
+  @Test
+  void getCentralTenantIdShouldThrowUserTenantExceptionTest() {
+    when(userTenantsClient.getUserTenants(anyInt())).thenReturn(new UserTenantCollection()
+      .addUserTenantsItem(null));
+
+    assertThrows(UserTenantException.class, () -> userTenantsService.getCentralTenantId());
+  }
+
 
   private static Stream<Arguments> userTenantCollectionToExpectedValue() {
     return Stream.of(
