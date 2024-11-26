@@ -40,7 +40,50 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void callsModTlrWhenEcsTlrEnabledInCentralTenant() {
+  void callsCirculationWhenEcsTlrDisabled() {
+    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    mockUserTenants(userTenant, TENANT_ID_COLLEGE);
+    mockEcsTlrCirculationSettings(false);
+
+    var allowedSpResponseConsortium = new AllowedServicePoints();
+    allowedSpResponseConsortium.setHold(Set.of(
+      buildAllowedServicePoint("SP_consortium_1"),
+      buildAllowedServicePoint("SP_consortium_2")));
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
+
+    var operation = "create";
+    var instanceId = UUID.randomUUID();
+    var requestId = UUID.randomUUID();
+    var patronGroupId = UUID.randomUUID();
+
+    mockMvc.perform(
+      get(ALLOWED_SERVICE_POINT_PATH)
+        .queryParam("operation", "create")
+        .queryParam("requestId", requestId.toString())
+        .queryParam("instanceId", instanceId.toString())
+        .queryParam("patronGroupId", patronGroupId.toString())
+        .headers(buildHeaders(TENANT_ID_COLLEGE))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.Page").doesNotExist())
+      .andExpect(jsonPath("$.Hold").exists())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
+      .andExpect(jsonPath("$.Hold[*].name", containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
+
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(
+      CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      .withQueryParam("requestId", equalTo(requestId.toString()))
+      .withQueryParam("instanceId", equalTo(instanceId.toString()))
+      .withQueryParam("operation", equalTo(operation))
+    );
+  }
+
+  @Test
+  @SneakyThrows
+  void callsTlrWhenEcsTlrEnabledInCentralTenant() {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
@@ -83,12 +126,12 @@ class CirculationBffRequestsApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void callsCirculationWhenEcsTlrDisabledOnDataTenant() {
+  void callsCirculationWhenEcsTlrEnabledOnDataTenant() {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockUserTenants(userTenant, TENANT_ID_COLLEGE);
     mockEcsTlrCirculationSettings(true);
-    mockAllowedServicePoints(TENANT_ID_COLLEGE);
+    mockAllowedServicePoints(TENANT_ID_CONSORTIUM);
 
     var operation = "create";
     var instanceId = UUID.randomUUID();
@@ -110,7 +153,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
       .andExpect(jsonPath("$.Hold[*].name", containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
     wireMockServer.verify(getRequestedFor(urlPathEqualTo(
-      CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      TLR_ALLOWED_SERVICE_POINT_URL))
       .withQueryParam("requestId", equalTo(requestId.toString()))
       .withQueryParam("instanceId", equalTo(instanceId.toString()))
       .withQueryParam("operation", equalTo(operation))
@@ -159,7 +202,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
     allowedSpResponseConsortium.setHold(Set.of(
       buildAllowedServicePoint("SP_consortium_1"),
       buildAllowedServicePoint("SP_consortium_2")));
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(TLR_ALLOWED_SERVICE_POINT_URL))
       .withHeader(HEADER_TENANT, equalTo(requestTenant))
       .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
   }

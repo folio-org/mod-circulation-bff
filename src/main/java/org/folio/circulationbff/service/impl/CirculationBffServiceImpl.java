@@ -12,6 +12,7 @@ import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.UserTenantsService;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -26,11 +27,12 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final EcsTlrClient ecsTlrClient;
   private final SettingsService settingsService;
   private final UserTenantsService userTenantsService;
+  private final SystemUserScopedExecutionService executionService;
 
   @Override
   public PickSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
     log.info("fetchPickSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    return shouldFetchStaffSlipsFromModTlr()
+    return shouldFetchStaffSlipsFromTlr()
       ? ecsTlrClient.getPickSlips(servicePointId)
       : circulationClient.getPickSlips(servicePointId);
   }
@@ -38,7 +40,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public SearchSlipCollection fetchSearchSlipsByServicePointId(String servicePointId) {
     log.info("fetchSearchSlipsByServicePointId:: servicePointId: {}", servicePointId);
-    return shouldFetchStaffSlipsFromModTlr()
+    return shouldFetchStaffSlipsFromTlr()
       ? ecsTlrClient.getSearchSlips(servicePointId)
       : circulationClient.getSearchSlips(servicePointId);
   }
@@ -46,10 +48,17 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
     log.info("getAllowedServicePoints:: params: {}", params);
-    if (settingsService.isEcsTlrFeatureEnabled(tenantId) && userTenantsService.isCentralTenant(tenantId)) {
-      log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. Getting allowed service " +
-        "points from mod-tlr module");
-      return ecsTlrClient.getAllowedServicePoints(params);
+    if (settingsService.isEcsTlrFeatureEnabled()) {
+      if (userTenantsService.isCentralTenant()) {
+        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
+          "Getting allowed service points from local mod-tlr");
+        return ecsTlrClient.getAllowedServicePoints(params);
+      } else {
+        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
+          "Getting allowed service points from central mod-tlr");
+        return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
+          () -> ecsTlrClient.getAllowedServicePoints(params));
+      }
     } else {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +
         "points from mod-circulation module");
@@ -70,13 +79,13 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     }
   }
 
-  private boolean shouldFetchStaffSlipsFromModTlr() {
+  private boolean shouldFetchStaffSlipsFromTlr() {
     boolean isCentralTenant = userTenantsService.isCentralTenant();
-    boolean ecsTlrFeatureIsEnabledInModTlr = false;
+    boolean ecsTlrFeatureIsEnabledInTlr = false;
     if (isCentralTenant) {
-      ecsTlrFeatureIsEnabledInModTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+      ecsTlrFeatureIsEnabledInTlr = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     }
-    log.info("shouldFetchStaffSlipsFromModTlr:: {}", ecsTlrFeatureIsEnabledInModTlr);
-    return ecsTlrFeatureIsEnabledInModTlr;
+    log.info("shouldFetchStaffSlipsFromTlr:: {}", ecsTlrFeatureIsEnabledInTlr);
+    return ecsTlrFeatureIsEnabledInTlr;
   }
 }
