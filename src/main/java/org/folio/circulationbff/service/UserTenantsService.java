@@ -4,5 +4,4 @@ public interface UserTenantsService {
   String getCentralTenant();
   boolean isCentralTenant();
   boolean isCentralTenant(String tenantId);
-  String getCentralTenantId();
 }
