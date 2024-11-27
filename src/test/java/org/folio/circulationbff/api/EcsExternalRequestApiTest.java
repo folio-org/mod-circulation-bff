@@ -39,12 +39,14 @@ class EcsExternalRequestApiTest extends BaseIT {
   @SneakyThrows
   void postEcsRequestExternalTest() {
     EcsRequestExternal requestExternal = buildEcsRequestExternal();
-    mockEcsTlrExternalRequestCreating(requestExternal);
+    wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
+      .withRequestBody(equalToJson(asJsonString(requestExternal)))
+      .willReturn(jsonResponse(asJsonString(new EcsTlr()), SC_CREATED)));
     mockUserTenants();
     mockPerform(requestExternal);
-
+    
     wireMockServer.verify(1,
-      postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
+  postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(XOkapiHeaders.TENANT, equalTo(TEST_CENTRAL_TENANT_ID)));
   }
 
@@ -57,14 +59,6 @@ class EcsExternalRequestApiTest extends BaseIT {
       .withQueryParam("limit", matching("\\d*"))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(userTenants), SC_OK)));
-  }
-
-  private static void mockEcsTlrExternalRequestCreating(EcsRequestExternal requestExternal) {
-    EcsTlr ecsTlr = new EcsTlr();
-
-    wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
-      .withRequestBody(equalToJson(asJsonString(requestExternal)))
-      .willReturn(jsonResponse(asJsonString(ecsTlr), SC_CREATED)));
   }
 
   private static EcsRequestExternal buildEcsRequestExternal() {

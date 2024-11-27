@@ -269,6 +269,10 @@
     {
       "id": "tlr-staff-slips",
       "version": "1.0"
+    },
+    {
+      "id": "ecs-request-external",
+      "version": "1.0"
     }
   ],
   "launchDescriptor": {

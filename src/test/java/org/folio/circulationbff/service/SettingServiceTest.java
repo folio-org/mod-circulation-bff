@@ -25,7 +25,6 @@ import org.testcontainers.shaded.org.apache.commons.lang3.BooleanUtils;
 
 @ExtendWith(MockitoExtension.class)
 class SettingServiceTest {
-
   @Mock
   private EcsTlrClient ecsTlrClient;
 
@@ -40,55 +39,38 @@ class SettingServiceTest {
 
   @ParameterizedTest
   @MethodSource("settingsToResponse")
-  void isEcsTlrSettingsEnabledTest(boolean isCentralTenant, TlrSettings tlrSettings,
-    CirculationSettingsResponse circulationSettingsResponse, boolean expectedValue) {
+  void isEcsTlrSettingsEnabledTest(boolean isCentralTenant, Boolean isTlrEnabled,
+    Boolean isCirculationTlrEnabled, boolean expectedValue) {
 
     when(userTenantsService.isCentralTenant()).thenReturn(isCentralTenant);
-    mockByIsCentralTenantId(circulationSettingsResponse, tlrSettings, isCentralTenant);
+    mockByIsCentralTenantId(isCirculationTlrEnabled, isTlrEnabled, isCentralTenant);
 
     assertThat(service.isEcsTlrFeatureEnabled(), equalTo(expectedValue));
   }
 
-  private void mockByIsCentralTenantId(CirculationSettingsResponse circulationSettingsResponse,
-    TlrSettings tlrSettings, boolean isCentralTenant) {
+  private void mockByIsCentralTenantId(Boolean isCirculationTlrEnabled, Boolean isTlrEnabled,
+    boolean isCentralTenant) {
 
     if (BooleanUtils.isTrue(isCentralTenant)) {
-      when(ecsTlrClient.getTlrSettings()).thenReturn(tlrSettings);
+      when(ecsTlrClient.getTlrSettings()).thenReturn(new TlrSettings()
+        .ecsTlrFeatureEnabled(isTlrEnabled));
     } else {
       when(circulationClient.getCirculationSettingsByQuery(anyString()))
-        .thenReturn(circulationSettingsResponse);
+        .thenReturn(new CirculationSettingsResponse()
+          .totalRecords(1)
+          .addCirculationSettingsItem(new CirculationSettings()
+            .value(new CirculationSettingsValue()
+              .enabled(isCirculationTlrEnabled))));
     }
-  }
-
-  private static CirculationSettingsResponse buildCirculationSettingsResponse(
-    boolean isEcsTlrEnabled) {
-
-    CirculationSettingsResponse circulationSettingsResponse = new CirculationSettingsResponse();
-    CirculationSettings circulationSettings = new CirculationSettings();
-    CirculationSettingsValue value = new CirculationSettingsValue();
-    value.enabled(isEcsTlrEnabled);
-    circulationSettings.setValue(value);
-    circulationSettingsResponse.addCirculationSettingsItem(circulationSettings);
-    circulationSettingsResponse.setTotalRecords(1);
-    return circulationSettingsResponse;
-  }
-
-  private static TlrSettings buildTlrSettings(boolean isTlrEnabled) {
-    TlrSettings tlrSettings = new TlrSettings();
-    tlrSettings.setEcsTlrFeatureEnabled(isTlrEnabled);
-    return tlrSettings;
   }
 
   private static Stream<Arguments> settingsToResponse() {
     return Stream.of(
-      Arguments.of(true, buildTlrSettings(true), null, true),
-      Arguments.of(true, buildTlrSettings(false), null, false),
-      Arguments.of(false, null, buildCirculationSettingsResponse(true),
-        true),
-      Arguments.of(false, null, buildCirculationSettingsResponse(false),
-        false)
+      Arguments.of(true, true, null, true),
+      Arguments.of(true, false, null, false),
+      Arguments.of(false, null, true, true),
+      Arguments.of(false, null, false, false)
     );
   }
-
 }
 

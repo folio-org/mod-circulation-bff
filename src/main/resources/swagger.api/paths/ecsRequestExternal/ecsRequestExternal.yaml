@@ -7,7 +7,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: "../../schemas/dto/ecsRequestExternal/ecsRequestExternal.yaml"
+          $ref: '../../schemas/dto/ecsRequestExternal/ecsRequestExternal.yaml'
     required: true
   responses:
     '201':

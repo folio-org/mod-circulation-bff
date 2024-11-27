@@ -24,6 +24,7 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
   @Override
   public EcsTlr createEcsRequestExternal(EcsRequestExternal ecsRequestExternal) {
     String centralTenantId = userTenantsService.getCentralTenant();
+    log.info("createEcsRequestExternal:: centralTenantId={}", centralTenantId);
 
     return systemUserScopedExecutionService.executeSystemUserScoped(centralTenantId,
       () -> ecsTlrClient.createEcsExternalRequest(ecsRequestExternal));
