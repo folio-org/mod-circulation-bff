@@ -9,7 +9,7 @@
         {
           "methods": ["POST"],
           "pathPattern": "/circulation-bff/create-ecs-request-external",
-          "permissionsRequired": ["circulation-bff.ecs-request-external.post"],
+          "permissionsRequired": ["circulation-bff.ecs-request-external.item.post"],
           "modulePermissions": [
             "tlr.ecs-request-external.post",
             "user-tenants.collection.get"
@@ -167,7 +167,7 @@
   ],
   "permissionSets" : [
     {
-      "permissionName": "circulation-bff.ecs-request-external.post",
+      "permissionName": "circulation-bff.ecs-request-external.item.post",
       "displayName": "circulation BFF - create ecs external request",
       "description": "create ecs external request"
     },
