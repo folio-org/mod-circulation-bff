@@ -44,9 +44,8 @@ class EcsExternalRequestApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(new EcsTlr()), SC_CREATED)));
     mockUserTenants();
     mockPerform(requestExternal);
-    
-    wireMockServer.verify(1,
-  postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
+
+    wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(XOkapiHeaders.TENANT, equalTo(TEST_CENTRAL_TENANT_ID)));
   }
 
