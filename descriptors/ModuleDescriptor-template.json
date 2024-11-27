@@ -209,6 +209,10 @@
   ],
   "requires": [
     {
+      "id": "ecs-request-external",
+      "version": "1.0"
+    },
+    {
       "id": "pick-slips",
       "version": "0.4"
     },
@@ -268,10 +272,6 @@
   "optional": [
     {
       "id": "tlr-staff-slips",
-      "version": "1.0"
-    },
-    {
-      "id": "ecs-request-external",
       "version": "1.0"
     }
   ],

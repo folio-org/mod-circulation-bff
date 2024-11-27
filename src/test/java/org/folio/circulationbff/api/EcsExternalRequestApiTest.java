@@ -75,10 +75,8 @@ class EcsExternalRequestApiTest extends BaseIT {
   }
 
   private static void mockEcsTlrExternalRequestCreating(EcsRequestExternal requestExternal) {
-    EcsTlr ecsTlr = new EcsTlr();
-
     wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withRequestBody(equalToJson(asJsonString(requestExternal)))
-      .willReturn(jsonResponse(asJsonString(ecsTlr), SC_CREATED)));
+      .willReturn(jsonResponse(asJsonString(new EcsTlr()), SC_CREATED)));
   }
 }
