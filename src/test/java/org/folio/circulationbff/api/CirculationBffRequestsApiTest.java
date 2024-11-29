@@ -22,6 +22,7 @@ import org.folio.circulationbff.domain.dto.CirculationSettings;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
 import org.folio.circulationbff.domain.dto.TlrSettings;
+import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
   private static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
   private static final String CIRCULATION_ALLOWED_SERVICE_POINT_URL = "/circulation/requests" +
     "/allowed-service-points";
+  private static final String USERS_URL = "/users";
 
   @Test
   @SneakyThrows
@@ -131,19 +133,25 @@ class CirculationBffRequestsApiTest extends BaseIT {
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockUserTenants(userTenant, TENANT_ID_COLLEGE);
     mockEcsTlrCirculationSettings(true);
+
+    User user = new User().patronGroup(UUID.randomUUID().toString());
+    wireMockServer.stubFor(WireMock.get(urlMatching(USERS_URL + ".*"))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(user), SC_OK)));
+
     mockAllowedServicePoints(TENANT_ID_CONSORTIUM);
 
     var operation = "create";
     var instanceId = UUID.randomUUID();
     var requestId = UUID.randomUUID();
-    var patronGroupId = UUID.randomUUID();
+    var requesterId = UUID.randomUUID();
 
     mockMvc.perform(
       get(ALLOWED_SERVICE_POINT_PATH)
         .queryParam("operation", "create")
         .queryParam("requestId", requestId.toString())
         .queryParam("instanceId", instanceId.toString())
-        .queryParam("patronGroupId", patronGroupId.toString())
+        .queryParam("requesterId", requesterId.toString())
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
