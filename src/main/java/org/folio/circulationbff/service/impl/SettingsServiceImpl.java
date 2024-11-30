@@ -20,6 +20,14 @@ public class SettingsServiceImpl implements SettingsService {
   private final UserTenantsService userTenantsService;
 
   @Override
+  public boolean isEcsTlrFeatureEnabled() {
+    if (userTenantsService.isCentralTenant()) {
+      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    }
+    return isTlrEnabledInCirculationSettings();
+  }
+
+  @Override
   public boolean isEcsTlrFeatureEnabled(String tenantId) {
     if (userTenantsService.isCentralTenant(tenantId)) {
       return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();

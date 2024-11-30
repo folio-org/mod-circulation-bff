@@ -1,3 +1,17 @@
+## 1.0.1 2024-11-30
+
+* Fix staff slip token name (MCBFF-27)
+* Pass patron group to allowed SP call for non-central ECS case (MCBFF-25)
+* Add `tlr-settings` interface dependency (MCBFF-26)
+* Add system user to module descriptor (MCBFF-24)
+* Make mod-tlr dependency optional, fix allowed SP routing (MCBFF-20)
+* Make `pickupServicePointId` field non-required for POST `/circulation-bff/requests` endpoint (MCBFF-19)
+* Add new endpoints to proxy to old or new slip endpoints (MCBFF-12)
+* Add excludes config `api-doc`
+* Increase minor version, fix typo requestLevel (MCBFF-6)
+* Add endpoint to resolve external user IDs (MCBFF-7)
+* Update folio-spring-support to 8.2 (MCBFF-15)
+
 ## 1.0.0 2024-11-01
 
 * Add `hrid` parameter to request schema (MCBFF-13)

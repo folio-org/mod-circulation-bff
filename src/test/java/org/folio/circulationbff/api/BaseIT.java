@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.folio.circulationbff.util.TestUtils;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.scope.FolioExecutionContextSetter;
@@ -26,6 +27,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -33,12 +37,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
+import jakarta.servlet.http.Cookie;
 import lombok.SneakyThrows;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class BaseIT {
+  protected static final String USER_TENANTS_URL = "/user-tenants";
+  protected static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
+  protected static final String TLR_SETTINGS_URL = "/tlr/settings";
   protected static final String HEADER_TENANT = "x-okapi-tenant";
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
@@ -107,6 +115,23 @@ public class BaseIT {
     httpHeaders.add(XOkapiHeaders.USER_ID, USER_ID);
 
     return httpHeaders;
+  }
+
+  protected ResultActions doPostWithTenant(String url, Object payload, String tenantId) throws Exception {
+    String token = TestUtils.buildToken(tenantId);
+    return doPostWithToken(url, payload, token);
+  }
+
+  protected ResultActions doPostWithToken(String url, Object payload, String token) throws Exception {
+    MockHttpServletRequestBuilder requestBuilder = buildRequest(MockMvcRequestBuilders.post(url), payload);
+    requestBuilder.cookie(new Cookie("folioAccessToken", token));
+    return mockMvc.perform(requestBuilder);
+  }
+
+  protected MockHttpServletRequestBuilder buildRequest(MockHttpServletRequestBuilder requestBuilder, Object payload) {
+    return requestBuilder
+      .headers(defaultHeaders())
+      .content(asJsonString(payload));
   }
 
   protected FolioExecutionContextSetter initFolioContext() {

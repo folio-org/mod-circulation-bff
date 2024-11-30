@@ -1,0 +1,14 @@
+description: "patron group"
+type: "object"
+properties:
+  id:
+    description: "ID of the patron group"
+    type: "string"
+    $ref: "../common/uuid.yaml"
+  group:
+    description: "The unique name of the patron group"
+    type: "string"
+  desc:
+    description: "A description of the patron group"
+    type: "string"
+
