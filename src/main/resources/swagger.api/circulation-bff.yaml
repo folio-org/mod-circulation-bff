@@ -9,6 +9,15 @@ paths:
     $ref: 'paths/searchInstances/searchInstances.yaml'
   /circulation-bff/mediated-requests/confirm:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
+  /circulation-bff/requests:
+    $ref: 'paths/requests/requests.yaml'
+  /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
+    $ref: 'paths/externalUser/externalUser.yaml'
+  /circulation-bff/pick-slips/{servicePointId}:
+    $ref: 'paths/staffSlips/pickSlips.yaml'
+  /circulation-bff/search-slips/{servicePointId}:
+    $ref: 'paths/staffSlips/searchSlips.yaml'
+
 components:
   schemas:
     tlr-settings:
@@ -31,3 +40,11 @@ components:
       $ref: 'schemas/dto/inventory/materialTypes.json'
     search-instances:
       $ref: 'schemas/dto/search/searchInstances.yaml'
+    patronGroup:
+      $ref: 'schemas/dto/request/patronGroup.yaml'
+    request:
+      $ref: 'schemas/dto/request/Request.yaml#/Request'
+    bff-request:
+      $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
+    ecs-tlr:
+      $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'

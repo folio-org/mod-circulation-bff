@@ -5,20 +5,34 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.oneOf;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.PickSlipCollection;
+import org.folio.circulationbff.domain.dto.SearchSlipCollection;
+import org.folio.circulationbff.domain.dto.StaffSlip;
+import org.folio.circulationbff.domain.dto.User;
+import org.folio.circulationbff.domain.dto.UserCollection;
+import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,8 +48,65 @@ class CirculationBffControllerTest {
   @Mock
   private MediatedRequestsService mediatedRequestsService;
 
+  @Mock
+  private UserService userService;
+
+  @Mock
+  private CirculationBffService circulationBffService;
+
   @InjectMocks
   private CirculationBffController controller;
+
+  @ParameterizedTest
+  @MethodSource
+  void externalUsersControllerReturnsTheSameUserCollectionAsUserService(List<User> users) {
+    UserCollection userCollection = new UserCollection(users, users == null ? 0 : users.size());
+    when(userService.getExternalUser(anyString(), anyString())).thenReturn(userCollection);
+
+    ResponseEntity<UserCollection> actual = controller.getExternalUsers(StringUtils.EMPTY,
+      StringUtils.EMPTY);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(userCollection));
+  }
+
+  static Stream<List<User>> externalUsersControllerReturnsTheSameUserCollectionAsUserService() {
+    return Stream.of(null, Collections.emptyList(), List.of(new User()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("staffSlips")
+  void getPickSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
+    PickSlipCollection pickSlipsCollection = new PickSlipCollection(
+      Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
+
+    when(circulationBffService.fetchPickSlipsByServicePointId(anyString()))
+      .thenReturn(pickSlipsCollection);
+
+    ResponseEntity<PickSlipCollection> actual = controller.getPickSlips(StringUtils.EMPTY);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(pickSlipsCollection));
+  }
+
+  @ParameterizedTest
+  @MethodSource("staffSlips")
+  void getSearchSlipsControllerReturnsSuccessResponseEntity(List<StaffSlip> staffSlips) {
+    SearchSlipCollection searchSlipCollection = new SearchSlipCollection(
+      Objects.isNull(staffSlips) ? 0 : staffSlips.size(), staffSlips);
+
+    when(circulationBffService.fetchSearchSlipsByServicePointId(anyString()))
+      .thenReturn(searchSlipCollection);
+
+    ResponseEntity<SearchSlipCollection> actual = controller.getSearchSlips(StringUtils.EMPTY);
+
+    assertThat(actual.getStatusCode(), is(HttpStatus.OK));
+    assertThat(actual.getBody(), is(searchSlipCollection));
+  }
+
+  private static Stream<List<StaffSlip>> staffSlips() {
+    return Stream.of(null, Collections.emptyList(), List.of(new StaffSlip()));
+  }
 
   @Test
   void instanceFoundSuccessfully() {

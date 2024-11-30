@@ -15,6 +15,11 @@ CirculationSettings:
         enabled:
           description: "Whether the setting is enabled"
           type: boolean
+    "metadata": {
+      "type": "object",
+      "$ref": "common/metadata.yaml",
+      "readonly": true
+    }
   required:
     - id
     - name

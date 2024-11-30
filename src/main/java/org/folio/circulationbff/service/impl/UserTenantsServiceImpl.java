@@ -19,10 +19,44 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   private final UserTenantsClient userTenantsClient;
 
   @Override
-  public boolean isCentralTenant(String tenantId) {
+  public String getCentralTenant() {
+    UserTenant firstUserTenant = getFirstUserTenant();
+    if (firstUserTenant == null) {
+      log.info("getCentralTenant:: failed to fetch user tenants");
+      return null;
+    }
+    String centralTenantId = firstUserTenant.getCentralTenantId();
+    log.info("getCentralTenant:: centralTenantId={}", centralTenantId);
+    return centralTenantId;
+  }
+
+  @Override
+  public boolean isCentralTenant() {
+    UserTenant firstUserTenant = getFirstUserTenant();
+    if (firstUserTenant == null) {
+      log.info("isCentralTenant:: failed to fetch user tenants");
+      return false;
+    }
+    String centralTenantId = firstUserTenant.getCentralTenantId();
+    String tenantId = firstUserTenant.getTenantId();
+    log.info("isCentralTenant:: centralTenantId={}, tenantId={}", centralTenantId,
+      tenantId);
+
+    return centralTenantId.equals(tenantId);
+  }
+
+  private UserTenant getFirstUserTenant() {
     UserTenant firstUserTenant = findFirstUserTenant();
     if (firstUserTenant == null) {
       log.info("processUserGroupEvent: Failed to get user-tenants info");
+    }
+    return firstUserTenant;
+  }
+
+  @Override
+  public boolean isCentralTenant(String tenantId) {
+    UserTenant firstUserTenant = getFirstUserTenant();
+    if (firstUserTenant == null) {
       return false;
     }
     String centralTenantId = firstUserTenant.getCentralTenantId();
