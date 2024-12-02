@@ -2,7 +2,6 @@ package org.folio.circulationbff.service;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -11,13 +10,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import org.folio.circulationbff.client.feign.InstanceStorageClient;
 import org.folio.circulationbff.client.feign.SearchClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
-import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -35,7 +31,6 @@ class SearchServiceTest {
   @Mock private SearchClient searchClient;
   @Mock private SearchInstanceMapper searchInstanceMapper;
   @Mock private SystemUserScopedExecutionService executionService;
-  @Mock private InstanceStorageClient instanceStorageClient;
 
   @InjectMocks
   private SearchServiceImpl searchService;
@@ -69,18 +64,12 @@ class SearchServiceTest {
     when(searchClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
-    Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
-    when(instanceStorageClient.findInstance(instanceId))
-      .thenReturn(instance);
-
     BffSearchInstance bffSearchInstance = new BffSearchInstance().id(instanceId);
     when(searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance))
       .thenReturn(bffSearchInstance);
 
     Collection<BffSearchInstance> response = searchService.findInstances(query);
     assertThat(response, equalTo(List.of(bffSearchInstance)));
-    assertThat(response.stream().findFirst().orElseThrow().getEditions(),
-      containsInAnyOrder("1st", "2st"));
   }
 
   @Test
