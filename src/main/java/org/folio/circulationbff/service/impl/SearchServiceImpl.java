@@ -185,6 +185,7 @@ public class SearchServiceImpl implements SearchService {
     log.info("fetchEditions:: fetching editions for instance {}", bffSearchInstance.getId());
     Instance instance = getInstanceFromStorage(bffSearchInstance.getId(), bffSearchInstance.getTenantId());
     if (instance != null && instance.getEditions() != null) {
+      log.info("fetchEditions:: editions found for instance {}", bffSearchInstance.getId());
       bffSearchInstance.setEditions(instance.getEditions());
     }
     return bffSearchInstance;
