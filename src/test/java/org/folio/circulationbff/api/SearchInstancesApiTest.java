@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -46,7 +48,9 @@ import org.folio.circulationbff.domain.dto.SearchItemEffectiveCallNumberComponen
 import org.folio.circulationbff.domain.dto.SearchItemStatus;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.dto.ServicePoints;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -64,6 +68,7 @@ class SearchInstancesApiTest extends BaseIT {
   private static final String MATERIAL_TYPES_URL = "/material-types";
 
   private static final String INSTANCE_STORAGE_URL = "/instance-storage/instances";
+  @Mock private SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Test
   @SneakyThrows
@@ -100,6 +105,7 @@ class SearchInstancesApiTest extends BaseIT {
         new SearchInstance()
           .id(instanceId)
           .items(emptyList())
+          .tenantId(TENANT_ID_CONSORTIUM)
       ));
 
     wireMockServer.stubFor(WireMock.get(urlPathMatching(SEARCH_INSTANCES_MOD_SEARCH_URL))
@@ -110,6 +116,9 @@ class SearchInstancesApiTest extends BaseIT {
     Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
     wireMockServer.stubFor(WireMock.get(urlPathMatching(String.format("%s/%s", INSTANCE_STORAGE_URL, instanceId)))
       .willReturn(jsonResponse(asJsonString(instance), HttpStatus.SC_OK)));
+
+    when(systemUserScopedExecutionService.executeSystemUserScoped(any(String.class), any()))
+      .thenReturn(emptyList());
 
     mockMvc.perform(
         get(SEARCH_INSTANCES_URL)
