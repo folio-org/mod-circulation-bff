@@ -10,4 +10,6 @@ inventory-storage.service-points.item.get
 inventory-storage.service-points.collection.get
 inventory-storage.material-types.item.get
 inventory-storage.material-types.collection.get
+inventory-storage.instances.item.get
+inventory-storage.instances.collection.get
 tlr.ecs-tlr-allowed-service-points.get
