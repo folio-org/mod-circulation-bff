@@ -183,11 +183,17 @@ public class SearchServiceImpl implements SearchService {
 
   private BffSearchInstance fetchEditions(BffSearchInstance bffSearchInstance) {
     log.info("fetchEditions:: fetching editions for instance {}", bffSearchInstance.getId());
-    Instance instance = instanceStorageClient.findInstance(bffSearchInstance.getId());
+    Instance instance = getInstanceFromStorage(bffSearchInstance.getId(), bffSearchInstance.getTenantId());
     if (instance != null && instance.getEditions() != null) {
       bffSearchInstance.setEditions(instance.getEditions());
     }
     return bffSearchInstance;
+  }
+
+  private Instance getInstanceFromStorage(String instanceId, String tenantId) {
+    log.info("getInstanceFromStorage:: Fetching instance {} from tenant {}", instanceId, tenantId);
+    return executionService.executeSystemUserScoped(tenantId,
+      () -> instanceStorageClient.findInstance(instanceId));
   }
 
   private BffSearchInstance buildBffSearchInstance(SearchInstance searchInstance,
