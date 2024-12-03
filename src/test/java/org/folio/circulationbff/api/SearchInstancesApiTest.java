@@ -31,6 +31,7 @@ import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
 import org.folio.circulationbff.domain.dto.Identifier;
 import org.folio.circulationbff.domain.dto.Instance;
+import org.folio.circulationbff.domain.dto.Instances;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.ItemStatus;
@@ -114,8 +115,8 @@ class SearchInstancesApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(mockSearchInstancesResponse), HttpStatus.SC_OK)));
 
     Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
-    wireMockServer.stubFor(WireMock.get(urlPathMatching(String.format("%s/%s", INSTANCE_STORAGE_URL, instanceId)))
-      .willReturn(jsonResponse(asJsonString(instance), HttpStatus.SC_OK)));
+    Instances instances = new Instances().instances(List.of(instance));
+    createStubForGetByIds(INSTANCE_STORAGE_URL, TENANT_ID_CONSORTIUM, instances);
 
     when(systemUserScopedExecutionService.executeSystemUserScoped(any(String.class), any()))
       .thenReturn(emptyList());
