@@ -127,14 +127,13 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private Collection<BffSearchInstance> fetchEditions(String tenantId,
-                                                      Collection<BffSearchInstance> searchInstances) {
+    Collection<BffSearchInstance> searchInstances) {
     log.info("fetchItemDetails:: fetching details for {} items in tenant {}", searchInstances.size(), tenantId);
     return executionService.executeSystemUserScoped(tenantId,
       () -> updateSearchInstanceEditions(searchInstances));
   }
 
   private Collection<BffSearchInstance> updateSearchInstanceEditions(Collection<BffSearchInstance> searchInstances) {
-
     Map<String, Instance> instanceMap = fetchInstances(
       searchInstances.stream()
         .map(BffSearchInstance::getId)
