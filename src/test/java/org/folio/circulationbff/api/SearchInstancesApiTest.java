@@ -168,8 +168,8 @@ class SearchInstancesApiTest extends BaseIT {
       .willReturn(jsonResponse(mockSearchResponse, HttpStatus.SC_OK)));
 
     Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
-    wireMockServer.stubFor(WireMock.get(urlPathMatching(String.format("%s/%s", INSTANCE_STORAGE_URL, instanceId)))
-      .willReturn(jsonResponse(asJsonString(instance), HttpStatus.SC_OK)));
+    Instances instances = new Instances().instances(List.of(instance));
+    createStubForGetByIds(INSTANCE_STORAGE_URL, TENANT_ID_CONSORTIUM, instances);
 
     // mock items
 
