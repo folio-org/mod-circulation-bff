@@ -76,11 +76,7 @@ class SearchServiceTest {
     when(searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance))
       .thenReturn(bffSearchInstance);
 
-    when(executionService.executeSystemUserScoped(any(), any(Callable.class)))
-      .thenAnswer(invocation -> {
-        Callable<Collection<BffSearchInstance>> callable = invocation.getArgument(1);
-        return callable.call();
-      });
+    mockSystemUserScopedExecutionService();
 
     Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
     when(fetchingService.fetch(any(), any(), any()))
@@ -130,11 +126,8 @@ class SearchServiceTest {
   }
 
   private void mockSystemUserScopedExecutionService() {
-    when(executionService.executeSystemUserScoped(any(String.class), any()))
-      .thenAnswer(invocation -> {
-        Callable<Collection<BffSearchInstance>> callable = invocation.getArgument(1);
-        return callable.call();
-      });
+    when(executionService.executeSystemUserScoped(any(String.class), any(Callable.class)))
+      .thenAnswer(invocation -> invocation.getArgument(1, Callable.class).call());
   }
 
 }
