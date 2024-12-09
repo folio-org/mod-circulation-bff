@@ -11,12 +11,15 @@ import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
+import org.folio.circulationbff.service.UserService;
 import org.folio.circulationbff.service.UserTenantsService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
 
   private final CirculationClient circulationClient;
   private final EcsTlrClient ecsTlrClient;
+  private final UserService userService;
   private final SettingsService settingsService;
   private final UserTenantsService userTenantsService;
   private final SystemUserScopedExecutionService executionService;
@@ -56,6 +60,9 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       } else {
         log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
           "Getting allowed service points from central mod-tlr");
+        String patronGroupId = userService.find(params.getRequesterId().toString()).getPatronGroup();
+        params.setPatronGroupId(UUID.fromString(patronGroupId));
+        params.setRequesterId(null);
         return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
           () -> ecsTlrClient.getAllowedServicePoints(params));
       }

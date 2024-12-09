@@ -1,0 +1,22 @@
+post:
+  description: Create ECS request external
+  operationId: postEcsRequestExternal
+  tags:
+    - ecsRequestExternal
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/dto/ecsRequestExternal/ecsRequestExternal.yaml'
+    required: true
+  responses:
+    '201':
+      description: Ecs external request has been created
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'

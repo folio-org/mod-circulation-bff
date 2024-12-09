@@ -17,6 +17,8 @@ paths:
     $ref: 'paths/staffSlips/pickSlips.yaml'
   /circulation-bff/search-slips/{servicePointId}:
     $ref: 'paths/staffSlips/searchSlips.yaml'
+  /circulation-bff/create-ecs-request-external:
+    $ref: 'paths/ecsRequestExternal/ecsRequestExternal.yaml'
 
 components:
   schemas:

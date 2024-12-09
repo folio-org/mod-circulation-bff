@@ -12,6 +12,7 @@ import org.folio.circulationbff.client.feign.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.service.impl.UserTenantsServiceImpl;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -37,6 +38,14 @@ class UserTenantsServiceTest {
     when(userTenantsClient.getUserTenants(anyInt())).thenReturn(userTenantCollection);
 
     assertThat(userTenantsService.isCentralTenant(), equalTo(expectedValue));
+  }
+
+  @Test
+  void getCentralTenantIdTest() {
+    when(userTenantsClient.getUserTenants(anyInt())).thenReturn(new UserTenantCollection()
+      .addUserTenantsItem(new UserTenant().centralTenantId(CENTRAL_TENANT_ID)));
+
+    assertThat(userTenantsService.getCentralTenant(), equalTo(CENTRAL_TENANT_ID));
   }
 
   private static Stream<Arguments> userTenantCollectionToExpectedValue() {
