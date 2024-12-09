@@ -12,9 +12,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.HoldingsStorageClient;
+import org.folio.circulationbff.client.feign.InstanceStorageClient;
 import org.folio.circulationbff.client.feign.ItemStorageClient;
 import org.folio.circulationbff.client.feign.LocationClient;
 import org.folio.circulationbff.client.feign.MaterialTypeClient;
@@ -30,6 +32,8 @@ import org.folio.circulationbff.domain.dto.BffSearchItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
+import org.folio.circulationbff.domain.dto.Instance;
+import org.folio.circulationbff.domain.dto.Instances;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.Items;
@@ -62,6 +66,7 @@ public class SearchServiceImpl implements SearchService {
   private final MaterialTypeClient materialTypeClient;
   private final ServicePointClient servicePointClient;
   private final SearchClient searchClient;
+  private final InstanceStorageClient instanceStorageClient;
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
   private final SearchInstanceMapper searchInstanceMapper;
@@ -78,7 +83,8 @@ public class SearchServiceImpl implements SearchService {
     }
     log.info("findInstances:: {} instances found", searchInstances::size);
 
-    Collection<BffSearchInstance> bffSearchInstances = buildBffSearchInstances(searchInstances);
+    Collection<BffSearchInstance> bffSearchInstances =
+      fetchEditions(buildBffSearchInstances(searchInstances));
     log.info("findInstances:: successfully built {} instances", bffSearchInstances::size);
 
     return bffSearchInstances;
@@ -109,6 +115,45 @@ public class SearchServiceImpl implements SearchService {
   private Collection<ItemContext> fetchItemDetails(String tenantId, Collection<SearchItem> items) {
     log.info("fetchItemDetails:: fetching details for {} items in tenant {}", items.size(), tenantId);
     return executionService.executeSystemUserScoped(tenantId, () -> buildItemContexts(items));
+  }
+
+  private Collection<BffSearchInstance> fetchEditions(Collection<BffSearchInstance> bffSearchInstances) {
+    return bffSearchInstances.stream()
+      .collect(Collectors.groupingBy(BffSearchInstance::getTenantId))
+      .entrySet()
+      .stream()
+      .flatMap(entry -> fetchEditions(entry.getKey(), entry.getValue()).stream())
+      .toList();
+  }
+
+  private Collection<BffSearchInstance> fetchEditions(String tenantId,
+    Collection<BffSearchInstance> searchInstances) {
+    log.info("fetchItemDetails:: fetching details for {} items in tenant {}", searchInstances.size(), tenantId);
+    return executionService.executeSystemUserScoped(tenantId,
+      () -> updateSearchInstanceEditions(searchInstances));
+  }
+
+  private Collection<BffSearchInstance> updateSearchInstanceEditions(Collection<BffSearchInstance> searchInstances) {
+    Map<String, Instance> instanceMap = fetchInstances(
+      searchInstances.stream()
+        .map(BffSearchInstance::getId)
+        .collect(Collectors.toSet())
+    ).stream()
+      .collect(Collectors.toMap(Instance::getId, Function.identity()));
+
+    searchInstances.forEach(searchInstance -> {
+      Instance instance = instanceMap.get(searchInstance.getId());
+      if (instance != null) {
+        searchInstance.setEditions(instance.getEditions());
+      }
+    });
+
+    return searchInstances;
+  }
+
+  private Collection<Instance> fetchInstances(Collection<String> ids) {
+    log.info("fetchInstances: fetching {} instances", ids::size);
+    return fetchingService.fetch(instanceStorageClient, ids, Instances::getInstances);
   }
 
   private Collection<ItemContext> buildItemContexts(Collection<SearchItem> searchItems) {

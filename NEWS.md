@@ -1,3 +1,7 @@
+## 1.0.2 2024-12-09
+* Failsafe approach to ECS requesting (MCBFF-21)
+* Add editions to instance search results (MCBFF-17)
+
 ## 1.0.1 2024-11-30
 
 * Fix staff slip token name (MCBFF-27)

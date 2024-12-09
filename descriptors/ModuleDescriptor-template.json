@@ -3,6 +3,21 @@
   "name": "Folio mod-circulation-bff module",
   "provides": [
     {
+      "id": "circulation-bff-ecs-request-external",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": ["POST"],
+          "pathPattern": "/circulation-bff/create-ecs-request-external",
+          "permissionsRequired": ["circulation-bff.ecs-request-external.item.post"],
+          "modulePermissions": [
+            "tlr.ecs-request-external.post",
+            "user-tenants.collection.get"
+          ]
+        }
+      ]
+    },
+    {
       "id": "circulation-bff-pick-slips",
       "version": "1.0",
       "handlers": [
@@ -153,6 +168,11 @@
   ],
   "permissionSets" : [
     {
+      "permissionName": "circulation-bff.ecs-request-external.item.post",
+      "displayName": "circulation BFF - create ecs external request",
+      "description": "create ecs external request"
+    },
+    {
       "permissionName": "circulation-bff.pick-slips.collection.get",
       "displayName": "circulation BFF - get pick slips by service point id",
       "description": "get pick slips by service point id"
@@ -210,6 +230,10 @@
       "version": "16.0"
     },
     {
+      "id": "user-tenants",
+      "version": "1.0"
+    },
+    {
       "id": "login",
       "version": "7.3"
     },
@@ -250,6 +274,10 @@
     {
       "id": "requests-mediated",
       "version": "2.0"
+    },
+    {
+      "id": "ecs-request-external",
+      "version": "1.0"
     }
   ],
   "metadata": {
@@ -267,7 +295,9 @@
         "inventory-storage.service-points.item.get",
         "inventory-storage.service-points.collection.get",
         "inventory-storage.material-types.item.get",
-        "inventory-storage.material-types.collection.get"
+        "inventory-storage.material-types.collection.get",
+        "inventory-storage.instances.item.get",
+        "inventory-storage.instances.collection.get"
       ]
     }
   },

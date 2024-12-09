@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -19,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -27,6 +30,8 @@ import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
 import org.folio.circulationbff.domain.dto.Identifier;
+import org.folio.circulationbff.domain.dto.Instance;
+import org.folio.circulationbff.domain.dto.Instances;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.ItemStatus;
@@ -44,7 +49,9 @@ import org.folio.circulationbff.domain.dto.SearchItemEffectiveCallNumberComponen
 import org.folio.circulationbff.domain.dto.SearchItemStatus;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.dto.ServicePoints;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -60,6 +67,9 @@ class SearchInstancesApiTest extends BaseIT {
   private static final String LOCATIONS_URL = "/locations";
   private static final String SERVICE_POINTS_URL = "/service-points";
   private static final String MATERIAL_TYPES_URL = "/material-types";
+
+  private static final String INSTANCE_STORAGE_URL = "/instance-storage/instances";
+  @Mock private SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Test
   @SneakyThrows
@@ -96,12 +106,20 @@ class SearchInstancesApiTest extends BaseIT {
         new SearchInstance()
           .id(instanceId)
           .items(emptyList())
+          .tenantId(TENANT_ID_CONSORTIUM)
       ));
 
     wireMockServer.stubFor(WireMock.get(urlPathMatching(SEARCH_INSTANCES_MOD_SEARCH_URL))
       .withQueryParam("query", equalTo("id==" + instanceId))
       .withQueryParam("expandAll", equalTo("true"))
       .willReturn(jsonResponse(asJsonString(mockSearchInstancesResponse), HttpStatus.SC_OK)));
+
+    Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
+    Instances instances = new Instances().instances(List.of(instance));
+    createStubForGetByIds(INSTANCE_STORAGE_URL, TENANT_ID_CONSORTIUM, instances);
+
+    when(systemUserScopedExecutionService.executeSystemUserScoped(any(String.class), any()))
+      .thenReturn(emptyList());
 
     mockMvc.perform(
         get(SEARCH_INSTANCES_URL)
@@ -110,7 +128,8 @@ class SearchInstancesApiTest extends BaseIT {
           .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id", is(instanceId)))
-      .andExpect(jsonPath("$.items", emptyIterable()));
+      .andExpect(jsonPath("$.items", emptyIterable()))
+      .andExpect(jsonPath("$.editions", containsInAnyOrder("1st", "2st")));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(ITEM_STORAGE_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(HOLDINGS_STORAGE_URL)));
@@ -147,6 +166,10 @@ class SearchInstancesApiTest extends BaseIT {
       .withQueryParam("query", equalTo("id==" + instanceId))
       .withQueryParam("expandAll", equalTo("true"))
       .willReturn(jsonResponse(mockSearchResponse, HttpStatus.SC_OK)));
+
+    Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
+    Instances instances = new Instances().instances(List.of(instance));
+    createStubForGetByIds(INSTANCE_STORAGE_URL, TENANT_ID_CONSORTIUM, instances);
 
     // mock items
 
@@ -232,7 +255,8 @@ class SearchInstancesApiTest extends BaseIT {
         containsInAnyOrder(searchHoldingInCollege.getId())))
       .andExpect(jsonPath("$.items", hasSize(90)))
       .andExpect(jsonPath("$.items[?(@.tenantId == 'consortium')]", hasSize(MAX_IDS_PER_QUERY)))
-      .andExpect(jsonPath("$.items[?(@.tenantId == 'college')]", hasSize(10)));
+      .andExpect(jsonPath("$.items[?(@.tenantId == 'college')]", hasSize(10)))
+      .andExpect(jsonPath("$.editions", containsInAnyOrder("1st", "2st")));
   }
 
   private static SearchInstance buildSearchInstance(String tenantId, List<SearchItem> searchItems,
