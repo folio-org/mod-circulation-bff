@@ -1,8 +1,8 @@
 package org.folio.circulationbff.service;
 
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
-import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.Request;
 
 public interface EcsRequestExternalService {
-  EcsTlr createEcsRequestExternal(EcsRequestExternal ecsRequestExternal);
+  Request createEcsRequestExternal(EcsRequestExternal ecsRequestExternal);
 }
