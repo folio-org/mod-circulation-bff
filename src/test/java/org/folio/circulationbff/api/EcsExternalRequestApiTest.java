@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -33,14 +34,17 @@ class EcsExternalRequestApiTest extends BaseIT {
     "/tlr/create-ecs-request-external";
   private static final String CIRCULATION_BFF_CREATE_ECS_EXTERNAL_REQUEST_URL =
     "/circulation-bff/create-ecs-request-external";
+  private static final String CIRCULATION_REQUESTS_URL = "/circulation/requests";
   private static final String TEST_CENTRAL_TENANT_ID = "testCentralTenantId";
 
   @Test
   @SneakyThrows
   void postEcsRequestExternalTest() {
+    String primaryRequestId = UUID.randomUUID().toString();
     EcsRequestExternal requestExternal = buildEcsRequestExternal();
-    mockEcsTlrExternalRequestCreating(requestExternal);
+    mockEcsTlrExternalRequestCreating(requestExternal, primaryRequestId);
     mockUserTenants();
+    mockPrimaryRequest(primaryRequestId);
     mockPerform(requestExternal);
 
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
@@ -74,9 +78,19 @@ class EcsExternalRequestApiTest extends BaseIT {
       .header(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM));
   }
 
-  private static void mockEcsTlrExternalRequestCreating(EcsRequestExternal requestExternal) {
+  private static void mockEcsTlrExternalRequestCreating(EcsRequestExternal requestExternal,
+    String primaryRequestId) {
+
     wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withRequestBody(equalToJson(asJsonString(requestExternal)))
-      .willReturn(jsonResponse(asJsonString(new EcsTlr()), SC_CREATED)));
+      .willReturn(jsonResponse(asJsonString(new EcsTlr().primaryRequestId(primaryRequestId)),
+        SC_CREATED)));
+  }
+
+  private static void mockPrimaryRequest(String primaryRequestId) {
+    wireMockServer.stubFor(WireMock.get(urlMatching(String.format("%s/%s",
+        CIRCULATION_REQUESTS_URL, primaryRequestId)))
+      .willReturn(jsonResponse(asJsonString(
+        new Request().id(UUID.randomUUID().toString())), SC_OK)));
   }
 }

@@ -15,7 +15,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+            $ref: '../../schemas/dto/request/Request.yaml'
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '500':
