@@ -2,6 +2,8 @@ package org.folio.circulationbff.api;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -49,6 +51,8 @@ class EcsExternalRequestApiTest extends BaseIT {
 
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(XOkapiHeaders.TENANT, equalTo(TEST_CENTRAL_TENANT_ID)));
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format("%s/%s",
+      CIRCULATION_REQUESTS_URL, primaryRequestId))));
   }
 
   private static void mockUserTenants() {
@@ -56,7 +60,7 @@ class EcsExternalRequestApiTest extends BaseIT {
     userTenant.setCentralTenantId(TEST_CENTRAL_TENANT_ID);
     UserTenantCollection userTenants = new UserTenantCollection(List.of(userTenant), 1);
 
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(USER_TENANTS_URL))
+    wireMockServer.stubFor(get(urlPathEqualTo(USER_TENANTS_URL))
       .withQueryParam("limit", matching("\\d*"))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(userTenants), SC_OK)));
@@ -88,9 +92,9 @@ class EcsExternalRequestApiTest extends BaseIT {
   }
 
   private static void mockPrimaryRequest(String primaryRequestId) {
-    wireMockServer.stubFor(WireMock.get(urlMatching(String.format("%s/%s",
+    wireMockServer.stubFor(get(urlMatching(String.format("%s/%s",
         CIRCULATION_REQUESTS_URL, primaryRequestId)))
       .willReturn(jsonResponse(asJsonString(
-        new Request().id(UUID.randomUUID().toString())), SC_OK)));
+        new Request().id(primaryRequestId)), SC_OK)));
   }
 }
