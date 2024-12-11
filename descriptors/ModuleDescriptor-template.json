@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "circulation-bff-ecs-request-external",
-      "version": "1.0",
+      "version": "1.1",
       "handlers": [
         {
           "methods": ["POST"],
@@ -12,7 +12,9 @@
           "permissionsRequired": ["circulation-bff.ecs-request-external.item.post"],
           "modulePermissions": [
             "tlr.ecs-request-external.post",
-            "user-tenants.collection.get"
+            "user-tenants.collection.get",
+            "circulation.requests.item.get",
+            "circulation.requests.collection.get"
           ]
         }
       ]
