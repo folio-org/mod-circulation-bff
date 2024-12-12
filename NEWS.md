@@ -1,3 +1,6 @@
+## 1.0.3 2024-12-12
+* Endpoint `create-ecs-request-external` returns primary request (MCBFF-32)
+
 ## 1.0.2 2024-12-09
 * Failsafe approach to ECS requesting (MCBFF-21)
 * Add editions to instance search results (MCBFF-17)

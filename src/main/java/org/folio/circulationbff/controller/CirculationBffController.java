@@ -43,7 +43,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final EcsRequestExternalService ecsRequestExternalService;
 
   @Override
-  public ResponseEntity<EcsTlr> postEcsRequestExternal(EcsRequestExternal ecsRequestExternal) {
+  public ResponseEntity<Request> postEcsRequestExternal(EcsRequestExternal ecsRequestExternal) {
     return ResponseEntity.status(HttpStatus.OK)
       .body(ecsRequestExternalService.createEcsRequestExternal(ecsRequestExternal));
   }
