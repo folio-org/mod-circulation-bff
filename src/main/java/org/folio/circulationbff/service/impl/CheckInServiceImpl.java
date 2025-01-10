@@ -1,6 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
+import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.service.CheckInService;
@@ -14,13 +14,13 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CheckInServiceImpl implements CheckInService {
 
-  private final CirculationClient circulationClient;
+  private final CheckInClient checkInClient;
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
     log.info("checkIn: checking in item with barcode {} on service point {}",
       request::getItemBarcode, request::getServicePointId);
-    return circulationClient.checkIn(request);
+    return checkInClient.checkIn(request);
   }
 
 }

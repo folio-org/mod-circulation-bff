@@ -1,5 +1,6 @@
 package org.folio.circulationbff.api;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
@@ -13,6 +14,8 @@ import java.util.Date;
 
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -46,6 +49,26 @@ class CheckInApiTest extends BaseIT {
     checkIn(request)
       .andExpect(status().isOk())
       .andExpect(content().json(mockResponse));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {400, 422, 500})
+  @SneakyThrows
+  void circulationCheckInErrorsAreForwarded(int responseStatus) {
+    CheckInRequest request = new CheckInRequest()
+      .itemBarcode("test_barcode")
+      .checkInDate(new Date())
+      .servicePointId(randomUUID());
+
+    String responseBody = "Response status is " + responseStatus;
+
+    wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
+      .withRequestBody(equalToJson(asJsonString(request)))
+      .willReturn(aResponse().withStatus(responseStatus).withBody(responseBody)));
+
+    checkIn(request)
+      .andExpect(status().is(responseStatus))
+      .andExpect(content().string(responseBody));
   }
 
   @Test

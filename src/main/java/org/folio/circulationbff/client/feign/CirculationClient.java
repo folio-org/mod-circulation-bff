@@ -40,6 +40,4 @@ public interface CirculationClient {
   @GetMapping("/search-slips/{servicePointId}")
   SearchSlipCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
 
-  @PostMapping("/check-in-by-barcode")
-  CheckInResponse checkIn(@RequestBody CheckInRequest request);
 }
