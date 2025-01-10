@@ -19,7 +19,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 
 import lombok.SneakyThrows;
 
-public class CheckInApiTest extends BaseIT {
+class CheckInApiTest extends BaseIT {
 
   private static final String CHECK_IN_URL = "/circulation-bff/check-in-by-barcode";
   private static final String CIRCULATION_CHECK_IN_URL = "/circulation/check-in-by-barcode";
