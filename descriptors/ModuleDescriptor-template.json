@@ -283,6 +283,10 @@
     {
       "id":  "material-types",
       "version": "2.2"
+    },
+    {
+      "id":  "circulation",
+      "version": "14.4"
     }
   ],
   "optional": [
