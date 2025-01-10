@@ -13,7 +13,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/dto/circulation/check-in-response.yaml"
+            $ref: "../../schemas/response/check-in-response.yaml"
     '422':
       $ref: '../../responses/unprocessableEntityResponse.yaml'
     '500':

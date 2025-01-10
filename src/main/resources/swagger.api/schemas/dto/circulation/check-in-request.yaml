@@ -1,6 +1,26 @@
 type: object
-description: "Check-in request"
+description: Check-in request
 properties:
   itemBarcode:
-    description: "Item barcode"
+    description: Item barcode
     type: string
+  servicePointId:
+    description: ID of the service point where item is being checked-in
+    type: string
+    format: uuid
+  checkInDate:
+    description: Date and time of item check-in
+    type: string
+    format: date-time
+  claimedReturnedResolution:
+    description: Describes how the library resolved the situation where the item was claimed returned
+    type: string
+  sessionId:
+    description: Randomly generated UUID which must be the same for all check-in requests issued in scope of the same check-in session
+    type: string
+    format: uuid
+
+required:
+  - itemBarcode
+  - servicePointId
+  - checkInDate

@@ -1,0 +1,8 @@
+type: object
+description: Check-in response
+properties:
+  toServicePoint:
+    description: Name of the service point the item should be routed to
+    type: string
+
+additionalProperties: true
