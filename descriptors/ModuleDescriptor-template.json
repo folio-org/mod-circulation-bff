@@ -138,6 +138,22 @@
       ]
     },
     {
+      "id": "circulation-bff-check-in-by-barcode",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/check-in-by-barcode",
+          "permissionsRequired": ["circulation-bff.check-in-by-barcode.execute"],
+          "modulePermissions": [
+            "circulation.check-in-by-barcode.post"
+          ]
+        }
+      ]
+    },
+    {
       "id": "_tenant",
       "version": "2.0",
       "interfaceType": "system",
