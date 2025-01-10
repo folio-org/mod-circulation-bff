@@ -1,0 +1,6 @@
+type: object
+description: "Check-in response"
+properties:
+  itemBarcode:
+    description: "Item barcode"
+    type: string
