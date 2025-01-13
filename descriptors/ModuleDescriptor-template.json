@@ -138,15 +138,17 @@
       ]
     },
     {
-      "id": "circulation-bff-check-in-by-barcode",
+      "id": "circulation-bff-loans",
       "version": "1.0",
       "handlers": [
         {
           "methods": [
             "POST"
           ],
-          "pathPattern": "/circulation-bff/check-in-by-barcode",
-          "permissionsRequired": ["circulation-bff.check-in-by-barcode.execute"],
+          "pathPattern": "/circulation-bff/loans/check-in-by-barcode",
+          "permissionsRequired": [
+            "circulation-bff.loans.check-in-by-barcode.execute"
+          ],
           "modulePermissions": [
             "circulation.check-in-by-barcode.post"
           ]
@@ -226,7 +228,7 @@
       "description": "create ECS LTR or Circulation request"
     },
     {
-      "permissionName": "circulation-bff.check-in-by-barcode.execute",
+      "permissionName": "circulation-bff.loans.check-in-by-barcode.execute",
       "displayName": "circulation BFF - check-in item",
       "description": "check-in item"
     }
