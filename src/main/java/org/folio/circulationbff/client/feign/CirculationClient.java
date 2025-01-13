@@ -37,4 +37,5 @@ public interface CirculationClient {
 
   @GetMapping("/search-slips/{servicePointId}")
   SearchSlipCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
+
 }
