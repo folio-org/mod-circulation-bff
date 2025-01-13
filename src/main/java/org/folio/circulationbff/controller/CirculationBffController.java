@@ -10,15 +10,18 @@ import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
+import org.folio.circulationbff.domain.dto.CheckInRequest;
+import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
-import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
+import org.folio.circulationbff.exception.HttpFailureFeignException;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
+import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.MediatedRequestsService;
@@ -26,6 +29,7 @@ import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +45,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final MediatedRequestsService mediatedRequestsService;
   private final UserService userService;
   private final EcsRequestExternalService ecsRequestExternalService;
+  private final CheckInService checkInService;
 
   @Override
   public ResponseEntity<Request> postEcsRequestExternal(EcsRequestExternal ecsRequestExternal) {
@@ -171,5 +176,18 @@ public class CirculationBffController implements CirculationBffApi {
     log.info("createRequest:: tenantId: {}, requestId: {}", tenantId, bffRequest.getId());
     return ResponseEntity.status(CREATED)
       .body(circulationBffService.createRequest(bffRequest, tenantId));
+  }
+
+  @Override
+  public ResponseEntity<CheckInResponse> checkInByBarcode(CheckInRequest checkInRequest) {
+    log.info("checkInByBarcode:: itemBarcode: {}", checkInRequest::getItemBarcode);
+    return ResponseEntity.ok(checkInService.checkIn(checkInRequest));
+  }
+
+  @ExceptionHandler(HttpFailureFeignException.class)
+  public ResponseEntity<String> handleFeignException(HttpFailureFeignException e) {
+    log.warn("handleFeignException:: forwarding error response with status {} from {}",
+      e::getStatusCode, e::getUrl);
+    return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBody());
   }
 }

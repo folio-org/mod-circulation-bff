@@ -19,6 +19,8 @@ paths:
     $ref: 'paths/staffSlips/searchSlips.yaml'
   /circulation-bff/create-ecs-request-external:
     $ref: 'paths/ecsRequestExternal/ecsRequestExternal.yaml'
+  /circulation-bff/check-in-by-barcode:
+    $ref: 'paths/check-in/check-in.yaml'
 
 components:
   schemas:
