@@ -60,8 +60,9 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       } else {
         log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
           "Getting allowed service points from central mod-tlr");
-        String patronGroupId = userService.find(params.getRequesterId().toString()).getPatronGroup();
-        params.setPatronGroupId(UUID.fromString(patronGroupId));
+        String patronGroupId = params.getRequesterId() == null ? null :
+                userService.find(params.getRequesterId().toString()).getPatronGroup();
+        params.setPatronGroupId(patronGroupId != null ? UUID.fromString(patronGroupId) : null);
         params.setRequesterId(null);
         return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
           () -> ecsTlrClient.getAllowedServicePoints(params));
