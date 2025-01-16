@@ -1,3 +1,6 @@
+## 1.0.4 2025-01-16
+* Check-in API (MCBFF-37)
+
 ## 1.0.3 2024-12-12
 * Endpoint `create-ecs-request-external` returns primary request (MCBFF-32)
 
