@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +43,22 @@ class SearchServiceTest {
 
   @InjectMocks
   private SearchServiceImpl searchService;
+
+  @Test
+  void searchInstanceByItemId() {
+    String itemId = UUID.randomUUID().toString();
+    SearchInstance instance = new SearchInstance();
+
+    SearchInstances mockSearchResponse = new SearchInstances()
+      .instances(List.of(instance))
+      .totalRecords(1);
+    String query = "items.id==" + itemId + "&expandAll=true";
+    when(searchClient.findInstances(query, true))
+      .thenReturn(mockSearchResponse);
+
+    SearchInstance response = searchService.findInstanceByItemId(itemId);
+    assertEquals(response, instance);
+  }
 
   @Test
   void searchFindsNoInstances() {
