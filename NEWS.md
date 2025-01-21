@@ -1,3 +1,6 @@
+## 1.0.5 2025-01-21
+* Add missing required interfaces (MCBFF-40)
+
 ## 1.0.4 2025-01-16
 * Check-in API (MCBFF-37)
 
