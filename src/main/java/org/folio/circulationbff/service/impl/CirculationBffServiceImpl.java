@@ -54,21 +54,35 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     log.info("getAllowedServicePoints:: params: {}", params);
     if (settingsService.isEcsTlrFeatureEnabled()) {
       if (userTenantsService.isCentralTenant()) {
-        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
-          "Getting allowed service points from local mod-tlr");
+        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and we are in the central " +
+          "tenant. Calling local mod-tlr.");
         return ecsTlrClient.getAllowedServicePoints(params);
       } else {
-        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled. " +
-          "Getting allowed service points from central mod-tlr");
-        String patronGroupId = userService.find(params.getRequesterId().toString()).getPatronGroup();
-        params.setPatronGroupId(UUID.fromString(patronGroupId));
-        params.setRequesterId(null);
-        return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
-          () -> ecsTlrClient.getAllowedServicePoints(params));
+        if (params.getRequestId() == null) {
+          log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled, requestId param is " +
+            "missing. Calling local mod-circulation.");
+          return circulationClient.allowedServicePoints(params);
+        } else {
+          var request = circulationClient.getRequestById(params.getRequestId().toString());
+          if (request.getEcsRequestPhase() == null) {
+            log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled, but request is not " +
+              "an ECS request. Calling local mod-circulation.");
+            return circulationClient.allowedServicePoints(params);
+          } else {
+            log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and request is " +
+              "an ECS request. Calling central mod-tlr.");
+            String patronGroupId = params.getRequesterId() == null ? null :
+              userService.find(params.getRequesterId().toString()).getPatronGroup();
+            params.setPatronGroupId(patronGroupId != null ? UUID.fromString(patronGroupId) : null);
+            params.setRequesterId(null);
+            return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
+              () -> ecsTlrClient.getAllowedServicePoints(params));
+          }
+        }
       }
     } else {
-      log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. Getting allowed service " +
-        "points from mod-circulation module");
+      log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. " +
+        "Calling local mod-circulation.");
       return circulationClient.allowedServicePoints(params);
     }
   }
