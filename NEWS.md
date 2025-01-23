@@ -1,3 +1,6 @@
+## 1.0.6 2025-01-23
+* Fix Allowed SP for non-ECS requests (MCBFF-36)
+
 ## 1.0.5 2025-01-21
 * Add missing required interfaces (MCBFF-40)
 
