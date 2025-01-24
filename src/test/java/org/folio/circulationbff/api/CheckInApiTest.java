@@ -39,7 +39,6 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccess() {
-    // given
     var request = new CheckInRequest()
       .itemBarcode("test_barcode")
       .checkInDate(new Date())
@@ -65,7 +64,6 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
 
-    // when-then
     var updatedServicePoint = "updated service point";
     checkIn(request)
       .andExpect(status().isOk())
@@ -76,7 +74,6 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccessCrossTenant() {
-    // given
     var request = new CheckInRequest()
       .itemBarcode("test_barcode")
       .checkInDate(new Date())
@@ -102,7 +99,6 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
 
-    // when-then
     var updatedServicePoint = "updated service point";
     checkIn(request)
       .andExpect(status().isOk())
@@ -113,7 +109,6 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccessWhenInstanceNotFound() {
-    // given
     var request = new CheckInRequest()
       .itemBarcode("test_barcode")
       .checkInDate(new Date())
@@ -123,7 +118,6 @@ class CheckInApiTest extends BaseIT {
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
       .willReturn(jsonResponse(searchInstances, SC_OK)));
 
-    // when-then
     checkIn(request)
       .andExpect(status().isOk());
   }
