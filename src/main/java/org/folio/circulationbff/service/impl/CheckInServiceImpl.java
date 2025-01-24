@@ -45,7 +45,7 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("getEffectiveLocationServicePoint: itemId {}", itemId);
     var instance = searchService.findInstanceByItemId(itemId);
     if (instance == null) {
-      log.info("getEffectiveLocationServicePoint: instance not found");
+      log.warn("getEffectiveLocationServicePoint: instance not found");
       return null;
     }
     var itemTenantId = instance.getItems()

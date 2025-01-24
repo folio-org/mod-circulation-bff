@@ -44,18 +44,13 @@ class CheckInApiTest extends BaseIT {
       .itemBarcode("test_barcode")
       .checkInDate(new Date())
       .servicePointId(randomUUID());
-
     givenCirculationCheckinSucceed(request);
-
     var checkinItem = new Item()
       .id("itemId")
       .copyNumber("copyNumber")
-      .effectiveLocationId( "effectiveLocationId");
-
+      .effectiveLocationId("effectiveLocationId");
     givenSearchInstanceReturnsItem(TENANT_ID_CONSORTIUM, checkinItem);
-
     givenCurrentTenantIsConsortium();
-
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/itemId"))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
@@ -86,18 +81,13 @@ class CheckInApiTest extends BaseIT {
       .itemBarcode("test_barcode")
       .checkInDate(new Date())
       .servicePointId(randomUUID());
-
     givenCirculationCheckinSucceed(request);
-
     var checkinItem = new Item()
       .id("itemId")
       .copyNumber("copyNumber")
-      .effectiveLocationId( "effectiveLocationId");
-
+      .effectiveLocationId("effectiveLocationId");
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
-
     givenCurrentTenantIsConsortium();
-
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/itemId"))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
@@ -128,12 +118,10 @@ class CheckInApiTest extends BaseIT {
       .itemBarcode("test_barcode")
       .checkInDate(new Date())
       .servicePointId(randomUUID());
-
     givenCirculationCheckinSucceed(request);
-
-    var searchResponse = new SearchInstances().instances(List.of());
+    var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
-      .willReturn(jsonResponse(searchResponse, SC_OK)));
+      .willReturn(jsonResponse(searchInstances, SC_OK)));
 
     // when-then
     checkIn(request)

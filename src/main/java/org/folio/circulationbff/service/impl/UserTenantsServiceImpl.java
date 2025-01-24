@@ -1,7 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
-import java.util.List;
-
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.client.feign.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
@@ -22,7 +21,6 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   public String getCurrentTenant() {
     UserTenant firstUserTenant = getFirstUserTenant();
     if (firstUserTenant == null) {
-      log.info("getCurrentTenant:: failed to fetch user tenants");
       return null;
     }
     String currentTenantId = firstUserTenant.getTenantId();
@@ -34,7 +32,6 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   public String getCentralTenant() {
     UserTenant firstUserTenant = getFirstUserTenant();
     if (firstUserTenant == null) {
-      log.info("getCentralTenant:: failed to fetch user tenants");
       return null;
     }
     String centralTenantId = firstUserTenant.getCentralTenantId();
@@ -46,7 +43,6 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   public boolean isCentralTenant() {
     UserTenant firstUserTenant = getFirstUserTenant();
     if (firstUserTenant == null) {
-      log.info("isCentralTenant:: failed to fetch user tenants");
       return false;
     }
     String centralTenantId = firstUserTenant.getCentralTenantId();
@@ -55,14 +51,6 @@ public class UserTenantsServiceImpl implements UserTenantsService {
       tenantId);
 
     return centralTenantId.equals(tenantId);
-  }
-
-  private UserTenant getFirstUserTenant() {
-    UserTenant firstUserTenant = findFirstUserTenant();
-    if (firstUserTenant == null) {
-      log.info("processUserGroupEvent: Failed to get user-tenants info");
-    }
-    return firstUserTenant;
   }
 
   @Override
@@ -79,21 +67,16 @@ public class UserTenantsServiceImpl implements UserTenantsService {
     return false;
   }
 
-  private UserTenant findFirstUserTenant() {
-    log.info("findFirstUserTenant:: finding first userTenant");
-    UserTenant firstUserTenant = null;
-    UserTenantCollection userTenantCollection = userTenantsClient.getUserTenants(1);
-    log.info("findFirstUserTenant:: userTenantCollection: {}", () -> userTenantCollection);
-    if (userTenantCollection != null) {
-      log.info("findFirstUserTenant:: userTenantCollection: {}", () -> userTenantCollection);
-      List<UserTenant> userTenants = userTenantCollection.getUserTenants();
-      if (!userTenants.isEmpty()) {
-        firstUserTenant = userTenants.get(0);
-        log.info("findFirstUserTenant:: found userTenant: {}", firstUserTenant);
-      }
+  private UserTenant getFirstUserTenant() {
+    log.info("getFirstUserTenant:: finding first userTenant");
+    UserTenantCollection userTenants = userTenantsClient.getUserTenants(1);
+    log.info("getFirstUserTenant:: userTenants: {}", () -> userTenants);
+    if (userTenants == null || CollectionUtils.isEmpty(userTenants.getUserTenants())) {
+      log.warn("getFirstUserTenant: failed to fetch user tenants");
+      return null;
     }
-    log.info("findFirstUserTenant:: result: {}", firstUserTenant);
+    var firstUserTenant = userTenants.getUserTenants().get(0);
+    log.info("getFirstUserTenant:: result: {}", firstUserTenant);
     return firstUserTenant;
   }
 }
-
