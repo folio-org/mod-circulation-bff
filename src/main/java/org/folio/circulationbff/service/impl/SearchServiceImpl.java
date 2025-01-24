@@ -75,7 +75,7 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public SearchInstance findInstanceByItemId(String itemId) {
     log.info("findInstanceByItemId:: itemId {}", itemId);
-    String query = String.format("items.id==%s&expandAll=true", itemId);
+    String query = "items.id==" + itemId;
     SearchInstances searchResult = searchClient.findInstances(query, true);
     if (CollectionUtils.isEmpty(searchResult.getInstances())) {
       return null;

@@ -52,7 +52,7 @@ class SearchServiceTest {
     SearchInstances mockSearchResponse = new SearchInstances()
       .instances(List.of(instance))
       .totalRecords(1);
-    String query = "items.id==" + itemId + "&expandAll=true";
+    String query = "items.id==" + itemId;
     when(searchClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
