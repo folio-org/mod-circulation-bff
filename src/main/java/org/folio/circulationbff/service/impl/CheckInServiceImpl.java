@@ -48,12 +48,6 @@ public class CheckInServiceImpl implements CheckInService {
       log.warn("getEffectiveLocationServicePoint: instance not found");
       return null;
     }
-    var itemTenantId = instance.getItems()
-      .stream()
-      .filter(item -> item.getId().equals(itemId))
-      .findFirst()
-      .map(SearchItem::getTenantId)
-      .orElse(null);
     var tenantId = instance.getItems()
       .stream()
       .filter(item -> item.getId().equals(itemId))
@@ -69,7 +63,7 @@ public class CheckInServiceImpl implements CheckInService {
       return executionService.executeSystemUserScoped(tenantId, () -> fetchServicePointName(itemId));
     }
   }
-  
+
   private String fetchServicePointName(String itemId) {
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
@@ -92,25 +86,6 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("fetchServicePointName:: result: {}", servicePointName);
 
     return servicePointName;
-  }
-      log.info("getEffectiveLocationServicePoint: same tenant case {}", itemTenantId);
-      var item = inventoryService.fetchItem(itemId);
-      var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
-      var servicePoint = inventoryService.fetchServicePoint(location.getPrimaryServicePoint().toString());
-      return servicePoint.getName();
-    } else {
-      log.info("getEffectiveLocationServicePoint: cross tenant case {}", itemTenantId);
-      var item = executionService.executeSystemUserScoped(itemTenantId,
-        () -> inventoryService.fetchItem(itemId)
-      );
-      var location = executionService.executeSystemUserScoped(itemTenantId,
-        () -> inventoryService.fetchLocation(item.getEffectiveLocationId())
-      );
-      var servicePoint = executionService.executeSystemUserScoped(itemTenantId,
-        () -> inventoryService.fetchServicePoint(location.getPrimaryServicePoint().toString())
-      );
-      return servicePoint.getName();
-    }
   }
 
 }
