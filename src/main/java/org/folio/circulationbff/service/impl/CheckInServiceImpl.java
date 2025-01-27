@@ -57,17 +57,19 @@ public class CheckInServiceImpl implements CheckInService {
     if (Objects.equals(itemTenantId, userTenantsService.getCurrentTenant())) {
       log.info("getEffectiveLocationServicePoint: same tenant case {}", itemTenantId);
       var item = inventoryService.fetchItem(itemId);
-      var servicePoint = inventoryService.fetchServicePoint(item.getEffectiveLocationId());
+      var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
+      var servicePoint = inventoryService.fetchServicePoint(location.getPrimaryServicePoint().toString());
       return servicePoint.getName();
     } else {
       log.info("getEffectiveLocationServicePoint: cross tenant case {}", itemTenantId);
-      var item = executionService.executeSystemUserScoped(
-        itemTenantId,
+      var item = executionService.executeSystemUserScoped(itemTenantId,
         () -> inventoryService.fetchItem(itemId)
       );
-      var servicePoint = executionService.executeSystemUserScoped(
-        itemTenantId,
-        () -> inventoryService.fetchServicePoint(item.getEffectiveLocationId())
+      var location = executionService.executeSystemUserScoped(itemTenantId,
+        () -> inventoryService.fetchLocation(item.getEffectiveLocationId())
+      );
+      var servicePoint = executionService.executeSystemUserScoped(itemTenantId,
+        () -> inventoryService.fetchServicePoint(location.getPrimaryServicePoint().toString())
       );
       return servicePoint.getName();
     }

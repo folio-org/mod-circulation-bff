@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -54,13 +55,18 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
+    var primaryServicePoint = randomUUID();
+    var location = new Location().primaryServicePoint(primaryServicePoint);
+    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/effectiveLocationId"))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = """
       {
         "name": "updated service point",
         "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
       }
       """;
-    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/effectiveLocationId"))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePoint))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
 
@@ -89,13 +95,18 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
+    var primaryServicePoint = randomUUID();
+    var location = new Location().primaryServicePoint(primaryServicePoint);
+    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/effectiveLocationId"))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = """
       {
         "name": "updated service point",
         "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
       }
       """;
-    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/effectiveLocationId"))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePoint))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
 
