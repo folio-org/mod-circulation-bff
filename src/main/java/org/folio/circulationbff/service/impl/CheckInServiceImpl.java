@@ -54,7 +54,45 @@ public class CheckInServiceImpl implements CheckInService {
       .findFirst()
       .map(SearchItem::getTenantId)
       .orElse(null);
-    if (Objects.equals(itemTenantId, userTenantsService.getCurrentTenant())) {
+    var tenantId = instance.getItems()
+      .stream()
+      .filter(item -> item.getId().equals(itemId))
+      .findFirst()
+      .map(SearchItem::getTenantId)
+      .orElse(null);
+
+    if (Objects.equals(tenantId, userTenantsService.getCurrentTenant())) {
+      log.info("getEffectiveLocationServicePoint: same tenant case {}", tenantId);
+      return fetchServicePointName(itemId);
+    } else {
+      log.info("getEffectiveLocationServicePoint: cross tenant case {}", tenantId);
+      return executionService.executeSystemUserScoped(tenantId, () -> fetchServicePointName(itemId));
+    }
+  }
+  
+  private String fetchServicePointName(String itemId) {
+    var item = inventoryService.fetchItem(itemId);
+    if (item == null) {
+      log.warn("fetchServicePointName:: item not found, itemId: {}", itemId);
+      return null;
+    }
+    var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
+    if (location == null) {
+      log.warn("fetchServicePointName:: location not found, locationId: {}",
+        item.getEffectiveLocationId());
+      return null;
+    }
+    var servicePoint = inventoryService.fetchServicePoint(location.getPrimaryServicePoint().toString());
+    if (servicePoint == null) {
+      log.warn("fetchServicePointName:: servicePoint not found, servicePointId: {}",
+        location.getPrimaryServicePoint());
+      return null;
+    }
+    String servicePointName = servicePoint.getName();
+    log.info("fetchServicePointName:: result: {}", servicePointName);
+
+    return servicePointName;
+  }
       log.info("getEffectiveLocationServicePoint: same tenant case {}", itemTenantId);
       var item = inventoryService.fetchItem(itemId);
       var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
