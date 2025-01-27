@@ -32,20 +32,11 @@ public class UserTenantsServiceImpl implements UserTenantsService {
 
   @Override
   public boolean isCentralTenant() {
-    UserTenant firstUserTenant = getFirstUserTenant();
-    if (firstUserTenant == null) {
-      log.info("isCentralTenant:: failed to fetch user tenants");
-      return false;
-    }
-    String centralTenantId = firstUserTenant.getCentralTenantId();
-    String tenantId = firstUserTenant.getTenantId();
-    log.info("isCentralTenant:: centralTenantId={}, tenantId={}", centralTenantId,
-      tenantId);
-
-    return centralTenantId.equals(tenantId);
+    return isCentralTenant(getFirstUserTenant());
   }
 
-  private UserTenant getFirstUserTenant() {
+  @Override
+  public UserTenant getFirstUserTenant() {
     UserTenant firstUserTenant = findFirstUserTenant();
     if (firstUserTenant == null) {
       log.info("processUserGroupEvent: Failed to get user-tenants info");
@@ -67,20 +58,34 @@ public class UserTenantsServiceImpl implements UserTenantsService {
     return false;
   }
 
+  @Override
+  public boolean isCentralTenant(UserTenant userTenant) {
+    if (userTenant == null) {
+      log.info("isCentralTenant:: failed to fetch user tenants");
+      return false;
+    }
+    String centralTenantId = userTenant.getCentralTenantId();
+    String tenantId = userTenant.getTenantId();
+    log.info("isCentralTenant:: centralTenantId={}, tenantId={}", centralTenantId,
+      tenantId);
+
+    return centralTenantId.equals(tenantId);
+  }
+
   private UserTenant findFirstUserTenant() {
     log.info("findFirstUserTenant:: finding first userTenant");
     UserTenant firstUserTenant = null;
     UserTenantCollection userTenantCollection = userTenantsClient.getUserTenants(1);
-    log.info("findFirstUserTenant:: userTenantCollection: {}", () -> userTenantCollection);
+    log.debug("findFirstUserTenant:: userTenantCollection: {}", () -> userTenantCollection);
     if (userTenantCollection != null) {
-      log.info("findFirstUserTenant:: userTenantCollection: {}", () -> userTenantCollection);
+      log.debug("findFirstUserTenant:: userTenantCollection: {}", () -> userTenantCollection);
       List<UserTenant> userTenants = userTenantCollection.getUserTenants();
       if (!userTenants.isEmpty()) {
         firstUserTenant = userTenants.get(0);
-        log.info("findFirstUserTenant:: found userTenant: {}", firstUserTenant);
+        log.debug("findFirstUserTenant:: found userTenant: {}", firstUserTenant);
       }
     }
-    log.info("findFirstUserTenant:: result: {}", firstUserTenant);
+    log.debug("findFirstUserTenant:: result: {}", firstUserTenant);
     return firstUserTenant;
   }
 }

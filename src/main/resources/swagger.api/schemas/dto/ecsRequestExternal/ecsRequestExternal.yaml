@@ -58,8 +58,5 @@ properties:
     type: string
 
 required:
-  - instanceId
   - requesterId
-  - requestLevel
-  - fulfillmentPreference
   - requestDate

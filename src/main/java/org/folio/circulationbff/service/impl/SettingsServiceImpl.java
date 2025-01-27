@@ -21,18 +21,19 @@ public class SettingsServiceImpl implements SettingsService {
 
   @Override
   public boolean isEcsTlrFeatureEnabled() {
-    if (userTenantsService.isCentralTenant()) {
-      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    }
-    return isTlrEnabledInCirculationSettings();
+    return isEcsTlrFeatureEnabled(userTenantsService.isCentralTenant());
   }
 
   @Override
   public boolean isEcsTlrFeatureEnabled(String tenantId) {
-    if (userTenantsService.isCentralTenant(tenantId)) {
-      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    }
-    return isTlrEnabledInCirculationSettings();
+    return isEcsTlrFeatureEnabled(userTenantsService.isCentralTenant(tenantId));
+  }
+
+  @Override
+  public boolean isEcsTlrFeatureEnabled(boolean isCentralTenant) {
+    return isCentralTenant
+      ? isEcsTlrFeatureEnabledInCentralTenant()
+      : isTlrEnabledInCirculationSettings();
   }
 
   private boolean isTlrEnabledInCirculationSettings() {
@@ -49,5 +50,11 @@ public class SettingsServiceImpl implements SettingsService {
       }
     }
     return false;
+  }
+
+  private boolean isEcsTlrFeatureEnabledInCentralTenant() {
+    Boolean ecsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    log.info("isEcsTlrFeatureEnabled:: {}", ecsTlrFeatureEnabled);
+    return ecsTlrFeatureEnabled;
   }
 }

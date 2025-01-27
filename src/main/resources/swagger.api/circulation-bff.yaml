@@ -52,3 +52,5 @@ components:
       $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
     ecs-tlr:
       $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+    consortium-item:
+      $ref: 'schemas/dto/search/consortiumItem.yaml'

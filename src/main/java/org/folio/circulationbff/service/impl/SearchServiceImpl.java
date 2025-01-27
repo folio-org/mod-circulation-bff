@@ -29,6 +29,7 @@ import org.folio.circulationbff.domain.dto.BffSearchItemInTransitDestinationServ
 import org.folio.circulationbff.domain.dto.BffSearchItemLocation;
 import org.folio.circulationbff.domain.dto.BffSearchItemMaterialType;
 import org.folio.circulationbff.domain.dto.BffSearchItemStatus;
+import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
@@ -70,6 +71,12 @@ public class SearchServiceImpl implements SearchService {
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
   private final SearchInstanceMapper searchInstanceMapper;
+
+  @Override
+  public ConsortiumItem findConsortiumItem(String itemId) {
+    log.info("findConsortiumItem:: looking for item {}", itemId);
+    return searchClient.searchItem(itemId);
+  }
 
   @Override
   public Collection<BffSearchInstance> findInstances(String query) {
