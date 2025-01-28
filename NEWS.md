@@ -1,3 +1,6 @@
+## 1.0.7 2025-01-28
+* Change allowed service point logic (MCBFF-52)
+
 ## 1.0.6 2025-01-23
 * Fix Allowed SP for non-ECS requests (MCBFF-36)
 
