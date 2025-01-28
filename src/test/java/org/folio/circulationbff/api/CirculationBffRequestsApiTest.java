@@ -152,8 +152,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
     allowedSpResponseConsortium.setHold(Set.of(
       buildAllowedServicePoint("SP_consortium_1"),
       buildAllowedServicePoint("SP_consortium_2")));
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_ALLOWED_SERVICE_POINT_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(TLR_ALLOWED_SERVICE_POINT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
 
     var operation = "create";
@@ -174,7 +175,8 @@ class CirculationBffRequestsApiTest extends BaseIT {
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
     wireMockServer.verify(getRequestedFor(urlPathEqualTo(
-      CIRCULATION_ALLOWED_SERVICE_POINT_URL))
+      TLR_ALLOWED_SERVICE_POINT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .withQueryParam("instanceId", equalTo(instanceId.toString()))
       .withQueryParam("operation", equalTo(operation))
     );
