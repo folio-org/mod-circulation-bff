@@ -69,21 +69,6 @@ public class CirculationBffServiceImpl implements CirculationBffService {
       "central.");
 
     if (params.getRequestId() == null) {
-//      log.info("getAllowedServicePoints:: Request ID is missing (creation).");
-//      if (params.getItemId() != null) {
-//        log.info("getAllowedServicePoints:: Item ID is present (ILR).");
-//        // Trying to fetch item to detect Mediated request creation case
-//        Item item = itemStorageClient.findItem(params.getItemId().toString());
-//        if (item == null) {
-//          log.info("getAllowedServicePoints:: Item not found in the current tenant. " +
-//            "Calling central mod-tlr.");
-//          return getAllowedSpFromCentralTlr(params);
-//        }
-//      }
-//      log.info("getAllowedServicePoints:: Item ID is either missing (TLR) or present and item " +
-//        "found locally. Calling local mod-circulation");
-//      return circulationClient.allowedServicePoints(params);
-
       log.info("getAllowedServicePoints:: Request ID is missing (creation). Calling central mod-tlr.");
       // This should handle both mediated request and local data tenant request cases.
       // In case of a local request, central mod-tlr should call mod-circulation of the current
