@@ -5,16 +5,15 @@ import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLeve
 
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
-import org.folio.circulationbff.domain.EcsTenantConfiguration;
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.Request;
-import org.folio.circulationbff.service.EcsTenantConfigurationService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.SettingsService;
+import org.folio.circulationbff.service.TenantService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
@@ -31,26 +30,25 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
   private final CirculationClient circulationClient;
   private final SettingsService settingsService;
   private final SearchService searchService;
-  private final EcsTenantConfigurationService ecsTenantConfigurationService;
+  private final TenantService tenantService;
 
   @Override
   public Request createEcsRequestExternal(EcsRequestExternal request) {
-    log.info("createEcsRequestExternal:: creating external request");
-    fetchMissingRequestProperties(request);
-    EcsTenantConfiguration tenantConfiguration = ecsTenantConfigurationService.getTenantConfiguration();
+    log.info("createEcsRequestExternal:: requesterId={}, itemId={}, instanceId={}",
+      request::getRequesterId, request::getItemId, request::getInstanceId);
 
-    return settingsService.isEcsTlrFeatureEnabled(tenantConfiguration.isCurrentTenantCentral())
-      ? createEcsRequest(request, tenantConfiguration)
+    fetchMissingRequestProperties(request);
+
+    return settingsService.isEcsTlrFeatureEnabled()
+      ? createEcsRequest(request)
       : createCirculationRequest(request);
   }
 
-  private Request createEcsRequest(EcsRequestExternal ecsRequestExternal,
-    EcsTenantConfiguration tenantConfiguration) {
-
+  private Request createEcsRequest(EcsRequestExternal ecsRequestExternal) {
     log.info("createEcsRequest:: creating ECS request");
-    return tenantConfiguration.isCurrentTenantSecure()
+    return tenantService.isCurrentTenantSecure()
       ? createMediatedRequest(ecsRequestExternal)
-      : createExternalEcsTlr(ecsRequestExternal, tenantConfiguration);
+      : createExternalEcsTlr(ecsRequestExternal);
   }
 
   private Request createCirculationRequest(EcsRequestExternal ecsRequestExternal) {
@@ -60,12 +58,10 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
       : createItemLevelRequest(ecsRequestExternal);
   }
 
-  private Request createExternalEcsTlr(EcsRequestExternal ecsRequestExternal,
-    EcsTenantConfiguration tenantConfiguration) {
-
+  private Request createExternalEcsTlr(EcsRequestExternal ecsRequestExternal) {
     log.info("createExternalEcsTlr:: creating ECS TLR");
     EcsTlr ecsTlr = systemUserScopedExecutionService.executeSystemUserScoped(
-      tenantConfiguration.centralTenantId(),
+      tenantService.getCentralTenantId().orElseThrow(),
       () -> ecsTlrClient.createEcsExternalRequest(ecsRequestExternal));
     log.info("createExternalEcsTlr:: ECS TLR created: {}", ecsTlr::getId);
     log.debug("createExternalEcsTlr:: ecsTlr: {}", ecsTlr);

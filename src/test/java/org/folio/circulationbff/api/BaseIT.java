@@ -51,7 +51,7 @@ public class BaseIT {
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
   protected static final String TENANT_ID_COLLEGE = "college";
-  protected static final String TENANT_ID_SECURE = "secure_tenant";
+  protected static final String TENANT_ID_SECURE = "secure";
   protected static final String USER_ID = randomId();
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL)

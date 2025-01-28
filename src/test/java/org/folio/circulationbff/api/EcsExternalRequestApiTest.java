@@ -16,10 +16,10 @@ import static org.folio.circulationbff.domain.dto.EcsRequestExternal.Fulfillment
 import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum.ITEM;
 import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum.TITLE;
 import static org.folio.spring.integration.XOkapiHeaders.TENANT;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
@@ -29,9 +29,9 @@ import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
-import org.folio.spring.integration.XOkapiHeaders;
+import org.folio.circulationbff.service.impl.TenantServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 
@@ -55,6 +55,11 @@ class EcsExternalRequestApiTest extends BaseIT {
   private static final String PRIMARY_REQUEST_ID = randomId();
   private static final Date REQUEST_DATE = new Date();
 
+  @BeforeEach
+  void beforeEach() {
+    TenantServiceImpl.clearCache();
+  }
+
   @Test
   void createExternalItemLevelEcsTlr() {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(ITEM);
@@ -63,7 +68,7 @@ class EcsExternalRequestApiTest extends BaseIT {
       .instanceId(INSTANCE_ID);
 
     mockItemSearch(ITEM_ID);
-    mockUserTenants(true);
+    mockUserTenants();
     mockEcsTlrFeatureSettings(true);
     mockEcsTlrExternalRequestCreating(expectedRequestBody);
     mockPrimaryRequest();
@@ -89,7 +94,7 @@ class EcsExternalRequestApiTest extends BaseIT {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
 
     mockItemSearch(ITEM_ID);
-    mockUserTenants(true);
+    mockUserTenants();
     mockEcsTlrFeatureSettings(true);
     mockEcsTlrExternalRequestCreating(initialRequest);
     mockPrimaryRequest();
@@ -109,10 +114,10 @@ class EcsExternalRequestApiTest extends BaseIT {
       CIRCULATION_REQUEST_URL_TEMPLATE, PRIMARY_REQUEST_ID))));
   }
 
-  private static void mockUserTenants(boolean isCentralTenant) {
+  private static void mockUserTenants() {
     UserTenant userTenant = new UserTenant()
       .centralTenantId(TENANT_ID_CONSORTIUM)
-      .tenantId(isCentralTenant ? TENANT_ID_CONSORTIUM : TENANT_ID_COLLEGE);
+      .tenantId("random_tenant");
     UserTenantCollection userTenants = new UserTenantCollection(List.of(userTenant), 1);
 
     wireMockServer.stubFor(get(urlPathEqualTo(USER_TENANTS_URL))
@@ -127,8 +132,7 @@ class EcsExternalRequestApiTest extends BaseIT {
       .requesterId(REQUESTER_ID)
       .requestDate(REQUEST_DATE)
       .fulfillmentPreference(HOLD_SHELF)
-      .pickupServicePointId(PICKUP_SERVICE_POINT_ID)
-      .instanceId(INSTANCE_ID);
+      .pickupServicePointId(PICKUP_SERVICE_POINT_ID);
 
     if (requestLevel == ITEM) {
       request.setItemId(ITEM_ID);
@@ -141,9 +145,14 @@ class EcsExternalRequestApiTest extends BaseIT {
 
   @SneakyThrows
   private void createExternalRequest(EcsRequestExternal requestExternal) {
-    mockMvc.perform(buildRequest(MockMvcRequestBuilders.post(
-      CIRCULATION_BFF_CREATE_ECS_EXTERNAL_REQUEST_URL), requestExternal)
-      .header(TENANT, TENANT_ID_CONSORTIUM));
+    createExternalRequest(requestExternal, TENANT_ID_CONSORTIUM);
+  }
+
+  @SneakyThrows
+  private void createExternalRequest(EcsRequestExternal requestExternal, String tenantId) {
+    mockMvc.perform(post(CIRCULATION_BFF_CREATE_ECS_EXTERNAL_REQUEST_URL)
+      .headers(buildHeaders(tenantId))
+      .content(asJsonString(requestExternal)));
   }
 
   private static void mockEcsTlrExternalRequestCreating(EcsRequestExternal requestBody) {
