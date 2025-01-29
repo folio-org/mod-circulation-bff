@@ -77,7 +77,8 @@ public class UserTenantsServiceImpl implements UserTenantsService {
       return null;
     }
     var firstUserTenant = userTenants.getUserTenants().get(0);
-    log.debug("getFirstUserTenant:: result: {}", firstUserTenant);
+    log.debug("getFirstUserTenant:: result: {}",
+      () -> firstUserTenant == null ? null : firstUserTenant.getId());
     return firstUserTenant;
   }
 }
