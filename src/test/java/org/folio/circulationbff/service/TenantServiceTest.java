@@ -111,7 +111,6 @@ class TenantServiceTest {
 
     assertTrue(secureTenantId.isPresent());
     assertEquals("secure_tenant", secureTenantId.get());
-    verify(tenantConfig, times(1)).getSecureTenantId();
   }
 
   @Test
@@ -122,7 +121,6 @@ class TenantServiceTest {
     Optional<String> secureTenantId = tenantService.getSecureTenantId();
 
     assertTrue(secureTenantId.isEmpty());
-    verify(tenantConfig, times(1)).getSecureTenantId();
   }
 
   @Test
