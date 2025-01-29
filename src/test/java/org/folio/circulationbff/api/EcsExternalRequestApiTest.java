@@ -36,9 +36,7 @@ import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.service.impl.TenantServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 
