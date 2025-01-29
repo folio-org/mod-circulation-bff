@@ -37,10 +37,10 @@ public class TenantServiceImpl implements TenantService {
 
     if (CENTRAL_TENANT_ID_CACHE.containsKey(currentTenantId)) {
       centralTenantId = CENTRAL_TENANT_ID_CACHE.get(currentTenantId);
-      log.info("getCentralTenantId:: cache hit: currentTenantId={}, centralTenantId={}",
+      log.info("getCentralTenantId:: cache hit: tenantId={}, centralTenantId={}",
         () -> currentTenantId, () -> centralTenantId.orElse(null));
     } else {
-      log.info("getCentralTenantId:: cache miss: currentTenantId={}", currentTenantId);
+      log.info("getCentralTenantId:: cache miss: tenantId={}", currentTenantId);
       centralTenantId = Optional.ofNullable(userTenantsService.getFirstUserTenant())
           .map(UserTenant::getCentralTenantId);
       log.info("getCentralTenantId:: populating cache: tenantId={}, centralTenantId={}",
