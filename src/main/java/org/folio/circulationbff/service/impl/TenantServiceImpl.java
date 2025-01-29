@@ -1,8 +1,8 @@
 package org.folio.circulationbff.service.impl;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.folio.circulationbff.config.TenantConfig;
 import org.folio.circulationbff.domain.dto.UserTenant;
@@ -19,7 +19,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TenantServiceImpl implements TenantService {
 
-  private static final Map<String, String> CENTRAL_TENANT_ID_CACHE = new HashMap<>();
+  private static final Map<String, String> CENTRAL_TENANT_ID_CACHE = new ConcurrentHashMap<>();
 
   private final UserTenantsService userTenantsService;
   private final TenantConfig tenantConfig;
@@ -41,10 +41,7 @@ public class TenantServiceImpl implements TenantService {
         currentTenantId, centralTenantId);
     } else {
       log.info("getCentralTenantId:: cache miss: currentTenantId={}", currentTenantId);
-      centralTenantId = Optional.ofNullable(userTenantsService.getFirstUserTenant())
-        .map(UserTenant::getCentralTenantId)
-        .orElse(null);
-
+      centralTenantId = resolveCentralTenantId();
       log.info("getCentralTenantId:: populating cache: tenantId={}, centralTenantId={}",
         currentTenantId, centralTenantId);
       CENTRAL_TENANT_ID_CACHE.put(currentTenantId, centralTenantId);
@@ -82,6 +79,15 @@ public class TenantServiceImpl implements TenantService {
   public static void clearCache() {
     log.info("clearCache:: clearing cache");
     CENTRAL_TENANT_ID_CACHE.clear();
+  }
+
+  private String resolveCentralTenantId() {
+    String centralTenantId = Optional.ofNullable(userTenantsService.getFirstUserTenant())
+      .map(UserTenant::getCentralTenantId)
+      .orElse(null);
+
+    log.info("resolveCentralTenantId:: centralTenantId={}", centralTenantId);
+    return centralTenantId;
   }
 
 }
