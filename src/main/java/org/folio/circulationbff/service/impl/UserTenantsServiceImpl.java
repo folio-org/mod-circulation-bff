@@ -70,13 +70,13 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   private UserTenant getFirstUserTenant() {
     log.info("getFirstUserTenant:: finding first userTenant");
     UserTenantCollection userTenants = userTenantsClient.getUserTenants(1);
-    log.debug("getFirstUserTenant:: userTenants: {}", () -> userTenants);
+    log.info("getFirstUserTenant:: userTenants: {}", () -> userTenants);
     if (userTenants == null || CollectionUtils.isEmpty(userTenants.getUserTenants())) {
       log.warn("getFirstUserTenant: failed to fetch user tenants");
       return null;
     }
     var firstUserTenant = userTenants.getUserTenants().get(0);
-    log.debug("getFirstUserTenant:: result: {}", firstUserTenant);
+    log.info("getFirstUserTenant:: result: {}", firstUserTenant);
     return firstUserTenant;
   }
 }

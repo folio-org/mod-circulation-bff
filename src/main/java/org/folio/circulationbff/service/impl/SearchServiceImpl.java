@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.HoldingsStorageClient;
 import org.folio.circulationbff.client.feign.InstanceStorageClient;
@@ -71,6 +72,17 @@ public class SearchServiceImpl implements SearchService {
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
   private final SearchInstanceMapper searchInstanceMapper;
+
+  @Override
+  public SearchInstance findInstanceByItemId(String itemId) {
+    log.info("findInstanceByItemId:: itemId {}", itemId);
+    String query = "items.id==" + itemId;
+    SearchInstances searchResult = searchClient.findInstances(query, true);
+    if (CollectionUtils.isEmpty(searchResult.getInstances())) {
+      return null;
+    }
+    return searchResult.getInstances().get(0);
+  }
 
   @Override
   public ConsortiumItem findConsortiumItem(String itemId) {
