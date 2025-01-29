@@ -47,6 +47,7 @@ public class TenantServiceImpl implements TenantService {
         () -> currentTenantId, () -> centralTenantId.orElse(null));
       CENTRAL_TENANT_ID_CACHE.put(currentTenantId, centralTenantId);
     }
+    log.debug("getCentralTenantId:: cache: {}", CENTRAL_TENANT_ID_CACHE);
 
     return centralTenantId;
   }
@@ -84,8 +85,8 @@ public class TenantServiceImpl implements TenantService {
       .orElse(false);
   }
 
-  public static void clearCache() {
-    log.info("clearCache:: clearing cache");
+  public static void clearCentralTenantIdCache() {
+    log.info("clearCentralTenantIdCache:: clearing cache");
     CENTRAL_TENANT_ID_CACHE.clear();
   }
 

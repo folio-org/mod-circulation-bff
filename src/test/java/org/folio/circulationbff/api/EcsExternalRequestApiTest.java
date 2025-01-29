@@ -63,7 +63,7 @@ class EcsExternalRequestApiTest extends BaseIT {
 
   @BeforeEach
   void beforeEach() {
-    TenantServiceImpl.clearCache();
+    TenantServiceImpl.clearCentralTenantIdCache();
   }
 
   @Test
