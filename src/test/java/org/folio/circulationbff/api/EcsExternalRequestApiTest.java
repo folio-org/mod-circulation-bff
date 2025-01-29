@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -17,10 +16,15 @@ import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLeve
 import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum.TITLE;
 import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Date;
 import java.util.List;
 
+import org.folio.circulationbff.domain.dto.CirculationSettings;
+import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
+import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum;
@@ -32,6 +36,9 @@ import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.service.impl.TenantServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 
@@ -45,6 +52,7 @@ class EcsExternalRequestApiTest extends BaseIT {
   private static final String USER_TENANTS_URL = "/user-tenants";
   private static final String CIRCULATION_REQUEST_URL_TEMPLATE = "/circulation/requests/%s";
   private static final String TLR_SETTINGS_URL = "/tlr/settings";
+  private static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
   private static final String SEARCH_ITEM_URL_TEMPLATE = "/search/consortium/item/%s";
 
   private static final String REQUESTER_ID = randomId();
@@ -61,25 +69,33 @@ class EcsExternalRequestApiTest extends BaseIT {
   }
 
   @Test
+  @SneakyThrows
   void createExternalItemLevelEcsTlr() {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(ITEM);
     EcsRequestExternal expectedRequestBody = buildEcsRequestExternal(ITEM)
       .holdingsRecordId(HOLDING_ID)
       .instanceId(INSTANCE_ID);
 
+    Request mockPrimaryRequest = new Request().id(PRIMARY_REQUEST_ID);
+
     mockItemSearch(ITEM_ID);
     mockUserTenants();
     mockEcsTlrFeatureSettings(true);
     mockEcsTlrExternalRequestCreating(expectedRequestBody);
-    mockPrimaryRequest();
+    mockPrimaryRequest(mockPrimaryRequest);
 
-    createExternalRequest(initialRequest);
+    createExternalRequest(initialRequest)
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(mockPrimaryRequest)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID)))
       .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
 
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM))
@@ -90,21 +106,27 @@ class EcsExternalRequestApiTest extends BaseIT {
   }
 
   @Test
+  @SneakyThrows
   void createExternalTitleLevelEcsTlr() {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
+    Request mockPrimaryRequest = new Request().id(PRIMARY_REQUEST_ID);
 
-    mockItemSearch(ITEM_ID);
     mockUserTenants();
     mockEcsTlrFeatureSettings(true);
     mockEcsTlrExternalRequestCreating(initialRequest);
-    mockPrimaryRequest();
+    mockPrimaryRequest(mockPrimaryRequest);
 
-    createExternalRequest(initialRequest);
+    createExternalRequest(initialRequest)
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(mockPrimaryRequest)));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID))));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
 
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM))
@@ -114,6 +136,55 @@ class EcsExternalRequestApiTest extends BaseIT {
       CIRCULATION_REQUEST_URL_TEMPLATE, PRIMARY_REQUEST_ID))));
   }
 
+  @Test
+  void createExternalMediatedRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
+
+    mockUserTenants();
+    mockCirculationSettings(true);
+
+    createExternalRequest(initialRequest, TENANT_ID_SECURE);
+
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
+      .withQueryParam("limit", equalTo("1")));
+  }
+
+  @Test
+  void createExternalTitleLevelCirculationRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
+
+    mockUserTenants();
+    mockEcsTlrFeatureSettings(false);
+
+    createExternalRequest(initialRequest);
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
+      .withQueryParam("limit", equalTo("1")));
+  }
+
+  @Test
+  void createExternalItemLevelCirculationRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(ITEM);
+
+    mockItemSearch(ITEM_ID);
+    mockUserTenants();
+    mockEcsTlrFeatureSettings(false);
+
+    createExternalRequest(initialRequest);
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
+      .withQueryParam("limit", equalTo("1")));
+  }
+
   private static void mockUserTenants() {
     UserTenant userTenant = new UserTenant()
       .centralTenantId(TENANT_ID_CONSORTIUM)
@@ -121,8 +192,7 @@ class EcsExternalRequestApiTest extends BaseIT {
     UserTenantCollection userTenants = new UserTenantCollection(List.of(userTenant), 1);
 
     wireMockServer.stubFor(get(urlPathEqualTo(USER_TENANTS_URL))
-      .withQueryParam("limit", matching("\\d*"))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withQueryParam("limit", equalTo("1"))
       .willReturn(jsonResponse(asJsonString(userTenants), SC_OK)));
   }
 
@@ -144,13 +214,13 @@ class EcsExternalRequestApiTest extends BaseIT {
   }
 
   @SneakyThrows
-  private void createExternalRequest(EcsRequestExternal requestExternal) {
-    createExternalRequest(requestExternal, TENANT_ID_CONSORTIUM);
+  private ResultActions createExternalRequest(EcsRequestExternal requestExternal) {
+    return createExternalRequest(requestExternal, TENANT_ID_CONSORTIUM);
   }
 
   @SneakyThrows
-  private void createExternalRequest(EcsRequestExternal requestExternal, String tenantId) {
-    mockMvc.perform(post(CIRCULATION_BFF_CREATE_ECS_EXTERNAL_REQUEST_URL)
+  private ResultActions createExternalRequest(EcsRequestExternal requestExternal, String tenantId) {
+    return mockMvc.perform(post(CIRCULATION_BFF_CREATE_ECS_EXTERNAL_REQUEST_URL)
       .headers(buildHeaders(tenantId))
       .content(asJsonString(requestExternal)));
   }
@@ -165,16 +235,28 @@ class EcsExternalRequestApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(ecsTlr), SC_CREATED)));
   }
 
-  private static void mockPrimaryRequest() {
+  private static void mockPrimaryRequest(Request mockPrimaryRequest) {
     wireMockServer.stubFor(get(urlMatching(String.format(
       CIRCULATION_REQUEST_URL_TEMPLATE, PRIMARY_REQUEST_ID)))
-      .willReturn(jsonResponse(asJsonString(
-        new Request().id(PRIMARY_REQUEST_ID)), SC_OK)));
+      .willReturn(jsonResponse(asJsonString(mockPrimaryRequest), SC_OK)));
   }
 
   private static void mockEcsTlrFeatureSettings(boolean isEcsTlrEnabled) {
     wireMockServer.stubFor(get(urlPathMatching(TLR_SETTINGS_URL))
       .willReturn(jsonResponse(asJsonString(new TlrSettings(isEcsTlrEnabled)), SC_OK)));
+  }
+
+  private static void mockCirculationSettings(boolean isEcsTlrEnabled) {
+    CirculationSettingsResponse mockResponse = new CirculationSettingsResponse()
+      .totalRecords(1)
+      .circulationSettings(List.of(new CirculationSettings()
+        .id(randomId())
+        .name("ecsTlrFeature")
+        .value(new CirculationSettingsValue().enabled(isEcsTlrEnabled))));
+
+    wireMockServer.stubFor(get(urlPathMatching(CIRCULATION_SETTINGS_URL))
+        .withQueryParam("query", equalTo("name=ecsTlrFeature"))
+      .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
   }
 
   private static void mockItemSearch(String itemId) {
