@@ -19,7 +19,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TenantServiceImpl implements TenantService {
 
-  private static final Map<String, String> CENTRAL_TENANT_ID_CACHE = new ConcurrentHashMap<>();
+  private static final Map<String, Optional<String>> CENTRAL_TENANT_ID_CACHE = new ConcurrentHashMap<>();
 
   private final UserTenantsService userTenantsService;
   private final TenantConfig tenantConfig;
@@ -33,21 +33,22 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public Optional<String> getCentralTenantId() {
     String currentTenantId = getCurrentTenantId();
-    String centralTenantId;
+    Optional<String> centralTenantId;
 
     if (CENTRAL_TENANT_ID_CACHE.containsKey(currentTenantId)) {
       centralTenantId = CENTRAL_TENANT_ID_CACHE.get(currentTenantId);
       log.info("getCentralTenantId:: cache hit: currentTenantId={}, centralTenantId={}",
-        currentTenantId, centralTenantId);
+        () -> currentTenantId, () -> centralTenantId.orElse(null));
     } else {
       log.info("getCentralTenantId:: cache miss: currentTenantId={}", currentTenantId);
-      centralTenantId = resolveCentralTenantId();
+      centralTenantId = Optional.ofNullable(userTenantsService.getFirstUserTenant())
+          .map(UserTenant::getCentralTenantId);
       log.info("getCentralTenantId:: populating cache: tenantId={}, centralTenantId={}",
-        currentTenantId, centralTenantId);
+        () -> currentTenantId, () -> centralTenantId.orElse(null));
       CENTRAL_TENANT_ID_CACHE.put(currentTenantId, centralTenantId);
     }
 
-    return Optional.ofNullable(centralTenantId);
+    return centralTenantId;
   }
 
   @Override
@@ -86,15 +87,6 @@ public class TenantServiceImpl implements TenantService {
   public static void clearCache() {
     log.info("clearCache:: clearing cache");
     CENTRAL_TENANT_ID_CACHE.clear();
-  }
-
-  private String resolveCentralTenantId() {
-    String centralTenantId = Optional.ofNullable(userTenantsService.getFirstUserTenant())
-      .map(UserTenant::getCentralTenantId)
-      .orElse(null);
-
-    log.info("resolveCentralTenantId:: centralTenantId={}", centralTenantId);
-    return centralTenantId;
   }
 
 }
