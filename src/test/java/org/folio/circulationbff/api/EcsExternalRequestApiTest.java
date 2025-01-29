@@ -88,17 +88,13 @@ class EcsExternalRequestApiTest extends BaseIT {
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID)))
       .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM)));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
-
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(expectedRequestBody))));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(
       CIRCULATION_REQUEST_URL_TEMPLATE, PRIMARY_REQUEST_ID))));
   }
@@ -119,54 +115,53 @@ class EcsExternalRequestApiTest extends BaseIT {
       .andExpect(content().json(asJsonString(mockPrimaryRequest)));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID))));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
-
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(TLR_CREATE_ECS_EXTERNAL_REQUEST_URL))
       .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(initialRequest))));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(
       CIRCULATION_REQUEST_URL_TEMPLATE, PRIMARY_REQUEST_ID))));
   }
 
   @Test
+  @SneakyThrows
   void createExternalMediatedRequest() {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
 
     mockUserTenants();
     mockCirculationSettings(true);
 
-    createExternalRequest(initialRequest, TENANT_ID_SECURE);
+    createExternalRequest(initialRequest, TENANT_ID_SECURE)
+      .andExpect(status().isOk());
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
   }
 
   @Test
+  @SneakyThrows
   void createExternalTitleLevelCirculationRequest() {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
 
     mockUserTenants();
     mockEcsTlrFeatureSettings(false);
 
-    createExternalRequest(initialRequest);
+    createExternalRequest(initialRequest)
+      .andExpect(status().isOk());
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
   }
 
   @Test
+  @SneakyThrows
   void createExternalItemLevelCirculationRequest() {
     EcsRequestExternal initialRequest =  buildEcsRequestExternal(ITEM);
 
@@ -174,11 +169,11 @@ class EcsExternalRequestApiTest extends BaseIT {
     mockUserTenants();
     mockEcsTlrFeatureSettings(false);
 
-    createExternalRequest(initialRequest);
+    createExternalRequest(initialRequest)
+      .andExpect(status().isOk());
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(TLR_SETTINGS_URL)));
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(CIRCULATION_SETTINGS_URL)));
-
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
       .withQueryParam("limit", equalTo("1")));
   }
