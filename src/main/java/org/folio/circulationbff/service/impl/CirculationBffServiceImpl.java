@@ -52,39 +52,50 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
     log.info("getAllowedServicePoints:: params: {}", params);
-    if (settingsService.isEcsTlrFeatureEnabled()) {
-      if (userTenantsService.isCentralTenant()) {
-        log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and we are in the central " +
-          "tenant. Calling local mod-tlr.");
-        return ecsTlrClient.getAllowedServicePoints(params);
-      } else {
-        if (params.getRequestId() == null) {
-          log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled, requestId param is " +
-            "missing. Calling local mod-circulation.");
-          return circulationClient.allowedServicePoints(params);
-        } else {
-          var request = circulationClient.getRequestById(params.getRequestId().toString());
-          if (request.getEcsRequestPhase() == null) {
-            log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled, but request is not " +
-              "an ECS request. Calling local mod-circulation.");
-            return circulationClient.allowedServicePoints(params);
-          } else {
-            log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and request is " +
-              "an ECS request. Calling central mod-tlr.");
-            String patronGroupId = params.getRequesterId() == null ? null :
-              userService.find(params.getRequesterId().toString()).getPatronGroup();
-            params.setPatronGroupId(patronGroupId != null ? UUID.fromString(patronGroupId) : null);
-            params.setRequesterId(null);
-            return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
-              () -> ecsTlrClient.getAllowedServicePoints(params));
-          }
-        }
-      }
-    } else {
+
+    if (!settingsService.isEcsTlrFeatureEnabled()) {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. " +
         "Calling local mod-circulation.");
       return circulationClient.allowedServicePoints(params);
     }
+
+    if (userTenantsService.isCentralTenant()) {
+      log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and we are in the central " +
+        "tenant. Calling local mod-tlr.");
+      return ecsTlrClient.getAllowedServicePoints(params);
+    }
+
+    log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and current tenant is not " +
+      "central.");
+
+    if (params.getRequestId() == null) {
+      log.info("getAllowedServicePoints:: Request ID is missing (creation). Calling central mod-tlr.");
+      // This should handle both mediated request and local data tenant request cases.
+      // In case of a local request, central mod-tlr should call mod-circulation of the current
+      // data tenant anyway.
+      return getAllowedSpFromCentralTlr(params);
+    }
+
+    log.info("getAllowedServicePoints:: Request ID is present (editing).");
+
+    var request = circulationClient.getRequestById(params.getRequestId().toString());
+    if (request.getEcsRequestPhase() == null) {
+      log.info("getAllowedServicePoints:: Request is not an ECS request. Calling local mod-circulation.");
+      return circulationClient.allowedServicePoints(params);
+    }
+
+    log.info("getAllowedServicePoints:: Ecs TLR Feature is enabled and request is " +
+      "an ECS request. Calling central mod-tlr.");
+    return getAllowedSpFromCentralTlr(params);
+  }
+
+  private AllowedServicePoints getAllowedSpFromCentralTlr(AllowedServicePointParams params) {
+    String patronGroupId = params.getRequesterId() == null ? null :
+      userService.find(params.getRequesterId().toString()).getPatronGroup();
+    params.setPatronGroupId(patronGroupId != null ? UUID.fromString(patronGroupId) : null);
+    params.setRequesterId(null);
+    return executionService.executeSystemUserScoped(userTenantsService.getCentralTenant(),
+      () -> ecsTlrClient.getAllowedServicePoints(params));
   }
 
   @Override
