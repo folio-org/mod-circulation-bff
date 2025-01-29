@@ -9,4 +9,5 @@ public interface TenantService {
   boolean isCurrentTenantCentral();
   boolean isCurrentTenantSecure();
   boolean isCentralTenant(String tenantId);
+  boolean isSecureTenant(String tenantId);
 }

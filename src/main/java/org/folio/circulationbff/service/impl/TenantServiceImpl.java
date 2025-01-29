@@ -76,6 +76,13 @@ public class TenantServiceImpl implements TenantService {
       .orElse(false);
   }
 
+  @Override
+  public boolean isSecureTenant(String tenantId) {
+    return getSecureTenantId()
+      .map(tenantId::equals)
+      .orElse(false);
+  }
+
   public static void clearCache() {
     log.info("clearCache:: clearing cache");
     CENTRAL_TENANT_ID_CACHE.clear();
