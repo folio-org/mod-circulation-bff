@@ -40,20 +40,21 @@ class CheckInApiTest extends BaseIT {
 
   private static final String CHECK_IN_URL = "/circulation-bff/loans/check-in-by-barcode";
   private static final String CIRCULATION_CHECK_IN_URL = "/circulation/check-in-by-barcode";
-  private static final String DCB_ITEM_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
+  private static final String DCB_ITEM_LOCATION_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
 
   @Test
   @SneakyThrows
   void checkInSameTenantSuccessForDcbItem() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request, DCB_ITEM_ID);
+    var itemId = randomId();
+    givenCirculationCheckinSucceed(request, itemId);
     var checkinItem = new Item()
-      .id(DCB_ITEM_ID)
+      .id(itemId)
       .copyNumber("copyNumber")
-      .effectiveLocationId("effectiveLocationId");
+      .effectiveLocationId(DCB_ITEM_LOCATION_ID);
     givenSearchInstanceReturnsItem(TENANT_ID_CONSORTIUM, checkinItem);
     givenCurrentTenantIsConsortium();
-    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + DCB_ITEM_ID))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
@@ -66,7 +67,7 @@ class CheckInApiTest extends BaseIT {
       .institutionId(institutionId)
       .campusId(campusId)
       .libraryId(libraryId);
-    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/effectiveLocationId"))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + DCB_ITEM_LOCATION_ID))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = """
@@ -102,14 +103,15 @@ class CheckInApiTest extends BaseIT {
   @SneakyThrows
   void checkInCrossTenantSuccessForDcbItem() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request, DCB_ITEM_ID);
+    var itemId = randomId();
+    givenCirculationCheckinSucceed(request, itemId);
     var checkinItem = new Item()
-      .id(DCB_ITEM_ID)
+      .id(itemId)
       .copyNumber("copyNumber")
-      .effectiveLocationId("effectiveLocationId");
+      .effectiveLocationId(DCB_ITEM_LOCATION_ID);
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
-    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + DCB_ITEM_ID))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
@@ -123,7 +125,7 @@ class CheckInApiTest extends BaseIT {
       .institutionId(institutionId)
       .campusId(campusId)
       .libraryId(libraryId);
-    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/effectiveLocationId"))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + DCB_ITEM_LOCATION_ID))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = """
@@ -163,7 +165,7 @@ class CheckInApiTest extends BaseIT {
   @SneakyThrows
   void checkInSuccessWhenInstanceNotFound() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request, DCB_ITEM_ID);
+    givenCirculationCheckinSucceed(request, DCB_ITEM_LOCATION_ID);
     var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
       .willReturn(jsonResponse(searchInstances, SC_OK)));

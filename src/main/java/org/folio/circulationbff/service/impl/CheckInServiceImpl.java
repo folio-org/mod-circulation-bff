@@ -7,6 +7,7 @@ import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.Contributor;
+import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -26,7 +27,7 @@ public class CheckInServiceImpl implements CheckInService {
   private final CheckInClient checkInClient;
   private final SearchService searchService;
   private final InventoryService inventoryService;
-  private static final String DCB_ITEM_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
+  private static final String DCB_ITEM_LOCATION_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
@@ -39,30 +40,31 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private void processStaffSlipContext(CheckInResponse response) {
-    if (!isStaffSlipContextForDcbItem(response)) {
+    var itemId = response.getItem().getId();
+    var searchInstance = searchService.findInstanceByItemId(response.getItem().getId());
+    if (searchInstance == null) {
+      log.warn("processStaffSlipContext:: instance not found");
+      return;
+    }
+
+    var item = inventoryService.fetchItem(getItemTenantId(itemId, searchInstance), itemId);
+    if (item == null) {
+      log.warn("processStaffSlipContext:: item not found, itemId: {}", itemId);
+      return;
+    }
+    if (!isStaffSlipContextForDcbItem(item)) {
       log.info("processStaffSlipContext:: staff slip context is not for DCB item");
       return;
     }
-
-    fillWithRealStaffSlipContext(response);
+    fillWithRealStaffSlipContext(response, searchInstance, item);
   }
 
-  private void fillWithRealStaffSlipContext(CheckInResponse response) {
-    var itemId = response.getItem().getId();
-    log.info("fillWithRealStaffSlipContext:: filling staff slip context for item {}", itemId);
+  private void fillWithRealStaffSlipContext(CheckInResponse response,
+    SearchInstance searchInstance, Item item) {
 
-    var searchInstance = searchService.findInstanceByItemId(itemId);
-    if (searchInstance == null) {
-      log.warn("fillWithRealStaffSlipContext:: instance not found");
-      return;
-    }
-
+    var itemId = item.getId();
     var itemTenantId = getItemTenantId(itemId, searchInstance);
-    var item = inventoryService.fetchItem(itemTenantId, itemId);
-    if (item == null) {
-      log.warn("fillWithRealStaffSlipContext:: item not found, itemId: {}", itemId);
-      return;
-    }
+    log.info("fillWithRealStaffSlipContext:: filling staff slip context for item {}", itemId);
 
     var location = inventoryService.fetchLocation(itemTenantId, item.getEffectiveLocationId());
     if (location == null) {
@@ -116,8 +118,8 @@ public class CheckInServiceImpl implements CheckInService {
       .collect(Collectors.joining(""));
   }
 
-  private boolean isStaffSlipContextForDcbItem(CheckInResponse response) {
-    return DCB_ITEM_ID.equals(response.getItem().getId());
+  private boolean isStaffSlipContextForDcbItem(Item item) {
+    return DCB_ITEM_LOCATION_ID.equals(item.getEffectiveLocationId());
   }
 
   private String fetchInstitutionName(String itemTenantId, Location location) {
