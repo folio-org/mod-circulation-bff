@@ -118,6 +118,7 @@ class CheckInApiTest extends BaseIT {
     var campusId = randomId();
     var libraryId = randomId();
     var location = new Location()
+      .name("location")
       .primaryServicePoint(primaryServicePoint)
       .institutionId(institutionId)
       .campusId(campusId)
@@ -151,7 +152,11 @@ class CheckInApiTest extends BaseIT {
     checkIn(request)
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(updatedServicePoint)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(updatedServicePoint)));
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(updatedServicePoint)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", equalTo(institution.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())));
   }
 
   @Test
