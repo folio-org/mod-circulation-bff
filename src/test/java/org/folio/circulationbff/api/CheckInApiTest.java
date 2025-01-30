@@ -177,6 +177,26 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
+  void checkInSuccessWhenItemNotFound() {
+    var request = generateCheckInRequest();
+    var effectiveLocationId = randomId();
+    var itemId = randomId();
+    givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
+    var checkinItem = new Item()
+      .id(itemId)
+      .copyNumber("copyNumber")
+      .effectiveLocationId(effectiveLocationId);
+    givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
+    givenCurrentTenantIsConsortium();
+    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(null, SC_OK)));
+
+    checkIn(request).andExpect(status().isOk());
+  }
+
+  @Test
+  @SneakyThrows
   void checkInSuccessForNotDcbItem() {
     var request = generateCheckInRequest();
     givenCirculationCheckinSucceed(request, randomId(), randomId());
