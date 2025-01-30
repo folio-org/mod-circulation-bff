@@ -43,9 +43,9 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void checkInSameTenantSuccess() {
+  void checkInSameTenantSuccessForDcbItem() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request);
+    givenCirculationCheckinSucceed(request, DCB_ITEM_ID);
     var checkinItem = new Item()
       .id(DCB_ITEM_ID)
       .copyNumber("copyNumber")
@@ -57,9 +57,9 @@ class CheckInApiTest extends BaseIT {
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var primaryServicePoint = randomUUID();
-    var institutionId = randomUUID().toString();
-    var campusId = randomUUID().toString();
-    var libraryId = randomUUID().toString();
+    var institutionId = randomId();
+    var campusId = randomId();
+    var libraryId = randomId();
     var location = new Location()
       .primaryServicePoint(primaryServicePoint)
       .institutionId(institutionId)
@@ -99,9 +99,9 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void checkInCrossTenantSuccess() {
+  void checkInCrossTenantSuccessForDcbItem() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request);
+    givenCirculationCheckinSucceed(request, DCB_ITEM_ID);
     var checkinItem = new Item()
       .id(DCB_ITEM_ID)
       .copyNumber("copyNumber")
@@ -113,9 +113,9 @@ class CheckInApiTest extends BaseIT {
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var primaryServicePoint = randomUUID();
-    var institutionId = randomUUID().toString();
-    var campusId = randomUUID().toString();
-    var libraryId = randomUUID().toString();
+    var institutionId = randomId();
+    var campusId = randomId();
+    var libraryId = randomId();
     var location = new Location()
       .primaryServicePoint(primaryServicePoint)
       .institutionId(institutionId)
@@ -157,13 +157,24 @@ class CheckInApiTest extends BaseIT {
   @SneakyThrows
   void checkInSuccessWhenInstanceNotFound() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request);
+    givenCirculationCheckinSucceed(request, DCB_ITEM_ID);
     var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
       .willReturn(jsonResponse(searchInstances, SC_OK)));
 
-    checkIn(request)
-      .andExpect(status().isOk());
+    checkIn(request).andExpect(status().isOk());
+  }
+
+  @Test
+  @SneakyThrows
+  void checkInSuccessForNotDcbItem() {
+    var request = generateCheckInRequest();
+    givenCirculationCheckinSucceed(request, randomId());
+    var searchInstances = new SearchInstances().instances(List.of());
+    wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
+      .willReturn(jsonResponse(searchInstances, SC_OK)));
+
+    checkIn(request).andExpect(status().isOk());
   }
 
   private CheckInRequest generateCheckInRequest() {
@@ -173,7 +184,7 @@ class CheckInApiTest extends BaseIT {
       .servicePointId(randomUUID());
   }
 
-  private void givenCirculationCheckinSucceed(CheckInRequest request) {
+  private void givenCirculationCheckinSucceed(CheckInRequest request, String itemId) {
     var checkinResponse = String.format("""
       {
         "item": {"id": "%s"},
@@ -184,7 +195,7 @@ class CheckInApiTest extends BaseIT {
           }
         }
       }
-      """, DCB_ITEM_ID);
+      """, itemId);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
