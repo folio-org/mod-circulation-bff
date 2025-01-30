@@ -33,7 +33,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   public Item fetchItem(String tenantId, String id) {
     log.info("fetchItem:: fetching item {} for tenant {}", id, tenantId);
-    return itemClient.findItem(id);
+    return executionService.executeSystemUserScoped(tenantId, () -> itemClient.findItem(id));
   }
 
   @Override

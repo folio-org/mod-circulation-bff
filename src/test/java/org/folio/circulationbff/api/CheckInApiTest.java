@@ -15,8 +15,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Date;
 import java.util.List;
 
+import org.folio.circulationbff.domain.dto.Campus;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
+import org.folio.circulationbff.domain.dto.Institution;
 import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Library;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
@@ -36,6 +39,7 @@ class CheckInApiTest extends BaseIT {
 
   private static final String CHECK_IN_URL = "/circulation-bff/loans/check-in-by-barcode";
   private static final String CIRCULATION_CHECK_IN_URL = "/circulation/check-in-by-barcode";
+  private static final String DCB_ITEM_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
 
   @Test
   @SneakyThrows
@@ -46,17 +50,24 @@ class CheckInApiTest extends BaseIT {
       .servicePointId(randomUUID());
     givenCirculationCheckinSucceed(request);
     var checkinItem = new Item()
-      .id("itemId")
+      .id(DCB_ITEM_ID)
       .copyNumber("copyNumber")
       .effectiveLocationId("effectiveLocationId");
     givenSearchInstanceReturnsItem(TENANT_ID_CONSORTIUM, checkinItem);
     givenCurrentTenantIsConsortium();
-    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/itemId"))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + DCB_ITEM_ID))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var primaryServicePoint = randomUUID();
-    var location = new Location().primaryServicePoint(primaryServicePoint);
+    var institutionId = randomUUID().toString();
+    var campusId = randomUUID().toString();
+    var libraryId = randomUUID().toString();
+    var location = new Location()
+      .primaryServicePoint(primaryServicePoint)
+      .institutionId(institutionId)
+      .campusId(campusId)
+      .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/effectiveLocationId"))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(location, SC_OK)));
@@ -66,9 +77,21 @@ class CheckInApiTest extends BaseIT {
         "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
       }
       """;
+    var institution = new Institution().id(institutionId).name("institution");
+    var campus = new Campus().id(campusId).name("campus");
+    var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePoint))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(institution, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(campus, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(library, SC_OK)));
 
     var updatedServicePoint = "updated service point";
     checkIn(request)
@@ -86,17 +109,24 @@ class CheckInApiTest extends BaseIT {
       .servicePointId(randomUUID());
     givenCirculationCheckinSucceed(request);
     var checkinItem = new Item()
-      .id("itemId")
+      .id(DCB_ITEM_ID)
       .copyNumber("copyNumber")
       .effectiveLocationId("effectiveLocationId");
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
-    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/itemId"))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + DCB_ITEM_ID))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var primaryServicePoint = randomUUID();
-    var location = new Location().primaryServicePoint(primaryServicePoint);
+    var institutionId = randomUUID().toString();
+    var campusId = randomUUID().toString();
+    var libraryId = randomUUID().toString();
+    var location = new Location()
+      .primaryServicePoint(primaryServicePoint)
+      .institutionId(institutionId)
+      .campusId(campusId)
+      .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/effectiveLocationId"))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(location, SC_OK)));
@@ -106,9 +136,21 @@ class CheckInApiTest extends BaseIT {
         "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
       }
       """;
+    var institution = new Institution().id(institutionId).name("institution");
+    var campus = new Campus().id(campusId).name("campus");
+    var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePoint))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(institution, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(campus, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(library, SC_OK)));
 
     var updatedServicePoint = "updated service point";
     checkIn(request)
@@ -134,9 +176,9 @@ class CheckInApiTest extends BaseIT {
   }
 
   private void givenCirculationCheckinSucceed(CheckInRequest request) {
-    var checkinResponse = """
+    var checkinResponse = String.format("""
       {
-        "item": {"id": "itemId"},
+        "item": {"id": "%s"},
         "staffSlipContext": {
           "item": {
             "toServicePoint": "random service point",
@@ -144,7 +186,7 @@ class CheckInApiTest extends BaseIT {
           }
         }
       }
-      """;
+      """, DCB_ITEM_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));

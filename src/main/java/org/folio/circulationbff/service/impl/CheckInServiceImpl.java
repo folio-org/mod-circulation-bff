@@ -70,21 +70,19 @@ public class CheckInServiceImpl implements CheckInService {
         item.getEffectiveLocationId());
       return;
     }
+    var servicePointName = fetchServicePointName(itemTenantId, location.getPrimaryServicePoint()
+      .toString());
 
     response.getStaffSlipContext()
       .getItem()
-      .effectiveLocationPrimaryServicePointName(fetchServicePointName(itemTenantId,
-        location.getPrimaryServicePoint().toString()))
-      .toServicePoint(fetchServicePointName(itemTenantId,
-        item.getInTransitDestinationServicePointId()))
-      .fromServicePoint(fetchServicePointName(itemTenantId,
-        item.getLastCheckIn().getServicePointId()))
+      .effectiveLocationPrimaryServicePointName(servicePointName)
+      .toServicePoint(servicePointName)
+      .fromServicePoint(item.getLastCheckIn() != null
+        ? fetchServicePointName(itemTenantId, item.getLastCheckIn().getServicePointId())
+        : null)
       .title(searchInstance.getTitle())
       .primaryContributor(getPrimaryContributorName(searchInstance.getContributors()))
-      .allContributors(searchInstance.getContributors().stream()
-        .map(Contributor::getName)
-        .map(contributorName -> contributorName + "; ")
-        .collect(Collectors.joining("")))
+      .allContributors(collectAllContributors(searchInstance))
       .barcode(item.getBarcode())
       .callNumber(item.getItemLevelCallNumber())
       .callNumberPrefix(item.getItemLevelCallNumberPrefix())
@@ -94,7 +92,7 @@ public class CheckInServiceImpl implements CheckInService {
       .enumeration(item.getEnumeration())
       .volume(item.getVolume())
       .chronology(item.getChronology())
-      .yearCaption(String.join("; ", item.getYearCaption()))
+      .yearCaption(item.getYearCaption() != null ? String.join("; ", item.getYearCaption()) : null)
       .loanType(item.getPermanentLoanTypeId())
       .materialType(item.getMaterialTypeId())
       .numberOfPieces(item.getNumberOfPieces())
@@ -104,6 +102,18 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationCampus(fetchCampusName(itemTenantId, location))
       .effectiveLocationLibrary(fetchLocationLibraryName(itemTenantId, location))
       .effectiveLocationSpecific(location.getName());
+  }
+
+  private static String collectAllContributors(SearchInstance searchInstance) {
+    if (searchInstance.getContributors() == null) {
+      log.info("collectAllContributors:: contributors not found in searchInstance {}",
+        searchInstance.getId());
+      return null;
+    }
+    return searchInstance.getContributors().stream()
+      .map(Contributor::getName)
+      .map(contributorName -> contributorName + "; ")
+      .collect(Collectors.joining(""));
   }
 
   private boolean isStaffSlipContextForDcbItem(CheckInResponse response) {
@@ -163,6 +173,11 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   public String getPrimaryContributorName(List<Contributor> contributors) {
+    if (contributors == null) {
+      log.info("getPrimaryContributorName:: contributors not found");
+      return null;
+    }
+
     return contributors.stream()
       .filter(Contributor::getPrimary)
       .findFirst()
