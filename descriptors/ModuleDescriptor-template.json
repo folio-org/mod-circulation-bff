@@ -158,7 +158,13 @@
             "inventory-storage.locations.item.get",
             "inventory-storage.locations.collection.get",
             "inventory-storage.service-points.item.get",
-            "inventory-storage.service-points.collection.get"
+            "inventory-storage.service-points.collection.get",
+            "inventory-storage.location-units.libraries.item.get",
+            "inventory-storage.location-units.libraries.collection.get",
+            "inventory-storage.location-units.campuses.item.get",
+            "inventory-storage.location-units.campuses.collection.get",
+            "inventory-storage.location-units.institutions.item.get",
+            "inventory-storage.location-units.institutions.collection.get"
           ]
         }
       ]
