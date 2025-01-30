@@ -43,11 +43,8 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void checkInSuccess() {
-    var request = new CheckInRequest()
-      .itemBarcode("test_barcode")
-      .checkInDate(new Date())
-      .servicePointId(randomUUID());
+  void checkInSameTenantSuccess() {
+    var request = generateCheckInRequest();
     givenCirculationCheckinSucceed(request);
     var checkinItem = new Item()
       .id(DCB_ITEM_ID)
@@ -102,11 +99,8 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void checkInSuccessCrossTenant() {
-    var request = new CheckInRequest()
-      .itemBarcode("test_barcode")
-      .checkInDate(new Date())
-      .servicePointId(randomUUID());
+  void checkInCrossTenantSuccess() {
+    var request = generateCheckInRequest();
     givenCirculationCheckinSucceed(request);
     var checkinItem = new Item()
       .id(DCB_ITEM_ID)
@@ -162,10 +156,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccessWhenInstanceNotFound() {
-    var request = new CheckInRequest()
-      .itemBarcode("test_barcode")
-      .checkInDate(new Date())
-      .servicePointId(randomUUID());
+    var request = generateCheckInRequest();
     givenCirculationCheckinSucceed(request);
     var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
@@ -173,6 +164,13 @@ class CheckInApiTest extends BaseIT {
 
     checkIn(request)
       .andExpect(status().isOk());
+  }
+
+  private CheckInRequest generateCheckInRequest() {
+    return new CheckInRequest()
+      .itemBarcode("test_barcode")
+      .checkInDate(new Date())
+      .servicePointId(randomUUID());
   }
 
   private void givenCirculationCheckinSucceed(CheckInRequest request) {
