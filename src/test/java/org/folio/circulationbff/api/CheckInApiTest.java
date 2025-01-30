@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.folio.circulationbff.domain.dto.Campus;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
+import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.Institution;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Library;
@@ -207,6 +208,10 @@ class CheckInApiTest extends BaseIT {
       .tenantId(tenantId);
     var searchInstance = new SearchInstance()
       .tenantId(tenantId)
+      .contributors(List.of(
+        new Contributor()
+          .name("Test contributor")
+          .primary(true)))
       .items(List.of(searchItem));
     var searchResponse = new SearchInstances().instances(List.of(searchInstance));
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
