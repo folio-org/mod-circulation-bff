@@ -167,7 +167,7 @@ class CheckInApiTest extends BaseIT {
   @SneakyThrows
   void checkInSuccessWhenInstanceNotFound() {
     var request = generateCheckInRequest();
-    givenCirculationCheckinSucceed(request, randomId(), randomId());
+    givenCirculationCheckinSucceed(request, randomId(), DCB_INSTANCE_ID);
     var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
       .willReturn(jsonResponse(searchInstances, SC_OK)));
