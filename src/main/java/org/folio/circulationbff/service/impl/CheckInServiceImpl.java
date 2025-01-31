@@ -7,7 +7,6 @@ import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.Contributor;
-import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.service.CheckInService;
@@ -40,33 +39,36 @@ public class CheckInServiceImpl implements CheckInService {
 
   private void processStaffSlipContext(CheckInResponse response) {
     if (!DCB_INSTANCE_ID.equals(response.getItem().getInstanceId())) {
-      log.info("processStaffSlipContext:: staff slip context is not for DCB item");
+      log.info("processStaffSlipContext:: keeping staff slip context because it was built " +
+        "for inventory item, not for circulation item");
       return;
     }
 
+    log.info("processStaffSlipContext:: rebuilding staff slip context with inventory item " +
+      "information");
     rebuildStaffSlipContextWithInventoryItem(response);
   }
 
   private void rebuildStaffSlipContextWithInventoryItem(CheckInResponse response) {
     var itemId = response.getItem().getId();
-    log.info("fillWithRealStaffSlipContext:: filling staff slip context for item {}", itemId);
+    log.info("rebuildStaffSlipContextWithInventoryItem:: item ID: {}", itemId);
 
     var searchInstance = searchService.findInstanceByItemId(itemId);
     if (searchInstance == null) {
-      log.warn("fillWithRealStaffSlipContext:: instance not found");
+      log.warn("rebuildStaffSlipContextWithInventoryItem:: instance not found");
       return;
     }
 
     var itemTenantId = getItemTenantId(itemId, searchInstance);
     var item = inventoryService.fetchItem(itemTenantId, itemId);
     if (item == null) {
-      log.warn("fillWithRealStaffSlipContext:: item not found, itemId: {}", itemId);
+      log.warn("rebuildStaffSlipContextWithInventoryItem:: item not found, itemId: {}", itemId);
       return;
     }
 
     var location = inventoryService.fetchLocation(itemTenantId, item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("fillWithRealStaffSlipContext:: location not found, locationId: {}",
+      log.warn("rebuildStaffSlipContextWithInventoryItem:: location not found, locationId: {}",
         item.getEffectiveLocationId());
       return;
     }
@@ -82,7 +84,7 @@ public class CheckInServiceImpl implements CheckInService {
         : null)
       .title(searchInstance.getTitle())
       .primaryContributor(getPrimaryContributorName(searchInstance.getContributors()))
-      .allContributors(collectAllContributors(searchInstance))
+      .allContributors(formatContributorNames(searchInstance.getContributors()))
       .barcode(item.getBarcode())
       .callNumber(item.getItemLevelCallNumber())
       .callNumberPrefix(item.getItemLevelCallNumberPrefix())
@@ -92,70 +94,80 @@ public class CheckInServiceImpl implements CheckInService {
       .enumeration(item.getEnumeration())
       .volume(item.getVolume())
       .chronology(item.getChronology())
-      .yearCaption(item.getYearCaption() != null ? String.join("; ", item.getYearCaption()) : null)
+      .yearCaption(item.getYearCaption() != null
+        ? String.join("; ", item.getYearCaption())
+        : null)
       .loanType(item.getPermanentLoanTypeId())
       .materialType(item.getMaterialTypeId())
       .numberOfPieces(item.getNumberOfPieces())
       .descriptionOfPieces(item.getDescriptionOfPieces())
-      .lastCheckedInDateTime(item.getLastCheckIn() != null ? item.getLastCheckIn().getDateTime() : null)
-      .effectiveLocationInstitution(fetchInstitutionName(itemTenantId, location))
-      .effectiveLocationCampus(fetchCampusName(itemTenantId, location))
-      .effectiveLocationLibrary(fetchLocationLibraryName(itemTenantId, location))
+      .lastCheckedInDateTime(item.getLastCheckIn() != null
+        ? item.getLastCheckIn().getDateTime()
+        : null)
+      .effectiveLocationInstitution(
+        fetchInstitutionName(itemTenantId, location.getInstitutionId()))
+      .effectiveLocationCampus(fetchCampusName(itemTenantId, location.getCampusId()))
+      .effectiveLocationLibrary(fetchLocationLibraryName(itemTenantId, location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
   }
 
-  private static String collectAllContributors(SearchInstance searchInstance) {
-    if (searchInstance.getContributors() == null) {
-      log.info("collectAllContributors:: contributors not found in searchInstance {}",
-        searchInstance.getId());
+  private static String formatContributorNames(List<Contributor> contributors) {
+    if (contributors == null) {
+      log.info("collectAllContributors:: contributors not found");
       return null;
     }
-    return searchInstance.getContributors().stream()
+    return contributors.stream()
       .map(Contributor::getName)
       .map(contributorName -> contributorName + "; ")
       .collect(Collectors.joining(""));
   }
 
-  private String fetchInstitutionName(String itemTenantId, Location location) {
-    var institution = inventoryService.fetchInstitution(itemTenantId, location.getInstitutionId());
+  private String fetchInstitutionName(String tenantId, String institutionId) {
+    log.info("fetchInstitutionName:: tenantId={}, institutionId={}", tenantId, institutionId);
+    var institution = inventoryService.fetchInstitution(tenantId, institutionId);
     if (institution == null) {
-      log.warn("fetchInstitutionName:: institution is not found {}", location.getInstitutionId());
+      log.warn("fetchInstitutionName:: institution {} not found", institutionId);
       return null;
     }
-
-    return institution.getName();
+    String institutionName = institution.getName();
+    log.debug("fetchInstitutionName:: result: {}", institutionName);
+    return institutionName;
   }
 
-  private String fetchCampusName(String itemTenantId, Location location) {
-    var campus = inventoryService.fetchCampus(itemTenantId, location.getCampusId());
+  private String fetchCampusName(String tenantId, String campusId) {
+    log.info("fetchCampusName:: tenantId={}, campusId={}", tenantId, campusId);
+    var campus = inventoryService.fetchCampus(tenantId, campusId);
     if (campus == null) {
-      log.warn("fetchCampusName:: campus is not found {}", location.getCampusId());
+      log.warn("fetchCampusName:: campus {} not found", campusId);
       return null;
     }
-
-    return campus.getName();
+    String campusName = campus.getName();
+    log.debug("fetchCampusName:: result: {}", campusName);
+    return campusName;
   }
 
-  private String fetchLocationLibraryName(String itemTenantId, Location location) {
-    var library = inventoryService.fetchLibrary(itemTenantId, location.getLibraryId());
+  private String fetchLocationLibraryName(String tenantId, String libraryId) {
+    log.info("fetchLocationLibraryName:: tenantId={}, libraryId={}", tenantId, libraryId);
+    var library = inventoryService.fetchLibrary(tenantId, libraryId);
     if (library == null) {
-      log.warn("fetchLocationLibrary:: library is not found {}", location.getLibraryId());
+      log.warn("fetchLocationLibrary:: library {} not found", libraryId);
       return null;
     }
-
-    return library.getName();
+    String libraryName = library.getName();
+    log.debug("fetchLocationLibraryName:: result: {}", libraryName);
+    return libraryName;
   }
 
   private String fetchServicePointName(String tenantId, String servicePointId) {
+    log.info("fetchServicePointName:: tenantId={}, libraryId={}", tenantId, servicePointId);
     var servicePoint = inventoryService.fetchServicePoint(tenantId, servicePointId);
     if (servicePoint == null) {
-      log.warn("fetchServicePointName:: servicePoint not found, servicePointId: {}",
+      log.warn("fetchServicePointName:: service point {} not found",
         servicePointId);
       return null;
     }
     String servicePointName = servicePoint.getName();
-    log.info("fetchServicePointName:: result: {}", servicePointName);
-
+    log.debug("fetchServicePointName:: result: {}", servicePointName);
     return servicePointName;
   }
 
