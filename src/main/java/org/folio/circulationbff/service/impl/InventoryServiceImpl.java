@@ -32,39 +32,39 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   public Item fetchItem(String tenantId, String id) {
-    log.info("fetchItem:: fetching item {} for tenant {}", id, tenantId);
+    log.info("fetchItem:: fetching item {} from tenant {}", id, tenantId);
     return executionService.executeSystemUserScoped(tenantId, () -> itemClient.findItem(id));
   }
 
   @Override
   public Location fetchLocation(String tenantId, String id) {
-    log.info("fetchLocation:: fetching location {} for tenant {}", id, tenantId);
+    log.info("fetchLocation:: fetching location {} from tenant {}", id, tenantId);
     return executionService.executeSystemUserScoped(tenantId, () -> locationClient.findLocation(id));
   }
 
   @Override
   public ServicePoint fetchServicePoint(String tenantId, String id) {
-    log.info("fetchServicePoint:: fetching service point {} for tenant {}", id, tenantId);
+    log.info("fetchServicePoint:: fetching service point {} from tenant {}", id, tenantId);
     return executionService.executeSystemUserScoped(tenantId,
       () -> servicePointClient.findServicePoint(id));
   }
 
   @Override
   public Campus fetchCampus(String tenantId, String id) {
-    log.info("fetchCampus:: fetching campus {} for tenant {}", id, tenantId);
+    log.info("fetchCampus:: fetching campus {} from tenant {}", id, tenantId);
     return executionService.executeSystemUserScoped(tenantId, () -> campusClient.findCampus(id));
   }
 
   @Override
   public Institution fetchInstitution(String tenantId, String id) {
-    log.info("fetchInstitution:: fetching institution {} for tenant {}", id, tenantId);
+    log.info("fetchInstitution:: fetching institution {} from tenant {}", id, tenantId);
     return executionService.executeSystemUserScoped(tenantId,
       () -> institutionClient.findInstitution(id));
   }
 
   @Override
   public Library fetchLibrary(String tenantId, String id) {
-    log.info("fetchLibrary:: fetching library {} for tenant {}", id, tenantId);
+    log.info("fetchLibrary:: fetching library {} from tenant {}", id, tenantId);
     return executionService.executeSystemUserScoped(tenantId, () -> libraryClient.findLibrary(id));
   }
 }
