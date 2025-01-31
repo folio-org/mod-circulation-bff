@@ -1,7 +1,8 @@
 package org.folio.circulationbff.service.impl;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
@@ -121,8 +122,7 @@ public class CheckInServiceImpl implements CheckInService {
     }
     return contributors.stream()
       .map(Contributor::getName)
-      .map(contributorName -> contributorName + "; ")
-      .collect(Collectors.joining(""));
+      .collect(joining("; "));
   }
 
   private String fetchInstitutionName(String tenantId, String institutionId) {
