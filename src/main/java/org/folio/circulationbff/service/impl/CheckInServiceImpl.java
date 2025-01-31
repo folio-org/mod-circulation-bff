@@ -39,7 +39,7 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private void processStaffSlipContext(CheckInResponse response) {
-    if (!isStaffSlipContextForDcbItem(response)) {
+    if (!DCB_INSTANCE_ID.equals(response.getItem().getInstanceId())) {
       log.info("processStaffSlipContext:: staff slip context is not for DCB item");
       return;
     }
@@ -114,10 +114,6 @@ public class CheckInServiceImpl implements CheckInService {
       .map(Contributor::getName)
       .map(contributorName -> contributorName + "; ")
       .collect(Collectors.joining(""));
-  }
-
-  private boolean isStaffSlipContextForDcbItem(CheckInResponse response) {
-    return DCB_INSTANCE_ID.equals(response.getItem().getInstanceId());
   }
 
   private String fetchInstitutionName(String itemTenantId, Location location) {
