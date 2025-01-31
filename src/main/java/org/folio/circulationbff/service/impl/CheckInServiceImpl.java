@@ -65,13 +65,14 @@ public class CheckInServiceImpl implements CheckInService {
     String itemTenantId = getItemTenantId(itemId, searchInstance);
     if (itemTenantId != null) {
       executionService.executeAsyncSystemUserScoped(getItemTenantId(itemId, searchInstance),
-        () -> fetchStaffSlipsFromInventoryAndRebuildContext(response, itemId, searchInstance));
+        () -> rebuildStaffSlipContext(response, itemId, searchInstance));
     }
   }
 
-  private void fetchStaffSlipsFromInventoryAndRebuildContext(CheckInResponse response,
-   String itemId, SearchInstance searchInstance) {
+  private void rebuildStaffSlipContext(CheckInResponse response,
+    String itemId, SearchInstance searchInstance) {
 
+    log.info("rebuildStaffSlipContext:: rebuilding staff slip context for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
       log.warn("fetchStaffSlipsFromInventoryAndRebuildContext:: item not found, itemId: {}", itemId);
