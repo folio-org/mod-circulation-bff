@@ -55,20 +55,20 @@ public class CheckInServiceImpl implements CheckInService {
 
     var searchInstance = searchService.findInstanceByItemId(itemId);
     if (searchInstance == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: instance not found");
+      log.warn("fillWithRealStaffSlipContext:: instance not found");
       return;
     }
 
     var itemTenantId = getItemTenantId(itemId, searchInstance);
     var item = inventoryService.fetchItem(itemTenantId, itemId);
     if (item == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: item not found, itemId: {}", itemId);
+      log.warn("fillWithRealStaffSlipContext:: item not found, itemId: {}", itemId);
       return;
     }
 
     var location = inventoryService.fetchLocation(itemTenantId, item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: location not found, locationId: {}",
+      log.warn("fillWithRealStaffSlipContext:: location not found, locationId: {}",
         item.getEffectiveLocationId());
       return;
     }
@@ -109,6 +109,9 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationCampus(fetchCampusName(itemTenantId, location.getCampusId()))
       .effectiveLocationLibrary(fetchLocationLibraryName(itemTenantId, location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
+
+      log.info("rebuildStaffSlipContextWithInventoryItem:: staff slips context for item {} " +
+        "has been successfully rebuilt", itemId);
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
