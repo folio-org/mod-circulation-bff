@@ -64,7 +64,7 @@ public class CheckInServiceImpl implements CheckInService {
 
     String itemTenantId = getItemTenantId(itemId, searchInstance);
     if (itemTenantId != null) {
-      executionService.executeAsyncSystemUserScoped(getItemTenantId(itemId, searchInstance),
+      executionService.executeAsyncSystemUserScoped(itemTenantId,
         () -> rebuildStaffSlipContext(response, itemId, searchInstance));
     }
   }
@@ -75,13 +75,13 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("rebuildStaffSlipContext:: rebuilding staff slip context for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
-      log.warn("fetchStaffSlipsFromInventoryAndRebuildContext:: item not found, itemId: {}", itemId);
+      log.warn("rebuildStaffSlipContext:: item {} not found", itemId);
       return;
     }
 
     var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("fetchStaffSlipsFromInventoryAndRebuildContext:: location not found, locationId: {}",
+      log.warn("rebuildStaffSlipContext:: location {} not found",
         item.getEffectiveLocationId());
       return;
     }
@@ -122,13 +122,13 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
 
-    log.info("fetchStaffSlipsFromInventoryAndRebuildContext:: staff slips context for item {} " +
+    log.info("rebuildStaffSlipContext:: staff slips context for item {} " +
       "has been successfully rebuilt", itemId);
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
     if (contributors == null) {
-      log.info("collectAllContributors:: contributors not found");
+      log.info("formatContributorNames:: contributors not found");
       return null;
     }
     return contributors.stream()
