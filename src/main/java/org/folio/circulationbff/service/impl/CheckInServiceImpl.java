@@ -44,10 +44,10 @@ public class CheckInServiceImpl implements CheckInService {
       return;
     }
 
-    fillWithRealStaffSlipContext(response);
+    rebuildStaffSlipContextWithInventoryItem(response);
   }
 
-  private void fillWithRealStaffSlipContext(CheckInResponse response) {
+  private void rebuildStaffSlipContextWithInventoryItem(CheckInResponse response) {
     var itemId = response.getItem().getId();
     log.info("fillWithRealStaffSlipContext:: filling staff slip context for item {}", itemId);
 
