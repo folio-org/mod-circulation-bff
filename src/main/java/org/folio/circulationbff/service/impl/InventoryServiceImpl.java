@@ -31,40 +31,38 @@ public class InventoryServiceImpl implements InventoryService {
   private final SystemUserScopedExecutionService executionService;
 
   @Override
-  public Item fetchItem(String tenantId, String id) {
-    log.info("fetchItem:: fetching item {} from tenant {}", id, tenantId);
-    return executionService.executeSystemUserScoped(tenantId, () -> itemClient.findItem(id));
+  public Item fetchItem(String id) {
+    log.info("fetchItem:: fetching item {}", id);
+    return itemClient.findItem(id);
   }
 
   @Override
-  public Location fetchLocation(String tenantId, String id) {
-    log.info("fetchLocation:: fetching location {} from tenant {}", id, tenantId);
-    return executionService.executeSystemUserScoped(tenantId, () -> locationClient.findLocation(id));
+  public Location fetchLocation(String id) {
+    log.info("fetchLocation:: fetching location {}", id);
+    return locationClient.findLocation(id);
   }
 
   @Override
-  public ServicePoint fetchServicePoint(String tenantId, String id) {
-    log.info("fetchServicePoint:: fetching service point {} from tenant {}", id, tenantId);
-    return executionService.executeSystemUserScoped(tenantId,
-      () -> servicePointClient.findServicePoint(id));
+  public ServicePoint fetchServicePoint(String id) {
+    log.info("fetchServicePoint:: fetching service point {}", id);
+    return servicePointClient.findServicePoint(id);
   }
 
   @Override
-  public Campus fetchCampus(String tenantId, String id) {
-    log.info("fetchCampus:: fetching campus {} from tenant {}", id, tenantId);
-    return executionService.executeSystemUserScoped(tenantId, () -> campusClient.findCampus(id));
+  public Campus fetchCampus(String id) {
+    log.info("fetchCampus:: fetching campus {}", id);
+    return campusClient.findCampus(id);
   }
 
   @Override
-  public Institution fetchInstitution(String tenantId, String id) {
-    log.info("fetchInstitution:: fetching institution {} from tenant {}", id, tenantId);
-    return executionService.executeSystemUserScoped(tenantId,
-      () -> institutionClient.findInstitution(id));
+  public Institution fetchInstitution(String id) {
+    log.info("fetchInstitution:: fetching institution {}", id);
+    return institutionClient.findInstitution(id);
   }
 
   @Override
-  public Library fetchLibrary(String tenantId, String id) {
-    log.info("fetchLibrary:: fetching library {} from tenant {}", id, tenantId);
-    return executionService.executeSystemUserScoped(tenantId, () -> libraryClient.findLibrary(id));
+  public Library fetchLibrary(String id) {
+    log.info("fetchLibrary:: fetching library {}", id);
+    return libraryClient.findLibrary(id);
   }
 }

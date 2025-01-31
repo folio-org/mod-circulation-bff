@@ -13,6 +13,7 @@ import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class CheckInServiceImpl implements CheckInService {
   private final CheckInClient checkInClient;
   private final SearchService searchService;
   private final InventoryService inventoryService;
+  private final SystemUserScopedExecutionService executionService;
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
 
   @Override
@@ -60,28 +62,36 @@ public class CheckInServiceImpl implements CheckInService {
       return;
     }
 
-    var itemTenantId = getItemTenantId(itemId, searchInstance);
-    var item = inventoryService.fetchItem(itemTenantId, itemId);
+    String itemTenantId = getItemTenantId(itemId, searchInstance);
+    if (itemTenantId != null) {
+      executionService.executeAsyncSystemUserScoped(getItemTenantId(itemId, searchInstance),
+        () -> fetchStaffSlipsFromInventoryAndRebuildContext(response, itemId, searchInstance));
+    }
+  }
+
+  private void fetchStaffSlipsFromInventoryAndRebuildContext(CheckInResponse response,
+   String itemId, SearchInstance searchInstance) {
+
+    var item = inventoryService.fetchItem(itemId);
     if (item == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: item not found, itemId: {}", itemId);
+      log.warn("fetchStaffSlipsFromInventoryAndRebuildContext:: item not found, itemId: {}", itemId);
       return;
     }
 
-    var location = inventoryService.fetchLocation(itemTenantId, item.getEffectiveLocationId());
+    var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: location not found, locationId: {}",
+      log.warn("fetchStaffSlipsFromInventoryAndRebuildContext:: location not found, locationId: {}",
         item.getEffectiveLocationId());
       return;
     }
-    var servicePointName = fetchServicePointName(itemTenantId, location.getPrimaryServicePoint()
-      .toString());
+    var servicePointName = fetchServicePointName(location.getPrimaryServicePoint().toString());
 
     response.getStaffSlipContext()
       .getItem()
       .effectiveLocationPrimaryServicePointName(servicePointName)
       .toServicePoint(servicePointName)
       .fromServicePoint(item.getLastCheckIn() != null
-        ? fetchServicePointName(itemTenantId, item.getLastCheckIn().getServicePointId())
+        ? fetchServicePointName(item.getLastCheckIn().getServicePointId())
         : null)
       .title(searchInstance.getTitle())
       .primaryContributor(getPrimaryContributorName(searchInstance.getContributors()))
@@ -106,13 +116,13 @@ public class CheckInServiceImpl implements CheckInService {
         ? item.getLastCheckIn().getDateTime()
         : null)
       .effectiveLocationInstitution(
-        fetchInstitutionName(itemTenantId, location.getInstitutionId()))
-      .effectiveLocationCampus(fetchCampusName(itemTenantId, location.getCampusId()))
-      .effectiveLocationLibrary(fetchLocationLibraryName(itemTenantId, location.getLibraryId()))
+        fetchInstitutionName(location.getInstitutionId()))
+      .effectiveLocationCampus(fetchCampusName(location.getCampusId()))
+      .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
 
-      log.info("rebuildStaffSlipContextWithInventoryItem:: staff slips context for item {} " +
-        "has been successfully rebuilt", itemId);
+    log.info("fetchStaffSlipsFromInventoryAndRebuildContext:: staff slips context for item {} " +
+      "has been successfully rebuilt", itemId);
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
@@ -125,9 +135,9 @@ public class CheckInServiceImpl implements CheckInService {
       .collect(joining("; "));
   }
 
-  private String fetchInstitutionName(String tenantId, String institutionId) {
-    log.info("fetchInstitutionName:: tenantId={}, institutionId={}", tenantId, institutionId);
-    var institution = inventoryService.fetchInstitution(tenantId, institutionId);
+  private String fetchInstitutionName(String institutionId) {
+    log.info("fetchInstitutionName:: institutionId={}", institutionId);
+    var institution = inventoryService.fetchInstitution(institutionId);
     if (institution == null) {
       log.warn("fetchInstitutionName:: institution {} not found", institutionId);
       return null;
@@ -137,9 +147,9 @@ public class CheckInServiceImpl implements CheckInService {
     return institutionName;
   }
 
-  private String fetchCampusName(String tenantId, String campusId) {
-    log.info("fetchCampusName:: tenantId={}, campusId={}", tenantId, campusId);
-    var campus = inventoryService.fetchCampus(tenantId, campusId);
+  private String fetchCampusName(String campusId) {
+    log.info("fetchCampusName:: campusId={}", campusId);
+    var campus = inventoryService.fetchCampus(campusId);
     if (campus == null) {
       log.warn("fetchCampusName:: campus {} not found", campusId);
       return null;
@@ -149,9 +159,9 @@ public class CheckInServiceImpl implements CheckInService {
     return campusName;
   }
 
-  private String fetchLocationLibraryName(String tenantId, String libraryId) {
-    log.info("fetchLocationLibraryName:: tenantId={}, libraryId={}", tenantId, libraryId);
-    var library = inventoryService.fetchLibrary(tenantId, libraryId);
+  private String fetchLocationLibraryName(String libraryId) {
+    log.info("fetchLocationLibraryName:: libraryId={}", libraryId);
+    var library = inventoryService.fetchLibrary(libraryId);
     if (library == null) {
       log.warn("fetchLocationLibrary:: library {} not found", libraryId);
       return null;
@@ -161,9 +171,9 @@ public class CheckInServiceImpl implements CheckInService {
     return libraryName;
   }
 
-  private String fetchServicePointName(String tenantId, String servicePointId) {
-    log.info("fetchServicePointName:: tenantId={}, libraryId={}", tenantId, servicePointId);
-    var servicePoint = inventoryService.fetchServicePoint(tenantId, servicePointId);
+  private String fetchServicePointName(String servicePointId) {
+    log.info("fetchServicePointName:: libraryId={}", servicePointId);
+    var servicePoint = inventoryService.fetchServicePoint(servicePointId);
     if (servicePoint == null) {
       log.warn("fetchServicePointName:: service point {} not found",
         servicePointId);
@@ -175,12 +185,15 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private String getItemTenantId(String itemId, SearchInstance searchInstance) {
-    return searchInstance.getItems()
+    var tenantId = searchInstance.getItems()
       .stream()
       .filter(item -> item.getId().equals(itemId))
       .findFirst()
       .map(SearchItem::getTenantId)
       .orElse(null);
+    log.info("getItemTenantId:: tenantId: {}", tenantId);
+
+    return tenantId;
   }
 
   public String getPrimaryContributorName(List<Contributor> contributors) {
