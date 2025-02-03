@@ -1,3 +1,7 @@
+## 1.0.8 2025-02-03
+* Populate staff slip context for non-DCB items (MCBFF-51)
+* Update hardcoded effective location during check-in (MCBFF-38)
+
 ## 1.0.7 2025-01-28
 * Change allowed service point logic (MCBFF-52)
 
