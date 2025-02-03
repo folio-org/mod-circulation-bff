@@ -38,6 +38,12 @@ components:
       $ref: 'schemas/dto/inventory/instances.json'
     locations:
       $ref: 'schemas/dto/inventory/locations.json'
+    libraries:
+      $ref: 'schemas/dto/inventory/libraries.json'
+    campuses:
+      $ref: 'schemas/dto/inventory/campuses.json'
+    institutions:
+      $ref: 'schemas/dto/inventory/institutions.json'
     service-points:
       $ref: 'schemas/dto/inventory/servicePoints.json'
     material-types:
