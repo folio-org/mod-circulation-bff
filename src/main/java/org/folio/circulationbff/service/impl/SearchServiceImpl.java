@@ -51,6 +51,7 @@ import org.folio.circulationbff.domain.dto.ServicePoints;
 import org.folio.circulationbff.domain.mapping.SearchInstanceMapper;
 import org.folio.circulationbff.service.BulkFetchingService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.TenantService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
@@ -72,6 +73,7 @@ public class SearchServiceImpl implements SearchService {
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
   private final SearchInstanceMapper searchInstanceMapper;
+  private final TenantService tenantService;
 
   @Override
   public SearchInstance findInstanceByItemId(String itemId) {
@@ -87,7 +89,9 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public ConsortiumItem findConsortiumItem(String itemId) {
     log.info("findConsortiumItem:: looking for item {}", itemId);
-    return searchClient.searchItem(itemId);
+    // this call is only allowed in central tenant
+    return executionService.executeSystemUserScoped(tenantService.getCentralTenantId().orElseThrow(),
+      () -> searchClient.searchItem(itemId));
   }
 
   @Override
