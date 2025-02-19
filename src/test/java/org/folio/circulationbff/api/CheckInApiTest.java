@@ -41,6 +41,7 @@ class CheckInApiTest extends BaseIT {
   private static final String CHECK_IN_URL = "/circulation-bff/loans/check-in-by-barcode";
   private static final String CIRCULATION_CHECK_IN_URL = "/circulation/check-in-by-barcode";
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
+  private static final String INSTANCE_ID = "4bd52525-b922-4b20-9b3b-caf7b2d1866f";
 
   @Test
   @SneakyThrows
@@ -106,9 +107,13 @@ class CheckInApiTest extends BaseIT {
     var request = generateCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
+    var inTransitDestinationServicePointId = randomId();
+    var holdingRecordId = randomId();
     givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
+      .holdingsRecordId(holdingRecordId)
+      .inTransitDestinationServicePointId(inTransitDestinationServicePointId)
       .copyNumber("copyNumber")
       .effectiveLocationId(effectiveLocationId);
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
@@ -160,7 +165,12 @@ class CheckInApiTest extends BaseIT {
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", equalTo(institution.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())));
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", equalTo(inTransitDestinationServicePointId)))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", equalTo(inTransitDestinationServicePointId)))
+      .andExpect(jsonPath("$.item.location.name", equalTo(location.getName())))
+      .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
+      .andExpect(jsonPath("$.item.instanceId", equalTo((INSTANCE_ID))));
   }
 
   @Test
@@ -239,6 +249,7 @@ class CheckInApiTest extends BaseIT {
       .id(item.getId())
       .tenantId(tenantId);
     var searchInstance = new SearchInstance()
+      .id(INSTANCE_ID)
       .tenantId(tenantId)
       .contributors(List.of(
         new Contributor()

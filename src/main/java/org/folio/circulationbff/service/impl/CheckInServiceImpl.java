@@ -7,7 +7,11 @@ import java.util.List;
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
+import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
+import org.folio.circulationbff.domain.dto.CheckInResponseItemLocation;
 import org.folio.circulationbff.domain.dto.Contributor;
+import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.service.CheckInService;
@@ -35,12 +39,12 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("checkIn: checking in item with barcode {} on service point {}",
       request.getItemBarcode(), request.getServicePointId());
     var response = checkInClient.checkIn(request);
-    processStaffSlipContext(response);
+    processCheckInResponse(response);
 
     return response;
   }
 
-  private void processStaffSlipContext(CheckInResponse response) {
+  private void processCheckInResponse(CheckInResponse response) {
     if (!DCB_INSTANCE_ID.equals(response.getItem().getInstanceId())) {
       log.info("processStaffSlipContext:: keeping staff slip context because it was built " +
         "for inventory item, not for circulation item");
@@ -49,10 +53,10 @@ public class CheckInServiceImpl implements CheckInService {
 
     log.info("processStaffSlipContext:: rebuilding staff slip context with inventory item " +
       "information");
-    rebuildStaffSlipContextWithInventoryItem(response);
+    updateCheckInResponseFromInventory(response);
   }
 
-  private void rebuildStaffSlipContextWithInventoryItem(CheckInResponse response) {
+  private void updateCheckInResponseFromInventory(CheckInResponse response) {
     var itemId = response.getItem().getId();
     log.info("rebuildStaffSlipContextWithInventoryItem:: item ID: {}", itemId);
 
@@ -65,27 +69,34 @@ public class CheckInServiceImpl implements CheckInService {
     String itemTenantId = getItemTenantId(itemId, searchInstance);
     if (itemTenantId != null) {
       executionService.executeAsyncSystemUserScoped(itemTenantId,
-        () -> rebuildStaffSlipContext(response, itemId, searchInstance));
+        () -> rebuildCheckInResponse(response, itemId, searchInstance));
     }
   }
 
-  private void rebuildStaffSlipContext(CheckInResponse response,
+  private void rebuildCheckInResponse(CheckInResponse response,
     String itemId, SearchInstance searchInstance) {
 
-    log.info("rebuildStaffSlipContext:: rebuilding staff slip context for item {}", itemId);
+    log.info("rebuildCheckInResponse:: rebuilding staff slip context for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
-      log.warn("rebuildStaffSlipContext:: item {} not found", itemId);
+      log.warn("rebuildCheckInResponse:: item {} not found", itemId);
       return;
     }
 
     var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("rebuildStaffSlipContext:: location {} not found",
+      log.warn("rebuildCheckInResponse:: location {} not found",
         item.getEffectiveLocationId());
       return;
     }
     var servicePointName = fetchServicePointName(location.getPrimaryServicePoint().toString());
+
+    buildStaffSlipContext(response, searchInstance, servicePointName, item, location);
+    buildCheckInItem(response, searchInstance, servicePointName, item, location);
+  }
+
+  private void buildStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
+    String servicePointName, Item item, Location location) {
 
     response.getStaffSlipContext()
       .getItem()
@@ -122,8 +133,25 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
 
-    log.info("rebuildStaffSlipContext:: staff slips context for item {} " +
-      "has been successfully rebuilt", itemId);
+    log.info("buildStaffSlipContext:: staff slips context for item {} " +
+      "has been successfully built", item.getId());
+  }
+
+  private void buildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
+    String servicePointName, Item item, Location location) {
+
+    var inTransitDestinationServicePointId = item.getInTransitDestinationServicePointId();
+    response.getItem()
+      .inTransitDestinationServicePointId(inTransitDestinationServicePointId)
+      .inTransitDestinationServicePoint(new CheckInResponseItemInTransitDestinationServicePoint()
+        .id(inTransitDestinationServicePointId)
+        .name(servicePointName))
+      .location(new CheckInResponseItemLocation()
+        .name(location.getName()))
+      .holdingsRecordId(item.getHoldingsRecordId())
+      .instanceId(searchInstance.getId());
+
+    log.info("buildCheckInItem:: checkInItem {} has been successfully built", item.getId());
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
