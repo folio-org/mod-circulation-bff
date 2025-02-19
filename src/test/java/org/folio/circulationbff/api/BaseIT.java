@@ -53,7 +53,7 @@ public class BaseIT {
   protected static final String TENANT_ID_COLLEGE = "college";
   protected static final String TENANT_ID_SECURE = "secure";
   protected static final String USER_ID = randomId();
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+  protected static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL)
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
