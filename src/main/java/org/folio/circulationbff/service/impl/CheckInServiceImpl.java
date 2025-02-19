@@ -14,6 +14,7 @@ import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
+import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
@@ -89,14 +90,15 @@ public class CheckInServiceImpl implements CheckInService {
         item.getEffectiveLocationId());
       return;
     }
-    var servicePointName = fetchServicePointName(location.getPrimaryServicePoint().toString());
 
-    buildStaffSlipContext(response, searchInstance, servicePointName, item, location);
-    buildCheckInItem(response, searchInstance, servicePointName, item, location);
+    buildStaffSlipContext(response, searchInstance, item, location);
+    buildCheckInItem(response, searchInstance, item, location);
   }
 
   private void buildStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
-    String servicePointName, Item item, Location location) {
+    Item item, Location location) {
+
+    var servicePointName = fetchServicePointName(location.getPrimaryServicePoint().toString());
 
     response.getStaffSlipContext()
       .getItem()
@@ -138,14 +140,18 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private void buildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
-    String servicePointName, Item item, Location location) {
+    Item item, Location location) {
 
-    var inTransitDestinationServicePointId = item.getInTransitDestinationServicePointId();
+    var primaryServicePointId = location.getPrimaryServicePoint().toString();
+    var primaryServicePoint = fetchServicePoint(primaryServicePointId);
+
     response.getItem()
-      .inTransitDestinationServicePointId(inTransitDestinationServicePointId)
-      .inTransitDestinationServicePoint(new CheckInResponseItemInTransitDestinationServicePoint()
-        .id(inTransitDestinationServicePointId)
-        .name(servicePointName))
+      .inTransitDestinationServicePointId(primaryServicePointId)
+      .inTransitDestinationServicePoint(primaryServicePoint != null
+        ? new CheckInResponseItemInTransitDestinationServicePoint()
+          .id(primaryServicePoint.getId())
+          .name(primaryServicePoint.getName())
+        : null)
       .location(new CheckInResponseItemLocation()
         .name(location.getName()))
       .holdingsRecordId(item.getHoldingsRecordId())
@@ -202,15 +208,24 @@ public class CheckInServiceImpl implements CheckInService {
 
   private String fetchServicePointName(String servicePointId) {
     log.info("fetchServicePointName:: libraryId={}", servicePointId);
-    var servicePoint = inventoryService.fetchServicePoint(servicePointId);
+    var servicePoint = fetchServicePoint(servicePointId);
     if (servicePoint == null) {
       log.warn("fetchServicePointName:: service point {} not found",
         servicePointId);
       return null;
     }
     String servicePointName = servicePoint.getName();
-    log.debug("fetchServicePointName:: result: {}", servicePointName);
+    log.info("fetchServicePointName:: result: {}", servicePointName);
+
     return servicePointName;
+  }
+
+  private ServicePoint fetchServicePoint(String servicePointId) {
+    log.info("fetchServicePoint:: libraryId={}", servicePointId);
+    var servicePoint = inventoryService.fetchServicePoint(servicePointId);
+    log.info("fetchServicePoint:: result: {}", servicePoint);
+
+    return servicePoint;
   }
 
   private String getItemTenantId(String itemId, SearchInstance searchInstance) {

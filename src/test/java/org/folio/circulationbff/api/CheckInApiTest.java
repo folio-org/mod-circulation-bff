@@ -107,13 +107,13 @@ class CheckInApiTest extends BaseIT {
     var request = generateCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
-    var inTransitDestinationServicePointId = randomId();
+    var primaryServicePointId = randomUUID();
     var holdingRecordId = randomId();
     givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
       .holdingsRecordId(holdingRecordId)
-      .inTransitDestinationServicePointId(inTransitDestinationServicePointId)
+      .inTransitDestinationServicePointId(primaryServicePointId.toString())
       .copyNumber("copyNumber")
       .effectiveLocationId(effectiveLocationId);
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
@@ -122,29 +122,29 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
-    var primaryServicePoint = randomUUID();
     var institutionId = randomId();
     var campusId = randomId();
     var libraryId = randomId();
     var location = new Location()
       .name("location")
-      .primaryServicePoint(primaryServicePoint)
+      .primaryServicePoint(primaryServicePointId)
       .institutionId(institutionId)
       .campusId(campusId)
       .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(location, SC_OK)));
-    var servicePointResponse = """
+    var servicePointResponse = String.format("""
       {
         "name": "updated service point",
+        "id": "%s",
         "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
       }
-      """;
+      """, primaryServicePointId);
     var institution = new Institution().id(institutionId).name("institution");
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
-    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePoint))
+    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePointId))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
@@ -166,8 +166,8 @@ class CheckInApiTest extends BaseIT {
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
-      .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", equalTo(inTransitDestinationServicePointId)))
-      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", equalTo(inTransitDestinationServicePointId)))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", equalTo(primaryServicePointId.toString())))
       .andExpect(jsonPath("$.item.location.name", equalTo(location.getName())))
       .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
       .andExpect(jsonPath("$.item.instanceId", equalTo((INSTANCE_ID))));
