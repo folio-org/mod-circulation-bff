@@ -90,15 +90,18 @@ public class CheckInServiceImpl implements CheckInService {
         item.getEffectiveLocationId());
       return;
     }
+    var primaryServicePoint = fetchServicePoint(location.getPrimaryServicePoint().toString());
 
-    buildStaffSlipContext(response, searchInstance, item, location);
-    buildCheckInItem(response, searchInstance, item, location);
+    buildStaffSlipContext(response, searchInstance, item, primaryServicePoint, location);
+    buildCheckInItem(response, searchInstance, item, primaryServicePoint, location);
   }
 
   private void buildStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
-    Item item, Location location) {
+    Item item, ServicePoint servicePoint, Location location) {
 
-    var servicePointName = fetchServicePointName(location.getPrimaryServicePoint().toString());
+    String servicePointName = servicePoint != null
+      ? servicePoint.getName()
+      : null;
 
     response.getStaffSlipContext()
       .getItem()
@@ -140,13 +143,10 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private void buildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
-    Item item, Location location) {
-
-    var primaryServicePointId = location.getPrimaryServicePoint().toString();
-    var primaryServicePoint = fetchServicePoint(primaryServicePointId);
+    Item item, ServicePoint primaryServicePoint, Location location) {
 
     response.getItem()
-      .inTransitDestinationServicePointId(primaryServicePointId)
+      .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
       .inTransitDestinationServicePoint(primaryServicePoint != null
         ? new CheckInResponseItemInTransitDestinationServicePoint()
           .id(primaryServicePoint.getId())
