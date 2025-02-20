@@ -20,6 +20,26 @@ properties:
       barcode:
         description: Barcode of the item
         type: string
+      inTransitDestinationServicePointId:
+        description: Service point an item is intended to be transited to (should only be present when in transit)
+        type: string
+      inTransitDestinationServicePoint:
+        description: "Service point an item is intended to be transited to (should only be present when in transit)"
+        type: object
+        properties:
+          id:
+            description: "The ID of the service point"
+            type: string
+          name:
+            description: "Name of the service point"
+            type: string
+      location:
+        description: Effective location of the item
+        type: object
+        properties:
+          name:
+            description: Name of the location
+            type: string
       enumeration:
         description: Enumeration of the item
         type: string
