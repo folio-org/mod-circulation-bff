@@ -59,11 +59,11 @@ public class CheckInServiceImpl implements CheckInService {
 
   private void updateCheckInResponseFromInventory(CheckInResponse response) {
     var itemId = response.getItem().getId();
-    log.info("rebuildStaffSlipContextWithInventoryItem:: item ID: {}", itemId);
+    log.info("updateCheckInResponseFromInventory:: item ID: {}", itemId);
 
     var searchInstance = searchService.findInstanceByItemId(itemId);
     if (searchInstance == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: instance not found");
+      log.warn("updateCheckInResponseFromInventory:: instance not found");
       return;
     }
 
