@@ -11,13 +11,9 @@
           "pathPattern": "/circulation-bff/create-ecs-request-external",
           "permissionsRequired": ["circulation-bff.ecs-request-external.item.post"],
           "modulePermissions": [
-            "tlr.ecs-request-external.post",
             "user-tenants.collection.get",
             "circulation.requests.item.get",
             "circulation.requests.collection.get",
-            "tlr.settings.get",
-            "circulation.settings.item.get",
-            "circulation.settings.collection.get",
             "consortium-search.items.collection.get",
             "consortium-search.items.item.get"
           ]
@@ -363,7 +359,10 @@
         "inventory-storage.material-types.item.get",
         "inventory-storage.material-types.collection.get",
         "inventory-storage.instances.item.get",
-        "inventory-storage.instances.collection.get"
+        "inventory-storage.instances.collection.get",
+        "consortium-search.items.collection.get",
+        "consortium-search.items.item.get",
+        "tlr.ecs-request-external.post"
       ]
     }
   },

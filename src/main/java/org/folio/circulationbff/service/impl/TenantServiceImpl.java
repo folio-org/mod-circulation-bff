@@ -19,7 +19,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TenantServiceImpl implements TenantService {
 
-  private static final Map<String, Optional<String>> CENTRAL_TENANT_ID_CACHE = new ConcurrentHashMap<>();
+  private static final Map<String, Optional<String>> CACHE = new ConcurrentHashMap<>();
 
   private final UserTenantsService userTenantsService;
   private final TenantConfig tenantConfig;
@@ -35,8 +35,8 @@ public class TenantServiceImpl implements TenantService {
     String currentTenantId = getCurrentTenantId();
     Optional<String> centralTenantId;
 
-    if (CENTRAL_TENANT_ID_CACHE.containsKey(currentTenantId)) {
-      centralTenantId = CENTRAL_TENANT_ID_CACHE.get(currentTenantId);
+    if (CACHE.containsKey(currentTenantId)) {
+      centralTenantId = CACHE.get(currentTenantId);
       log.info("getCentralTenantId:: cache hit: tenantId={}, centralTenantId={}",
         () -> currentTenantId, () -> centralTenantId.orElse(null));
     } else {
@@ -45,9 +45,9 @@ public class TenantServiceImpl implements TenantService {
           .map(UserTenant::getCentralTenantId);
       log.info("getCentralTenantId:: populating cache: tenantId={}, centralTenantId={}",
         () -> currentTenantId, () -> centralTenantId.orElse(null));
-      CENTRAL_TENANT_ID_CACHE.put(currentTenantId, centralTenantId);
+      CACHE.put(currentTenantId, centralTenantId);
     }
-    log.debug("getCentralTenantId:: cache: {}", CENTRAL_TENANT_ID_CACHE);
+    log.debug("getCentralTenantId:: cache: {}", CACHE);
 
     return centralTenantId;
   }
@@ -85,9 +85,9 @@ public class TenantServiceImpl implements TenantService {
       .orElse(false);
   }
 
-  public static void clearCentralTenantIdCache() {
-    log.info("clearCentralTenantIdCache:: clearing cache");
-    CENTRAL_TENANT_ID_CACHE.clear();
+  public static void clearCache() {
+    log.info("clearCache:: clearing cache");
+    CACHE.clear();
   }
 
 }

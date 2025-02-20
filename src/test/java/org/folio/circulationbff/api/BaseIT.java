@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.folio.circulationbff.service.impl.TenantServiceImpl;
 import org.folio.circulationbff.util.TestUtils;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -81,6 +82,7 @@ public class BaseIT {
   void beforeEachTest() {
     contextSetter = initFolioContext();
     wireMockServer.resetAll();
+    TenantServiceImpl.clearCache();
   }
 
   @AfterEach

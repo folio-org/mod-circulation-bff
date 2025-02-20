@@ -1,7 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
 import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum.ITEM;
-import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum.TITLE;
 
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
@@ -12,7 +11,6 @@ import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.SearchService;
-import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,6 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
   private final SystemUserScopedExecutionService systemUserScopedExecutionService;
   private final EcsTlrClient ecsTlrClient;
   private final CirculationClient circulationClient;
-  private final SettingsService settingsService;
   private final SearchService searchService;
   private final TenantService tenantService;
 
@@ -39,23 +36,9 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
 
     fetchMissingRequestProperties(request);
 
-    return settingsService.isEcsTlrFeatureEnabled()
-      ? createEcsRequest(request)
-      : createCirculationRequest(request);
-  }
-
-  private Request createEcsRequest(EcsRequestExternal ecsRequestExternal) {
-    log.info("createEcsRequest:: creating ECS request");
     return tenantService.isCurrentTenantSecure()
-      ? createMediatedRequest(ecsRequestExternal)
-      : createExternalEcsTlr(ecsRequestExternal);
-  }
-
-  private Request createCirculationRequest(EcsRequestExternal ecsRequestExternal) {
-    log.info("createCirculationRequest:: creating circulation request");
-    return ecsRequestExternal.getRequestLevel() == TITLE
-      ? createTitleLevelRequest(ecsRequestExternal)
-      : createItemLevelRequest(ecsRequestExternal);
+      ? createMediatedRequest(request)
+      : createExternalEcsTlr(request);
   }
 
   private Request createExternalEcsTlr(EcsRequestExternal ecsRequestExternal) {
@@ -73,18 +56,6 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
   private Request createMediatedRequest(EcsRequestExternal ecsRequestExternal) {
     log.info("createMediatedRequest:: creating mediated request");
     // POST /requests-mediated/mediated-requests
-    return new Request();
-  }
-
-  private Request createItemLevelRequest(EcsRequestExternal ecsRequestExternal) {
-    log.info("createItemLevelRequest:: creating item level request");
-    // POST /circulation/requests
-    return new Request();
-  }
-
-  private Request createTitleLevelRequest(EcsRequestExternal ecsRequestExternal) {
-    log.info("createTitleLevelRequest:: creating title level request");
-    // POST /circulation/requests/instances
     return new Request();
   }
 
