@@ -86,7 +86,7 @@ public class BaseIT {
   }
 
   @AfterEach
-  public void afterEachTest() {
+  void afterEachTest() {
     contextSetter.close();
   }
 
