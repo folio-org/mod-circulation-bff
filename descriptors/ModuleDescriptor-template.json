@@ -160,7 +160,13 @@
             "inventory-storage.locations.item.get",
             "inventory-storage.locations.collection.get",
             "inventory-storage.service-points.item.get",
-            "inventory-storage.service-points.collection.get"
+            "inventory-storage.service-points.collection.get",
+            "inventory-storage.location-units.libraries.item.get",
+            "inventory-storage.location-units.libraries.collection.get",
+            "inventory-storage.location-units.campuses.item.get",
+            "inventory-storage.location-units.campuses.collection.get",
+            "inventory-storage.location-units.institutions.item.get",
+            "inventory-storage.location-units.institutions.collection.get"
           ]
         }
       ]
@@ -293,6 +299,10 @@
       "version": "3.1"
     },
     {
+      "id": "location-units",
+      "version": "2.0"
+    },
+    {
       "id": "service-points",
       "version": "3.3"
     },
@@ -363,7 +373,14 @@
         "inventory-storage.instances.collection.get",
         "consortium-search.items.collection.get",
         "consortium-search.items.item.get",
-        "tlr.ecs-request-external.post"
+        "tlr.ecs-request-external.post",
+        "inventory-storage.instances.collection.get",
+        "inventory-storage.location-units.libraries.item.get",
+        "inventory-storage.location-units.libraries.collection.get",
+        "inventory-storage.location-units.campuses.item.get",
+        "inventory-storage.location-units.campuses.collection.get",
+        "inventory-storage.location-units.institutions.item.get",
+        "inventory-storage.location-units.institutions.collection.get"
       ]
     }
   },
