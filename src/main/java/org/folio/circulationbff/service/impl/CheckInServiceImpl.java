@@ -100,7 +100,8 @@ public class CheckInServiceImpl implements CheckInService {
   private void rebuildCheckInStaffSlipContext(CheckInResponse response,
     SearchInstance searchInstance, Item item, ServicePoint servicePoint, Location location) {
 
-    log.info("rebuildCheckInStaffSlipContext:: rebuilding context with item {}", item::getId);
+    log.info("rebuildCheckInStaffSlipContext:: rebuilding context with inventory item {}",
+      item::getId);
 
     String servicePointName = servicePoint != null
       ? servicePoint.getName()
@@ -142,13 +143,13 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationSpecific(location.getName());
 
     log.info("rebuildCheckInStaffSlipContext:: succeeded to rebuild check in staff slip context " +
-        "with item {}", item::getId);
+        "with inventory item {}", item::getId);
   }
 
   private void rebuildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint primaryServicePoint, Location location) {
 
-    log.info("rebuildCheckInItem:: rebuilding check in item with item {}", item::getId);
+    log.info("rebuildCheckInItem:: rebuilding check in item with inventory item {}", item::getId);
 
     response.getItem()
       .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
@@ -162,7 +163,8 @@ public class CheckInServiceImpl implements CheckInService {
       .holdingsRecordId(item.getHoldingsRecordId())
       .instanceId(searchInstance.getId());
 
-    log.info("rebuildCheckInItem:: succeeded to rebuild check in item with item {}", item::getId);
+    log.info("rebuildCheckInItem:: succeeded to rebuild check in item with inventory item {}",
+      item::getId);
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
