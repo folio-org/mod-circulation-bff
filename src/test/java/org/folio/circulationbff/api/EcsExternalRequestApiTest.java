@@ -57,11 +57,6 @@ class EcsExternalRequestApiTest extends BaseIT {
   private static final String PRIMARY_REQUEST_ID = randomId();
   private static final Date REQUEST_DATE = new Date();
 
-  @BeforeEach
-  void beforeEach() {
-    TenantServiceImpl.clearCentralTenantIdCache();
-  }
-
   @Test
   @SneakyThrows
   void createExternalItemLevelEcsTlr() {
@@ -78,7 +73,7 @@ class EcsExternalRequestApiTest extends BaseIT {
     mockPrimaryRequest(mockPrimaryRequest);
 
     createExternalRequest(initialRequest)
-      .andExpect(status().isOk())
+      .andExpect(status().isCreated())
       .andExpect(content().json(asJsonString(mockPrimaryRequest)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID)))
@@ -103,7 +98,7 @@ class EcsExternalRequestApiTest extends BaseIT {
     mockPrimaryRequest(mockPrimaryRequest);
 
     createExternalRequest(initialRequest)
-      .andExpect(status().isOk())
+      .andExpect(status().isCreated())
       .andExpect(content().json(asJsonString(mockPrimaryRequest)));
 
     wireMockServer.verify(0, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID))));
@@ -118,15 +113,48 @@ class EcsExternalRequestApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void createExternalMediatedRequest() {
-    EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
+  void createExternalItemLevelMediatedRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(ITEM);
+    EcsRequestExternal expectedRequestWithItemDetails = buildEcsRequestExternal(ITEM)
+      .holdingsRecordId(HOLDING_ID)
+      .instanceId(INSTANCE_ID);
+    MediatedRequest mockMediatedRequest = buildMediatedRequest(expectedRequestWithItemDetails);
 
     mockUserTenants();
-//    mockMediatedRequest(buildMediatedRequest(initialRequest));
-    mockMediatedRequest(buildMediatedRequest());
+    mockMediatedRequest(mockMediatedRequest);
+    mockItemSearch(ITEM_ID);
 
     createExternalRequest(initialRequest, TENANT_ID_SECURE)
-      .andExpect(status().isOk());
+      .andExpect(status().isCreated())
+      .andExpect(content().json(asJsonString(mockMediatedRequest)));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID)))
+      .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
+      .withQueryParam("limit", equalTo("1")));
+    wireMockServer.verify(1, postRequestedFor(urlPathMatching(MEDIATED_REQUESTS_URL))
+      .withHeader(TENANT, equalTo(TENANT_ID_SECURE))
+      .withRequestBody(equalToJson(asJsonString(mockMediatedRequest))));
+  }
+
+  @Test
+  @SneakyThrows
+  void createExternalTitleLevelMediatedRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
+    MediatedRequest mockMediatedRequest = buildMediatedRequest(initialRequest);
+
+    mockUserTenants();
+    mockMediatedRequest(mockMediatedRequest);
+
+    createExternalRequest(initialRequest, TENANT_ID_SECURE)
+      .andExpect(status().isCreated())
+      .andExpect(content().json(asJsonString(mockMediatedRequest)));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID))));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(USER_TENANTS_URL)));
+    wireMockServer.verify(1, postRequestedFor(urlPathMatching(MEDIATED_REQUESTS_URL))
+      .withHeader(TENANT, equalTo(TENANT_ID_SECURE))
+      .withRequestBody(equalToJson(asJsonString(mockMediatedRequest))));
   }
 
   private static void mockUserTenants() {
@@ -158,7 +186,18 @@ class EcsExternalRequestApiTest extends BaseIT {
   }
 
   private static MediatedRequest buildMediatedRequest(EcsRequestExternal externalRequest) {
-    return new MediatedRequest();
+    return new MediatedRequest()
+      .requestLevel(MediatedRequest.RequestLevelEnum.fromValue(externalRequest.getRequestLevel().getValue()))
+      .requestType(MediatedRequest.RequestTypeEnum.PAGE)
+      .itemId(externalRequest.getItemId())
+      .holdingsRecordId(externalRequest.getHoldingsRecordId())
+      .instanceId(externalRequest.getInstanceId())
+      .requesterId(externalRequest.getRequesterId())
+      .pickupServicePointId(externalRequest.getPickupServicePointId())
+      .requestDate(externalRequest.getRequestDate())
+      .patronComments(externalRequest.getPatronComments())
+      .fulfillmentPreference(MediatedRequest.FulfillmentPreferenceEnum.fromValue(
+        externalRequest.getFulfillmentPreference().getValue()));
   }
 
   @SneakyThrows
@@ -201,71 +240,8 @@ class EcsExternalRequestApiTest extends BaseIT {
 
   private static void mockMediatedRequest(MediatedRequest mediatedRequest) {
     wireMockServer.stubFor(WireMock.post(urlPathMatching(MEDIATED_REQUESTS_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE))
       .willReturn(jsonResponse(asJsonString(mediatedRequest), SC_OK)));
   }
 
-  @SneakyThrows
-  private static MediatedRequest buildMediatedRequest() {
-    return OBJECT_MAPPER.readValue("""
-      {
-        "id": "00eabb9c-d850-4d79-9488-64c438827eb2",
-        "requestLevel": "Item",
-        "requestType": "Page",
-        "requestDate": "2025-02-05T16:45:09.816+00:00",
-        "requesterId": "06d45eab-46f5-4fdb-8cc3-cdec4461dcd1",
-        "requester": {
-          "firstName": "Secure",
-          "lastName": "Requester ",
-          "barcode": "S",
-          "patronGroupId": "3684a786-6671-4268-8ed0-9db82ebca60b",
-          "patronGroup": {
-            "id": "3684a786-6671-4268-8ed0-9db82ebca60b",
-            "group": "staff",
-            "desc": "Staff Member"
-          }
-        },
-        "instanceId": "2c9b1261-f57f-4dd8-a20e-f08f1cd80c73",
-        "instance": {
-          "title": "MODREQMED-76",
-          "identifiers": [],
-          "contributorNames": [],
-          "publication": [],
-          "editions": [],
-          "hrid": "in00000000027"
-        },
-        "holdingsRecordId": "d4a396ff-7a2e-4f89-9ce3-08cbbc02268b",
-        "itemId": "a05f8be0-0ff1-4423-b0a4-267e5414a032",
-        "item": {
-          "barcode": "MODREQMED-76-2",
-          "location": {
-            "name": "College",
-            "libraryName": "College",
-            "code": "1"
-          },
-          "status": "In transit",
-          "callNumberComponents": {}
-        },
-        "mediatedWorkflow": "Private request",
-        "mediatedRequestStatus": "New",
-        "mediatedRequestStep": "Awaiting confirmation",
-        "status": "New - Awaiting confirmation",
-        "fulfillmentPreference": "Hold Shelf",
-        "pickupServicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
-        "pickupServicePoint": {
-          "name": "Circ Desk 1",
-          "code": "cd1",
-          "discoveryDisplayName": "Circulation Desk -- Hallway",
-          "pickupLocation": true
-        },
-        "confirmedRequestId": "1807d75c-1f04-49f1-8e0b-6c4221f8ae04",
-        "metadata": {
-          "createdDate": "2025-02-05T16:45:10.158+00:00",
-          "createdByUserId": "3ad2a24b-d349-4f8d-b38e-1ed8628da348",
-          "updatedDate": "2025-02-05T16:45:10.158+00:00",
-          "updatedByUserId": "3ad2a24b-d349-4f8d-b38e-1ed8628da348"
-        }
-      }
-      """,
-    MediatedRequest.class);
-  }
 }

@@ -1,6 +1,6 @@
 package org.folio.circulationbff.service;
 
-import static org.folio.circulationbff.service.impl.TenantServiceImpl.clearCentralTenantIdCache;
+import static org.folio.circulationbff.service.impl.TenantServiceImpl.clearCache;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,7 +39,7 @@ class TenantServiceTest {
 
   @BeforeEach
   void setUp() {
-    clearCentralTenantIdCache();
+    clearCache();
   }
 
   @Test
