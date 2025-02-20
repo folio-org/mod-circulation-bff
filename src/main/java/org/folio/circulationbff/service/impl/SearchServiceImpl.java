@@ -84,6 +84,21 @@ public class SearchServiceImpl implements SearchService {
   }
 
   @Override
+  public SearchInstance findInstanceByItemBarcode(String itemBarcode) {
+    log.info("findInstanceByItemBarcode:: itemBarcode {}", itemBarcode);
+    String query = "items.barcode==" + itemBarcode;
+    SearchInstances searchResult = searchClient.findInstances(query, true);
+    if (CollectionUtils.isEmpty(searchResult.getInstances())) {
+      log.info("findInstanceByItemBarcode:: found nothing by itemBarcode {}", itemBarcode);
+      return null;
+    }
+
+    return searchResult.getInstances().stream()
+      .findFirst()
+      .orElse(null);
+  }
+
+  @Override
   public Collection<BffSearchInstance> findInstances(String query) {
     log.info("findInstances:: searching instances by query: {}", query);
     final SearchInstances searchResult = searchClient.findInstances(query, true);

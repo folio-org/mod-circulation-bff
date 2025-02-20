@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import java.util.List;
 
 import org.folio.circulationbff.client.feign.CheckInClient;
+import org.folio.circulationbff.client.feign.CirculationItemClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.Contributor;
@@ -13,6 +14,8 @@ import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.SettingsService;
+import org.folio.circulationbff.service.UserTenantsService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,9 @@ import lombok.extern.log4j.Log4j2;
 public class CheckInServiceImpl implements CheckInService {
 
   private final CheckInClient checkInClient;
+  private final CirculationItemClient circulationItemClient;
+  private final SettingsService settingsService;
+  private final UserTenantsService userTenantsService;
   private final SearchService searchService;
   private final InventoryService inventoryService;
   private final SystemUserScopedExecutionService executionService;
@@ -32,12 +38,79 @@ public class CheckInServiceImpl implements CheckInService {
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
-    log.info("checkIn: checking in item with barcode {} on service point {}",
-      request.getItemBarcode(), request.getServicePointId());
-    var response = checkInClient.checkIn(request);
+    if (request == null) {
+      log.warn("checkIn:: check in request is null");
+      return null;
+    }
+
+    var itemBarcode = request.getItemBarcode();
+    if (itemBarcode == null) {
+      log.warn("checkIn:: itemBarcode is null");
+      return null;
+    }
+
+    log.info("checkIn:: checking in item with barcode {} on service point {}",
+      itemBarcode, request.getServicePointId());
+
+    // Duplication
+    var searchInstance = searchService.findInstanceByItemBarcode(itemBarcode);
+    if (searchInstance == null) {
+      log.warn("checkIn:: failed to find an instance by item barcode {}", itemBarcode);
+      return null;
+    }
+
+    var searchItem = getItemInfoFromSearchInstance(searchInstance, itemBarcode);
+    if (searchItem == null) {
+      log.warn("checkIn:: failed to find an item by item barcode {}", itemBarcode);
+      return null;
+    }
+
+    var circulationItem = circulationItemClient.getCirculationItem(searchItem.getId());
+    if (circulationItem == null) {
+      log.info("checkIn:: failed to find circulation item by ID {}", searchItem.getId());
+    }
+
+    var needToProxyToAnotherTenant = userTenantsService.isCentralTenant()
+      && settingsService.isEcsTlrFeatureEnabled()
+      && circulationItem == null;
+
+    var response = needToProxyToAnotherTenant
+      ? checkInLocally(request)
+      : checkInRemotely(request, searchItem.getTenantId());
+
     processStaffSlipContext(response);
 
     return response;
+  }
+
+  private CheckInResponse checkInLocally(CheckInRequest request) {
+    log.info("checkInLocally:: item barcode {}", request.getItemBarcode());
+    return checkInClient.checkIn(request);
+  }
+
+  private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {
+    log.info("checkIn:: proxying to a remote tenant {}", tenantId);
+
+    return executionService.executeSystemUserScoped(tenantId,
+      () -> checkInClient.checkIn(request));
+  }
+
+  private SearchItem getItemInfoFromSearchInstance(SearchInstance searchInstance,
+    String itemBarcode) {
+
+    if (searchInstance == null) {
+      log.info("getItemInfoFromSearchInstance:: failed to find item {}, instance is null",
+        itemBarcode);
+      return null;
+    }
+
+    log.info("getItemInfoFromSearchInstance:: getting item info by barcode {} from instance {}",
+      () -> itemBarcode, searchInstance::getId);
+
+    return searchInstance.getItems().stream()
+      .filter(item -> itemBarcode.equals(item.getBarcode()))
+      .findFirst()
+      .orElse(null);
   }
 
   private void processStaffSlipContext(CheckInResponse response) {
