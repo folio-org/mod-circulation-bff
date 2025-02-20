@@ -13,9 +13,7 @@
           "modulePermissions": [
             "user-tenants.collection.get",
             "circulation.requests.item.get",
-            "circulation.requests.collection.get",
-            "consortium-search.items.collection.get",
-            "consortium-search.items.item.get"
+            "circulation.requests.collection.get"
           ]
         }
       ]
