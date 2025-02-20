@@ -1,11 +1,7 @@
 package org.folio.circulationbff.domain.mapping;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
-import org.folio.circulationbff.domain.dto.Request;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -41,23 +37,6 @@ public interface RequestMapper {
     return ecsRequestExternalFulfillmentPreference != null
       ? MediatedRequest.FulfillmentPreferenceEnum.fromValue(ecsRequestExternalFulfillmentPreference.getValue())
       : null;
-  }
-
-  @Named("mediatedToCirculationRequestStatus")
-  default Request.StatusEnum externalToMediatedRequestLevel(
-    MediatedRequest.StatusEnum mediatedRequestStatus) {
-
-    if (mediatedRequestStatus == null || mediatedRequestStatus.getValue() == null) {
-      return null;
-    }
-
-    return Arrays.stream(Request.StatusEnum.values())
-      .map(Request.StatusEnum::getValue)
-      .filter(Objects::nonNull)
-      .filter(status -> status.equals(mediatedRequestStatus.getValue()))
-      .map(Request.StatusEnum::fromValue)
-      .findFirst()
-      .orElse(null);
   }
 
 }

@@ -3,7 +3,7 @@ package org.folio.circulationbff.service.impl;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.service.SettingsService;
-import org.folio.circulationbff.service.TenantService;
+import org.folio.circulationbff.service.UserTenantsService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,23 +17,22 @@ public class SettingsServiceImpl implements SettingsService {
   public static final String ECS_TLR_FEATURE_SETTINGS = "name=ecsTlrFeature";
   private final EcsTlrClient ecsTlrClient;
   private final CirculationClient circulationClient;
-  private final TenantService tenantService;
+  private final UserTenantsService userTenantsService;
 
   @Override
   public boolean isEcsTlrFeatureEnabled() {
-    return isEcsTlrFeatureEnabled(tenantService.isCurrentTenantCentral());
+    if (userTenantsService.isCentralTenant()) {
+      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    }
+    return isTlrEnabledInCirculationSettings();
   }
 
   @Override
   public boolean isEcsTlrFeatureEnabled(String tenantId) {
-    return isEcsTlrFeatureEnabled(tenantService.isCentralTenant(tenantId));
-  }
-
-  @Override
-  public boolean isEcsTlrFeatureEnabled(boolean isCentralTenant) {
-    return isCentralTenant
-      ? isEcsTlrFeatureEnabledInCentralTenant()
-      : isTlrEnabledInCirculationSettings();
+    if (userTenantsService.isCentralTenant(tenantId)) {
+      return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
+    }
+    return isTlrEnabledInCirculationSettings();
   }
 
   private boolean isTlrEnabledInCirculationSettings() {
@@ -50,11 +49,5 @@ public class SettingsServiceImpl implements SettingsService {
       }
     }
     return false;
-  }
-
-  private boolean isEcsTlrFeatureEnabledInCentralTenant() {
-    Boolean ecsTlrFeatureEnabled = ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
-    log.info("isEcsTlrFeatureEnabled:: {}", ecsTlrFeatureEnabled);
-    return ecsTlrFeatureEnabled;
   }
 }
