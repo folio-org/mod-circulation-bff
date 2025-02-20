@@ -32,7 +32,7 @@ class SettingServiceTest {
   private CirculationClient circulationClient;
 
   @Mock
-  private TenantService tenantService;
+  private UserTenantsService userTenantsService;
 
   @InjectMocks
   private SettingsServiceImpl service;
@@ -42,7 +42,7 @@ class SettingServiceTest {
   void isEcsTlrSettingsEnabledTest(boolean isCentralTenant, Boolean isTlrEnabled,
     Boolean isCirculationTlrEnabled, boolean expectedValue) {
 
-    when(tenantService.isCurrentTenantCentral()).thenReturn(isCentralTenant);
+    when(userTenantsService.isCentralTenant()).thenReturn(isCentralTenant);
     mockByIsCentralTenantId(isCirculationTlrEnabled, isTlrEnabled, isCentralTenant);
 
     assertThat(service.isEcsTlrFeatureEnabled(), equalTo(expectedValue));
