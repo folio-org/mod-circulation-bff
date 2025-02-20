@@ -59,4 +59,6 @@ properties:
 
 required:
   - requesterId
+  - requestLevel
+  - fulfillmentPreference
   - requestDate
