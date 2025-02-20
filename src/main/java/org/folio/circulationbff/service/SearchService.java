@@ -7,5 +7,6 @@ import org.folio.circulationbff.domain.dto.SearchInstance;
 
 public interface SearchService {
   SearchInstance findInstanceByItemId(String itemId);
+  SearchInstance findInstanceByItemBarcode(String itemBarcode);
   Collection<BffSearchInstance> findInstances(String query);
 }
