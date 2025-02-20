@@ -108,6 +108,7 @@ class CheckInApiTest extends BaseIT {
     var effectiveLocationId = randomId();
     var itemId = randomId();
     var primaryServicePointId = randomUUID();
+    var primaryServicePointName = "updated service point";
     var holdingRecordId = randomId();
     givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
@@ -136,11 +137,11 @@ class CheckInApiTest extends BaseIT {
       .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = String.format("""
       {
-        "name": "updated service point",
+        "name": "%s",
         "id": "%s",
         "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
       }
-      """, primaryServicePointId);
+      """, primaryServicePointName, primaryServicePointId);
     var institution = new Institution().id(institutionId).name("institution");
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
@@ -157,17 +158,17 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(library, SC_OK)));
 
-    var updatedServicePoint = "updated service point";
     checkIn(request)
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(updatedServicePoint)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(updatedServicePoint)))
+      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(primaryServicePointName)))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", equalTo(institution.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
       .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", equalTo(primaryServicePointId.toString())))
       .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.name", equalTo(primaryServicePointName)))
       .andExpect(jsonPath("$.item.location.name", equalTo(location.getName())))
       .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
       .andExpect(jsonPath("$.item.instanceId", equalTo((INSTANCE_ID))));
