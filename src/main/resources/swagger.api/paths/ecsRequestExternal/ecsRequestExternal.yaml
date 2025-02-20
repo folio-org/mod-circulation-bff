@@ -15,7 +15,9 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/dto/request/Request.yaml'
+            oneOf:
+              - $ref: '../../schemas/dto/mediatedRequest/mediatedRequest.yaml'
+              - $ref: '../../schemas/dto/request/Request.yaml'
     '400':
       $ref: '../../responses/badRequestResponse.yaml'
     '500':

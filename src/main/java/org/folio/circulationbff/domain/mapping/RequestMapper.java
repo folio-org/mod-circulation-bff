@@ -13,9 +13,6 @@ import org.mapstruct.Named;
 @Mapper(componentModel = "spring")
 public interface RequestMapper {
 
-  @Mapping(target = "status", qualifiedByName = "mediatedToCirculationRequestStatus")
-  Request toCirculationRequest (MediatedRequest mediatedRequest);
-
   @Mapping(target = "requestLevel", qualifiedByName = "externalToMediatedRequestLevel")
   @Mapping(target = "fulfillmentPreference", qualifiedByName = "externalToMediatedFulfillmentPreference")
   @Mapping(target = "requestType", constant = "PAGE")

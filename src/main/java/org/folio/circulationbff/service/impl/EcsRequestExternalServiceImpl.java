@@ -35,7 +35,7 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
   private final RequestMapper requestMapper;
 
   @Override
-  public Request createEcsRequestExternal(EcsRequestExternal request) {
+  public Object createEcsRequestExternal(EcsRequestExternal request) {
     log.info("createEcsRequestExternal:: requesterId={}, itemId={}, instanceId={}",
       request::getRequesterId, request::getItemId, request::getInstanceId);
 
@@ -58,12 +58,11 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
     return circulationClient.getRequestById(ecsTlr.getPrimaryRequestId());
   }
 
-  private Request createMediatedRequest(EcsRequestExternal ecsRequestExternal) {
+  private MediatedRequest createMediatedRequest(EcsRequestExternal ecsRequestExternal) {
     log.info("createMediatedRequest:: creating mediated request");
-    MediatedRequest mediatedRequest = mediatedRequestsService.saveMediatedRequest(
-      requestMapper.toMediatedRequest(ecsRequestExternal)).getBody();
-
-    return requestMapper.toCirculationRequest(mediatedRequest);
+    return mediatedRequestsService.saveMediatedRequest(
+      requestMapper.toMediatedRequest(ecsRequestExternal))
+      .getBody();
   }
 
   private void fetchMissingRequestProperties(EcsRequestExternal request) {

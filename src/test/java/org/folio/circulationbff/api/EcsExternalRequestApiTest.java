@@ -248,7 +248,7 @@ class EcsExternalRequestApiTest extends BaseIT {
         "mediatedWorkflow": "Private request",
         "mediatedRequestStatus": "New",
         "mediatedRequestStep": "Awaiting confirmation",
-        "status": "Open - Not yet filled",
+        "status": "New - Awaiting confirmation",
         "fulfillmentPreference": "Hold Shelf",
         "pickupServicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
         "pickupServicePoint": {
