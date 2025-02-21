@@ -111,7 +111,7 @@ class CheckInApiTest extends BaseIT {
     var primaryServicePointId = randomUUID();
     var primaryServicePointName = "updated service point";
     var holdingRecordId = randomId();
-    givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
+    givenCirculationCheckInForInTransitItemSucceed(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
       .holdingsRecordId(holdingRecordId)
@@ -314,6 +314,32 @@ class CheckInApiTest extends BaseIT {
           }
         }
         """, itemId, instanceId);
+    wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
+      .withRequestBody(equalToJson(asJsonString(request)))
+      .willReturn(jsonResponse(checkinResponse, SC_OK)));
+  }
+
+  private void givenCirculationCheckInForInTransitItemSucceed(CheckInRequest request,
+    String itemId, String instanceId) {
+
+    var checkinResponse = String.format("""
+        {
+          "item": {
+            "id": "%s",
+            "instanceId": "%s",
+            "inTransitDestinationServicePoint": {
+              "inTransitDestinationServicePointId": "%s",
+              "inTransitDestinationServicePointName": "DCB SP name"
+            }
+          },
+          "staffSlipContext": {
+            "item": {
+              "toServicePoint": "random service point",
+              "effectiveLocationPrimaryServicePointName": "random service point"
+            }
+          }
+        }
+        """, itemId, instanceId, randomId());
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
