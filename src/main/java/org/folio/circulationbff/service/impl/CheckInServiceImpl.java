@@ -154,9 +154,17 @@ public class CheckInServiceImpl implements CheckInService {
     Item item, ServicePoint primaryServicePoint, Location location) {
 
     CheckInResponseItem checkInItem = response.getItem();
+    if (checkInItem == null) {
+      log.warn("rebuildCheckInItem:: item in checkInResponse not found");
+      return;
+    }
+
+    CheckInResponseItemLocation itemLocation = checkInItem.getLocation();
+    if (itemLocation != null) {
+      itemLocation.setName(location.getName());
+    }
+
     checkInItem
-      .location(new CheckInResponseItemLocation()
-        .name(location.getName()))
       .holdingsRecordId(item.getHoldingsRecordId())
       .instanceId(searchInstance.getId());
 
@@ -201,7 +209,7 @@ public class CheckInServiceImpl implements CheckInService {
       }
       BffSearchItemLocation loanItemLocation = loanItem.getLocation();
       if (loanItemLocation != null) {
-        loanItemLocation.name(location.getName());
+        loanItemLocation.setName(location.getName());
       }
       loanItem.holdingsRecordId(item.getHoldingsRecordId());
       loanItem.instanceId(searchInstance.getId());
