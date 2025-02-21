@@ -67,7 +67,8 @@ public class UserTenantsServiceImpl implements UserTenantsService {
     return false;
   }
 
-  private UserTenant getFirstUserTenant() {
+  @Override
+  public UserTenant getFirstUserTenant() {
     log.info("getFirstUserTenant:: finding first userTenant");
     UserTenantCollection userTenants = userTenantsClient.getUserTenants(1);
     log.info("getFirstUserTenant:: userTenants: {}", () -> userTenants);

@@ -1,3 +1,7 @@
+## 1.0.9 2025-02-21
+* Create external mediated requests (MCBFF-46)
+* Fetch item details for external request (MCBFF-44)
+
 ## 1.0.8 2025-02-03
 * Populate staff slip context for non-DCB items (MCBFF-51)
 * Update hardcoded effective location during check-in (MCBFF-38)
