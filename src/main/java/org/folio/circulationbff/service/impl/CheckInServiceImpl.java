@@ -80,7 +80,8 @@ public class CheckInServiceImpl implements CheckInService {
   private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response, String itemId,
     SearchInstance searchInstance) {
 
-    log.info("rebuildCheckInResponseWithInventoryItem:: rebuilding staff slip context for item {}", itemId);
+    log.info("rebuildCheckInResponseWithInventoryItem:: rebuilding staff slip context " +
+      "for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
       log.warn("rebuildCheckInResponseWithInventoryItem:: item {} not found", itemId);
@@ -102,6 +103,9 @@ public class CheckInServiceImpl implements CheckInService {
 
   private void rebuildCheckInStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint servicePoint, Location location) {
+
+    log.info("rebuildCheckInStaffSlipContext:: rebuilding context with inventory item {}",
+      item.getId());
 
     String servicePointName = servicePoint != null
       ? servicePoint.getName()
