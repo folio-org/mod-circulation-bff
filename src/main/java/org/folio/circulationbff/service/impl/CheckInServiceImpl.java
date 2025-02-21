@@ -50,57 +50,57 @@ public class CheckInServiceImpl implements CheckInService {
 
   private void processCheckInResponse(CheckInResponse response) {
     if (!DCB_INSTANCE_ID.equals(response.getItem().getInstanceId())) {
-      log.info("processStaffSlipContext:: keeping staff slip context because it was built " +
+      log.info("processCheckInResponse:: keeping check in response because it was built " +
         "for inventory item, not for circulation item");
       return;
     }
 
-    log.info("processStaffSlipContext:: rebuilding staff slip context with inventory item " +
+    log.info("processCheckInResponse:: rebuilding check in response with inventory item " +
       "information");
-    updateCheckInResponseFromInventory(response);
+    rebuildCheckInResponseWithInventoryItem(response);
   }
 
-  private void updateCheckInResponseFromInventory(CheckInResponse response) {
+  private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response) {
     var itemId = response.getItem().getId();
-    log.info("updateCheckInResponseFromInventory:: item ID: {}", itemId);
+    log.info("rebuildCheckInResponseWithInventoryItem:: item ID: {}", itemId);
 
     var searchInstance = searchService.findInstanceByItemId(itemId);
     if (searchInstance == null) {
-      log.warn("updateCheckInResponseFromInventory:: instance not found");
+      log.warn("rebuildCheckInResponseWithInventoryItem:: instance not found");
       return;
     }
 
     String itemTenantId = getItemTenantId(itemId, searchInstance);
     if (itemTenantId != null) {
       executionService.executeAsyncSystemUserScoped(itemTenantId,
-        () -> rebuildCheckInResponse(response, itemId, searchInstance));
+        () -> rebuildCheckInResponseWithInventoryItem(response, itemId, searchInstance));
     }
   }
 
-  private void rebuildCheckInResponse(CheckInResponse response,
+  private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response,
     String itemId, SearchInstance searchInstance) {
 
-    log.info("rebuildCheckInResponse:: rebuilding staff slip context for item {}", itemId);
+    log.info("rebuildCheckInResponseWithInventoryItem:: rebuilding staff slip context for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
-      log.warn("rebuildCheckInResponse:: item {} not found", itemId);
+      log.warn("rebuildCheckInResponseWithInventoryItem:: item {} not found", itemId);
       return;
     }
 
     var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("rebuildCheckInResponse:: location {} not found",
+      log.warn("rebuildCheckInResponseWithInventoryItem:: location {} not found",
         item.getEffectiveLocationId());
       return;
     }
     var primaryServicePoint = fetchServicePoint(location.getPrimaryServicePoint().toString());
 
-    buildStaffSlipContext(response, searchInstance, item, primaryServicePoint, location);
-    buildCheckInItem(response, searchInstance, item, primaryServicePoint, location);
-    buildCheckInLoan(response, searchInstance, item, primaryServicePoint, location);
+    rebuildCheckInStaffSlipContext(response, searchInstance, item, primaryServicePoint, location);
+    rebuildCheckInItem(response, searchInstance, item, primaryServicePoint, location);
+    rebuildCheckInLoan(response, searchInstance, item, primaryServicePoint, location);
   }
 
-  private void buildStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
+  private void rebuildCheckInStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint servicePoint, Location location) {
 
     String servicePointName = servicePoint != null
@@ -142,11 +142,11 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
 
-    log.info("buildStaffSlipContext:: staff slips context for item {} " +
+    log.info("rebuildCheckInStaffSlipContext:: staff slips context for item {} " +
       "has been successfully built", item.getId());
   }
 
-  private void buildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
+  private void rebuildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint primaryServicePoint, Location location) {
 
     CheckInResponseItem checkInItem = response.getItem();
@@ -157,7 +157,7 @@ public class CheckInServiceImpl implements CheckInService {
       .instanceId(searchInstance.getId());
 
     if (checkInItem.getInTransitDestinationServicePoint() != null) {
-      log.info("buildCheckInItem:: inTransitDestinationServicePoint is present for checkInItem: {}",
+      log.info("rebuildCheckInItem:: inTransitDestinationServicePoint is present for checkInItem: {}",
         checkInItem.getId());
 
       checkInItem
@@ -169,22 +169,22 @@ public class CheckInServiceImpl implements CheckInService {
           : null);
     }
 
-    log.info("buildCheckInItem:: checkInItem {} has been successfully built", item.getId());
+    log.info("rebuildCheckInItem:: checkInItem {} has been successfully built", item.getId());
   }
 
-  private void buildCheckInLoan(CheckInResponse response, SearchInstance searchInstance,
+  private void rebuildCheckInLoan(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint primaryServicePoint, Location location) {
 
     Loan checkInLoan = response.getLoan();
     if (checkInLoan == null) {
-      log.info("buildCheckInLoan:: loan in checkInResponse not found");
+      log.info("rebuildCheckInLoan:: loan in checkInResponse not found");
       return;
     }
     var loanItem = checkInLoan.getItem();
     if (loanItem != null) {
-      log.info("buildCheckInLoan:: checkInLoanItem is present");
+      log.info("rebuildCheckInLoan:: checkInLoanItem is present");
       if (loanItem.getInTransitDestinationServicePoint() != null) {
-        log.info("buildCheckInLoan:: inTransitDestinationServicePoint is present for checkInLoan: {}",
+        log.info("rebuildCheckInLoan:: inTransitDestinationServicePoint is present for checkInLoan: {}",
           loanItem.getId());
 
         loanItem
@@ -203,7 +203,7 @@ public class CheckInServiceImpl implements CheckInService {
       loanItem.instanceId(searchInstance.getId());
     }
 
-    log.info("buildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan.getId());
+    log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan.getId());
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
