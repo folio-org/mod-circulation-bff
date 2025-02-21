@@ -12,13 +12,6 @@ public interface RequestMapper {
   @Mapping(target = "requestLevel", qualifiedByName = "externalToMediatedRequestLevel")
   @Mapping(target = "fulfillmentPreference", qualifiedByName = "externalToMediatedFulfillmentPreference")
   @Mapping(target = "requestType", constant = "PAGE")
-  @Mapping(source = "itemId", target = "itemId")
-  @Mapping(source = "holdingsRecordId", target = "holdingsRecordId")
-  @Mapping(source = "instanceId", target = "instanceId")
-  @Mapping(source = "requesterId", target = "requesterId")
-  @Mapping(source = "pickupServicePointId", target = "pickupServicePointId")
-  @Mapping(source = "requestDate", target = "requestDate")
-  @Mapping(source = "patronComments", target = "patronComments")
   MediatedRequest toMediatedRequest(EcsRequestExternal externalRequest);
 
   @Named("externalToMediatedRequestLevel")
