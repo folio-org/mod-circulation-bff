@@ -330,6 +330,9 @@ class CheckInApiTest extends BaseIT {
             "inTransitDestinationServicePoint": {
               "inTransitDestinationServicePointId": "%s",
               "inTransitDestinationServicePointName": "DCB SP name"
+            },
+            "location": {
+              "name": "DCB location"
             }
           },
           "staffSlipContext": {
