@@ -77,8 +77,8 @@ public class CheckInServiceImpl implements CheckInService {
     }
   }
 
-  private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response,
-    String itemId, SearchInstance searchInstance) {
+  private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response, String itemId,
+    SearchInstance searchInstance) {
 
     log.info("rebuildCheckInResponseWithInventoryItem:: rebuilding staff slip context for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
