@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "circulation-bff-ecs-request-external",
-      "version": "1.2",
+      "version": "2.0",
       "handlers": [
         {
           "methods": ["POST"],
@@ -13,7 +13,8 @@
           "modulePermissions": [
             "user-tenants.collection.get",
             "circulation.requests.item.get",
-            "circulation.requests.collection.get"
+            "circulation.requests.collection.get",
+            "requests-mediated.mediated-request.item.post"
           ]
         }
       ]

@@ -26,6 +26,7 @@ import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum;
 import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
@@ -44,6 +45,7 @@ class EcsExternalRequestApiTest extends BaseIT {
   private static final String USER_TENANTS_URL = "/user-tenants";
   private static final String CIRCULATION_REQUEST_URL_TEMPLATE = "/circulation/requests/%s";
   private static final String SEARCH_ITEM_URL_TEMPLATE = "/search/consortium/item/%s";
+  private static final String MEDIATED_REQUESTS_URL = "/requests-mediated/mediated-requests";
 
   private static final String REQUESTER_ID = randomId();
   private static final String ITEM_ID = randomId();
@@ -107,6 +109,52 @@ class EcsExternalRequestApiTest extends BaseIT {
       CIRCULATION_REQUEST_URL_TEMPLATE, PRIMARY_REQUEST_ID))));
   }
 
+  @Test
+  @SneakyThrows
+  void createExternalItemLevelMediatedRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(ITEM);
+    EcsRequestExternal expectedRequestWithItemDetails = buildEcsRequestExternal(ITEM)
+      .holdingsRecordId(HOLDING_ID)
+      .instanceId(INSTANCE_ID);
+    MediatedRequest mockMediatedRequest = buildMediatedRequest(expectedRequestWithItemDetails);
+
+    mockUserTenants();
+    mockMediatedRequest(mockMediatedRequest);
+    mockItemSearch(ITEM_ID);
+
+    createExternalRequest(initialRequest, TENANT_ID_SECURE)
+      .andExpect(status().isCreated())
+      .andExpect(content().json(asJsonString(mockMediatedRequest)));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID)))
+      .withHeader(TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+    wireMockServer.verify(1, getRequestedFor(urlPathMatching(USER_TENANTS_URL))
+      .withQueryParam("limit", equalTo("1")));
+    wireMockServer.verify(1, postRequestedFor(urlPathMatching(MEDIATED_REQUESTS_URL))
+      .withHeader(TENANT, equalTo(TENANT_ID_SECURE))
+      .withRequestBody(equalToJson(asJsonString(mockMediatedRequest))));
+  }
+
+  @Test
+  @SneakyThrows
+  void createExternalTitleLevelMediatedRequest() {
+    EcsRequestExternal initialRequest =  buildEcsRequestExternal(TITLE);
+    MediatedRequest mockMediatedRequest = buildMediatedRequest(initialRequest);
+
+    mockUserTenants();
+    mockMediatedRequest(mockMediatedRequest);
+
+    createExternalRequest(initialRequest, TENANT_ID_SECURE)
+      .andExpect(status().isCreated())
+      .andExpect(content().json(asJsonString(mockMediatedRequest)));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, ITEM_ID))));
+    wireMockServer.verify(0, getRequestedFor(urlPathMatching(USER_TENANTS_URL)));
+    wireMockServer.verify(1, postRequestedFor(urlPathMatching(MEDIATED_REQUESTS_URL))
+      .withHeader(TENANT, equalTo(TENANT_ID_SECURE))
+      .withRequestBody(equalToJson(asJsonString(mockMediatedRequest))));
+  }
+
   private static void mockUserTenants() {
     UserTenant userTenant = new UserTenant()
       .centralTenantId(TENANT_ID_CONSORTIUM)
@@ -133,6 +181,21 @@ class EcsExternalRequestApiTest extends BaseIT {
     }
 
     return request;
+  }
+
+  private static MediatedRequest buildMediatedRequest(EcsRequestExternal externalRequest) {
+    return new MediatedRequest()
+      .requestLevel(MediatedRequest.RequestLevelEnum.fromValue(externalRequest.getRequestLevel().getValue()))
+      .requestType(MediatedRequest.RequestTypeEnum.PAGE)
+      .itemId(externalRequest.getItemId())
+      .holdingsRecordId(externalRequest.getHoldingsRecordId())
+      .instanceId(externalRequest.getInstanceId())
+      .requesterId(externalRequest.getRequesterId())
+      .pickupServicePointId(externalRequest.getPickupServicePointId())
+      .requestDate(externalRequest.getRequestDate())
+      .patronComments(externalRequest.getPatronComments())
+      .fulfillmentPreference(MediatedRequest.FulfillmentPreferenceEnum.fromValue(
+        externalRequest.getFulfillmentPreference().getValue()));
   }
 
   @SneakyThrows
@@ -171,6 +234,12 @@ class EcsExternalRequestApiTest extends BaseIT {
 
     wireMockServer.stubFor(get(urlPathMatching(String.format(SEARCH_ITEM_URL_TEMPLATE, itemId)))
       .willReturn(jsonResponse(asJsonString(consortiumItem), SC_OK)));
+  }
+
+  private static void mockMediatedRequest(MediatedRequest mediatedRequest) {
+    wireMockServer.stubFor(WireMock.post(urlPathMatching(MEDIATED_REQUESTS_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE))
+      .willReturn(jsonResponse(asJsonString(mediatedRequest), SC_OK)));
   }
 
 }

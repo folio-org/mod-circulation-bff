@@ -8,8 +8,11 @@ import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum;
 import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.mapping.RequestMapper;
 import org.folio.circulationbff.service.EcsRequestExternalService;
+import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
@@ -28,9 +31,11 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
   private final CirculationClient circulationClient;
   private final SearchService searchService;
   private final TenantService tenantService;
+  private final MediatedRequestsService mediatedRequestsService;
+  private final RequestMapper requestMapper;
 
   @Override
-  public Request createEcsRequestExternal(EcsRequestExternal request) {
+  public Object createEcsRequestExternal(EcsRequestExternal request) {
     log.info("createEcsRequestExternal:: requesterId={}, itemId={}, instanceId={}",
       request::getRequesterId, request::getItemId, request::getInstanceId);
 
@@ -53,10 +58,11 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
     return circulationClient.getRequestById(ecsTlr.getPrimaryRequestId());
   }
 
-  private Request createMediatedRequest(EcsRequestExternal ecsRequestExternal) {
+  private MediatedRequest createMediatedRequest(EcsRequestExternal ecsRequestExternal) {
     log.info("createMediatedRequest:: creating mediated request");
-    // POST /requests-mediated/mediated-requests
-    return new Request();
+    return mediatedRequestsService.saveMediatedRequest(
+      requestMapper.toMediatedRequest(ecsRequestExternal))
+      .getBody();
   }
 
   private void fetchMissingRequestProperties(EcsRequestExternal request) {
