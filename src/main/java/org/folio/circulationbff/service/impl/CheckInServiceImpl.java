@@ -5,12 +5,15 @@ import static java.util.stream.Collectors.joining;
 import java.util.List;
 
 import org.folio.circulationbff.client.feign.CheckInClient;
+import org.folio.circulationbff.domain.dto.BffSearchItemLocation;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
+import org.folio.circulationbff.domain.dto.CheckInResponseItem;
 import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
 import org.folio.circulationbff.domain.dto.CheckInResponseItemLocation;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Loan;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -94,6 +97,7 @@ public class CheckInServiceImpl implements CheckInService {
 
     buildStaffSlipContext(response, searchInstance, item, primaryServicePoint, location);
     buildCheckInItem(response, searchInstance, item, primaryServicePoint, location);
+    buildCheckInLoan(response, searchInstance, item, primaryServicePoint, location);
   }
 
   private void buildStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
@@ -145,19 +149,61 @@ public class CheckInServiceImpl implements CheckInService {
   private void buildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint primaryServicePoint, Location location) {
 
-    response.getItem()
-      .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
-      .inTransitDestinationServicePoint(primaryServicePoint != null
-        ? new CheckInResponseItemInTransitDestinationServicePoint()
-          .id(primaryServicePoint.getId())
-          .name(primaryServicePoint.getName())
-        : null)
+    CheckInResponseItem checkInItem = response.getItem();
+    checkInItem
       .location(new CheckInResponseItemLocation()
         .name(location.getName()))
       .holdingsRecordId(item.getHoldingsRecordId())
       .instanceId(searchInstance.getId());
 
+    if (checkInItem.getInTransitDestinationServicePoint() != null) {
+      log.info("buildCheckInItem:: inTransitDestinationServicePoint is present for checkInItem: {}",
+        checkInItem.getId());
+
+      checkInItem
+        .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
+        .inTransitDestinationServicePoint(primaryServicePoint != null
+          ? new CheckInResponseItemInTransitDestinationServicePoint()
+            .id(primaryServicePoint.getId())
+            .name(primaryServicePoint.getName())
+          : null);
+    }
+
     log.info("buildCheckInItem:: checkInItem {} has been successfully built", item.getId());
+  }
+
+  private void buildCheckInLoan(CheckInResponse response, SearchInstance searchInstance,
+    Item item, ServicePoint primaryServicePoint, Location location) {
+
+    Loan checkInLoan = response.getLoan();
+    if (checkInLoan == null) {
+      log.info("buildCheckInLoan:: loan in checkInResponse not found");
+      return;
+    }
+    var loanItem = checkInLoan.getItem();
+    if (loanItem != null) {
+      log.info("buildCheckInLoan:: checkInLoanItem is present");
+      if (loanItem.getInTransitDestinationServicePoint() != null) {
+        log.info("buildCheckInLoan:: inTransitDestinationServicePoint is present for checkInLoan: {}",
+          loanItem.getId());
+
+        loanItem
+          .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
+          .inTransitDestinationServicePoint(primaryServicePoint != null
+            ? new CheckInResponseItemInTransitDestinationServicePoint()
+            .id(primaryServicePoint.getId())
+            .name(primaryServicePoint.getName())
+            : null);
+      }
+      BffSearchItemLocation loanItemLocation = loanItem.getLocation();
+      if (loanItemLocation != null) {
+        loanItemLocation.name(location.getName());
+      }
+      loanItem.holdingsRecordId(item.getHoldingsRecordId());
+      loanItem.instanceId(searchInstance.getId());
+    }
+
+    log.info("buildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan.getId());
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {

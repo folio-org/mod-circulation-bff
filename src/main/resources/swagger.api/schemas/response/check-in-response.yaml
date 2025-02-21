@@ -149,6 +149,6 @@ properties:
           fromServicePoint:
             description: Last checked in service point of the item
             type: string
-        additionalProperties: true
+  loan:
+    $ref: '../dto/inventory/loan.json'
 
-additionalProperties: true
