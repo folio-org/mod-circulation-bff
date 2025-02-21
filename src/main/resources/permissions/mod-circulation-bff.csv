@@ -21,3 +21,5 @@ inventory-storage.location-units.institutions.collection.get
 tlr.ecs-tlr-allowed-service-points.get
 tlr.ecs-request-external.post
 user-tenants.collection.get
+consortium-search.items.collection.get
+consortium-search.items.item.get

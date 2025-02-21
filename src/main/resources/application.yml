@@ -23,6 +23,7 @@ spring:
         enabled: true
 folio:
   tenant:
+    secure-tenant-id: ${SECURE_TENANT_ID}
     validation:
       enabled: true
   environment: ${ENV:folio}
