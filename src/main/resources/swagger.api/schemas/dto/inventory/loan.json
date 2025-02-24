@@ -345,10 +345,5 @@
       "type": "object",
       "$ref": "../common/metadata.yaml"
     }
-  },
-  "required": [
-    "itemId",
-    "loanDate",
-    "action"
-  ]
+  }
 }
