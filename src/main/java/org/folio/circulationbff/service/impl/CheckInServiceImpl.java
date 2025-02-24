@@ -170,7 +170,8 @@ public class CheckInServiceImpl implements CheckInService {
           .name(primaryServicePoint.getName()));
     }
 
-    replaceIfExists(checkInItem::getLocation, checkInItem.getLocation()::setName,
+    replaceIfExists(checkInItem::getLocation,
+      checkInItem.getLocation() == null ? null : checkInItem.getLocation()::setName,
       location.getName());
     replaceIfExists(checkInItem::getHoldingsRecordId, checkInItem::setHoldingsRecordId,
       item.getHoldingsRecordId());
@@ -203,7 +204,9 @@ public class CheckInServiceImpl implements CheckInService {
             .name(primaryServicePoint.getName()));
       }
 
-      replaceIfExists(loanItem::getLocation, loanItem.getLocation()::setName, location.getName());
+      replaceIfExists(loanItem::getLocation,
+        loanItem.getLocation() == null ? null : loanItem.getLocation()::setName,
+        location.getName());
       replaceIfExists(loanItem::getHoldingsRecordId, loanItem::setHoldingsRecordId,
         item.getHoldingsRecordId());
       replaceIfExists(loanItem::getId, loanItem::setInstanceId, searchInstance.getId());
@@ -305,6 +308,11 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private <T, S> void replaceIfExists(Supplier<T> nonNullCheckGetter, Consumer<S> setter, S value) {
+    if (nonNullCheckGetter == null || setter == null) {
+      log.info("replaceIfExists:: null getter or setter");
+      return;
+    }
+
     if (nonNullCheckGetter.get() != null) {
       setter.accept(value);
     }
