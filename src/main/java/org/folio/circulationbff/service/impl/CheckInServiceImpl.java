@@ -105,7 +105,7 @@ public class CheckInServiceImpl implements CheckInService {
     Item item, ServicePoint servicePoint, Location location) {
 
     log.info("rebuildCheckInStaffSlipContext:: rebuilding context with inventory item {}",
-      item.getId());
+      item::getId);
 
     String servicePointName = servicePoint != null
       ? servicePoint.getName()
@@ -147,7 +147,7 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationSpecific(location.getName());
 
     log.info("rebuildCheckInStaffSlipContext:: staff slips context for item {} " +
-      "has been successfully built", item.getId());
+      "has been successfully built", item::getId);
   }
 
   private void rebuildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
@@ -170,7 +170,7 @@ public class CheckInServiceImpl implements CheckInService {
 
     if (checkInItem.getInTransitDestinationServicePoint() != null) {
       log.info("rebuildCheckInItem:: inTransitDestinationServicePoint is present for checkInItem: {}",
-        checkInItem.getId());
+        checkInItem::getId);
 
       checkInItem
         .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
@@ -181,7 +181,7 @@ public class CheckInServiceImpl implements CheckInService {
           : null);
     }
 
-    log.info("rebuildCheckInItem:: checkInItem {} has been successfully built", item.getId());
+    log.info("rebuildCheckInItem:: checkInItem {} has been successfully built", item::getId);
   }
 
   private void rebuildCheckInLoan(CheckInResponse response, SearchInstance searchInstance,
@@ -197,7 +197,7 @@ public class CheckInServiceImpl implements CheckInService {
       log.info("rebuildCheckInLoan:: checkInLoanItem is present");
       if (loanItem.getInTransitDestinationServicePoint() != null) {
         log.info("rebuildCheckInLoan:: inTransitDestinationServicePoint is present for checkInLoan: {}",
-          loanItem.getId());
+          loanItem::getId);
 
         loanItem
           .inTransitDestinationServicePointId(location.getPrimaryServicePoint().toString())
@@ -215,7 +215,7 @@ public class CheckInServiceImpl implements CheckInService {
       loanItem.instanceId(searchInstance.getId());
     }
 
-    log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan.getId());
+    log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan::getId);
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
@@ -268,8 +268,7 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("fetchServicePointName:: libraryId={}", servicePointId);
     var servicePoint = fetchServicePoint(servicePointId);
     if (servicePoint == null) {
-      log.warn("fetchServicePointName:: service point {} not found",
-        servicePointId);
+      log.warn("fetchServicePointName:: service point {} not found", servicePointId);
       return null;
     }
     String servicePointName = servicePoint.getName();
