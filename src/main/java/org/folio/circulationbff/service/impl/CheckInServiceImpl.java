@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.joining;
 import java.util.List;
 
 import org.folio.circulationbff.client.feign.CheckInClient;
-import org.folio.circulationbff.domain.dto.BffSearchItemLocation;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
@@ -13,7 +12,6 @@ import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinati
 import org.folio.circulationbff.domain.dto.CheckInResponseItemLocation;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.Item;
-import org.folio.circulationbff.domain.dto.Loan;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -187,7 +185,7 @@ public class CheckInServiceImpl implements CheckInService {
   private void rebuildCheckInLoan(CheckInResponse response, SearchInstance searchInstance,
     Item item, ServicePoint primaryServicePoint, Location location) {
 
-    Loan checkInLoan = response.getLoan();
+    var checkInLoan = response.getLoan();
     if (checkInLoan == null) {
       log.info("rebuildCheckInLoan:: loan in checkInResponse not found");
       return;
@@ -207,7 +205,7 @@ public class CheckInServiceImpl implements CheckInService {
             .name(primaryServicePoint.getName())
             : null);
       }
-      BffSearchItemLocation loanItemLocation = loanItem.getLocation();
+      var loanItemLocation = loanItem.getLocation();
       if (loanItemLocation != null) {
         loanItemLocation.setName(location.getName());
       }

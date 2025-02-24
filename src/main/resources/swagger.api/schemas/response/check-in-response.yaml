@@ -24,14 +24,14 @@ properties:
         description: Service point an item is intended to be transited to (should only be present when in transit)
         type: string
       inTransitDestinationServicePoint:
-        description: "Service point an item is intended to be transited to (should only be present when in transit)"
+        description: Service point an item is intended to be transited to (should only be present when in transit)
         type: object
         properties:
           id:
-            description: "The ID of the service point"
+            description: The ID of the service point
             type: string
           name:
-            description: "Name of the service point"
+            description: Name of the service point
             type: string
       location:
         description: Effective location of the item
@@ -58,7 +58,6 @@ properties:
       callNumber:
         description: Call number of the item
         type: string
-    additionalProperties: true
   staffSlipContext:
     description: Staff slips data
     type: object
@@ -150,5 +149,43 @@ properties:
             description: Last checked in service point of the item
             type: string
   loan:
-    $ref: '../dto/inventory/loan.json'
+    description: Links the item with the patron and applies certain conditions based on policies
+    type: object
+    properties:
+      id:
+        description: Unique ID of the loan
+        type: string
+      item:
+        description: Item data
+        type: object
+        properties:
+          id:
+            description: Item ID
+            type: string
+          inTransitDestinationServicePointId:
+            description: Service point an item is intended to be transited to (should only be present when in transit)
+            type: string
+          inTransitDestinationServicePoint:
+            description: Service point an item is intended to be transited to (should only be present when in transit)
+            type: object
+            properties:
+              id:
+                description: The ID of the service point
+                type: string
+              name:
+                description: Name of the service point
+                type: string
+          location:
+            description: Effective location of the item
+            type: object
+            properties:
+              name:
+                description: Name of the location
+                type: string
+          instanceId:
+            description: Related Instance Id
+            type: string
+          holdingsRecordId:
+            description: Related holding record id
+            type: string
 
