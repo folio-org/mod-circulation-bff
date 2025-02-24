@@ -3,6 +3,8 @@ package org.folio.circulationbff.service.impl;
 import static java.util.stream.Collectors.joining;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
@@ -157,14 +159,10 @@ public class CheckInServiceImpl implements CheckInService {
       return;
     }
 
-    CheckInResponseItemLocation itemLocation = checkInItem.getLocation();
-    if (itemLocation != null) {
-      itemLocation.setName(location.getName());
-    }
-
-    if (checkInItem.getHoldingsRecordId() != null) {
-      checkInItem.setHoldingsRecordId(item.getHoldingsRecordId());
-    }
+    replaceIfExists(checkInItem::getLocation, checkInItem.getLocation()::setName,
+      location.getName());
+    replaceIfExists(item::getHoldingsRecordId, checkInItem::setHoldingsRecordId,
+      item.getHoldingsRecordId());
     checkInItem.setInstanceId(searchInstance.getId());
 
 
@@ -207,16 +205,15 @@ public class CheckInServiceImpl implements CheckInService {
             .name(primaryServicePoint.getName())
             : null);
       }
-      var loanItemLocation = loanItem.getLocation();
-      if (loanItemLocation != null) {
-        loanItemLocation.setName(location.getName());
-      }
-      if (loanItem.getHoldingsRecordId() != null) {
-        loanItem.setHoldingsRecordId(item.getHoldingsRecordId());
-      }
-      if (loanItem.getInstanceId() != null) {
-        loanItem.setInstanceId(searchInstance.getId());
-      }
+      replaceIfExists(loanItem::getLocation,
+        loanItemLocation -> loanItemLocation.setName(location.getName()),
+        loanItem.getLocation());
+
+      replaceIfExists(item::getHoldingsRecordId, loanItem::setHoldingsRecordId,
+        item.getHoldingsRecordId());
+
+      replaceIfExists(searchInstance::getId, loanItem::setInstanceId,
+        searchInstance.getId());
     }
 
     log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan::getId);
@@ -314,4 +311,9 @@ public class CheckInServiceImpl implements CheckInService {
       .orElse(null);
   }
 
+  private <T, S> void replaceIfExists(Supplier<T> getter, Consumer<S> setter, S value) {
+    if (getter.get() != null) {
+      setter.accept(value);
+    }
+  }
 }
