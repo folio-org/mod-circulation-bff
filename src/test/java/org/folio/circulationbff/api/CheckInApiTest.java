@@ -328,8 +328,9 @@ class CheckInApiTest extends BaseIT {
             "id": "%s",
             "instanceId": "%s",
             "holdingsRecordId": "DCB",
+            "inTransitDestinationServicePointId": "DCB",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "%s",
+              "inTransitDestinationServicePointId": "DCB",
               "inTransitDestinationServicePointName": "DCB SP name"
             },
             "location": {
@@ -343,7 +344,7 @@ class CheckInApiTest extends BaseIT {
             }
           }
         }
-        """, itemId, instanceId, randomId());
+        """, itemId, instanceId);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
@@ -357,20 +358,21 @@ class CheckInApiTest extends BaseIT {
         "item": {
           "id": "%s",
           "instanceId": "%s",
-          "holdingsRecordId": "6eccbe1a-18b1-4c6a-a4b6-4d2d327e5406"
+          "holdingsRecordId": "DCB"
         },
         "loan": {
           "id": "%s",
           "item": {
+            "inTransitDestinationServicePointId": "DCB",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "%s",
+              "inTransitDestinationServicePointId": "DCB",
               "inTransitDestinationServicePointName": "DCB SP name"
             },
             "location": {
               "name": "DCB"
             },
             "holdingsRecordId": "DCB",
-            "instanceId": "DCB"
+            "instanceId": "%s"
           }
         },
         "staffSlipContext": {
@@ -380,7 +382,7 @@ class CheckInApiTest extends BaseIT {
           }
         }
       }
-      """, itemId, instanceId, randomId(), IN_TRANSIT_DESTINATION_DCB_SP_ID);
+      """, itemId, instanceId, randomId(), INSTANCE_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
