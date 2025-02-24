@@ -162,9 +162,11 @@ public class CheckInServiceImpl implements CheckInService {
       itemLocation.setName(location.getName());
     }
 
-    checkInItem
-      .holdingsRecordId(item.getHoldingsRecordId())
-      .instanceId(searchInstance.getId());
+    if (checkInItem.getHoldingsRecordId() != null) {
+      checkInItem.setHoldingsRecordId(item.getHoldingsRecordId());
+    }
+    checkInItem.setInstanceId(searchInstance.getId());
+
 
     if (checkInItem.getInTransitDestinationServicePoint() != null) {
       log.info("rebuildCheckInItem:: inTransitDestinationServicePoint is present for checkInItem: {}",
@@ -209,8 +211,12 @@ public class CheckInServiceImpl implements CheckInService {
       if (loanItemLocation != null) {
         loanItemLocation.setName(location.getName());
       }
-      loanItem.holdingsRecordId(item.getHoldingsRecordId());
-      loanItem.instanceId(searchInstance.getId());
+      if (loanItem.getHoldingsRecordId() != null) {
+        loanItem.setHoldingsRecordId(item.getHoldingsRecordId());
+      }
+      if (loanItem.getInstanceId() != null) {
+        loanItem.setInstanceId(searchInstance.getId());
+      }
     }
 
     log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan::getId);
