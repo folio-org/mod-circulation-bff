@@ -1,3 +1,6 @@
+## 1.0.10 2025-02-24
+* Rebuild check-in response - item, loan (MCBFF-67)
+
 ## 1.0.9 2025-02-21
 * Create external mediated requests (MCBFF-46)
 * Fetch item details for external request (MCBFF-44)

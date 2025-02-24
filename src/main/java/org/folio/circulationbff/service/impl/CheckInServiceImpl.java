@@ -3,13 +3,20 @@ package org.folio.circulationbff.service.impl;
 import static java.util.stream.Collectors.joining;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
+import org.folio.circulationbff.domain.dto.CheckInResponseItem;
+import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
 import org.folio.circulationbff.domain.dto.Contributor;
+import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
+import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
@@ -35,57 +42,73 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("checkIn: checking in item with barcode {} on service point {}",
       request.getItemBarcode(), request.getServicePointId());
     var response = checkInClient.checkIn(request);
-    processStaffSlipContext(response);
+    processCheckInResponse(response);
 
     return response;
   }
 
-  private void processStaffSlipContext(CheckInResponse response) {
+  private void processCheckInResponse(CheckInResponse response) {
     if (!DCB_INSTANCE_ID.equals(response.getItem().getInstanceId())) {
-      log.info("processStaffSlipContext:: keeping staff slip context because it was built " +
+      log.info("processCheckInResponse:: keeping check in response because it was built " +
         "for inventory item, not for circulation item");
       return;
     }
 
-    log.info("processStaffSlipContext:: rebuilding staff slip context with inventory item " +
+    log.info("processCheckInResponse:: rebuilding check in response with inventory item " +
       "information");
-    rebuildStaffSlipContextWithInventoryItem(response);
+    rebuildCheckInResponseWithInventoryItem(response);
   }
 
-  private void rebuildStaffSlipContextWithInventoryItem(CheckInResponse response) {
+  private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response) {
     var itemId = response.getItem().getId();
-    log.info("rebuildStaffSlipContextWithInventoryItem:: item ID: {}", itemId);
+    log.info("rebuildCheckInResponseWithInventoryItem:: item ID: {}", itemId);
 
     var searchInstance = searchService.findInstanceByItemId(itemId);
     if (searchInstance == null) {
-      log.warn("rebuildStaffSlipContextWithInventoryItem:: instance not found");
+      log.warn("rebuildCheckInResponseWithInventoryItem:: instance not found");
       return;
     }
 
     String itemTenantId = getItemTenantId(itemId, searchInstance);
     if (itemTenantId != null) {
       executionService.executeAsyncSystemUserScoped(itemTenantId,
-        () -> rebuildStaffSlipContext(response, itemId, searchInstance));
+        () -> rebuildCheckInResponseWithInventoryItem(response, itemId, searchInstance));
     }
   }
 
-  private void rebuildStaffSlipContext(CheckInResponse response,
-    String itemId, SearchInstance searchInstance) {
+  private void rebuildCheckInResponseWithInventoryItem(CheckInResponse response, String itemId,
+    SearchInstance searchInstance) {
 
-    log.info("rebuildStaffSlipContext:: rebuilding staff slip context for item {}", itemId);
+    log.info("rebuildCheckInResponseWithInventoryItem:: rebuilding staff slip context " +
+      "for item {}", itemId);
     var item = inventoryService.fetchItem(itemId);
     if (item == null) {
-      log.warn("rebuildStaffSlipContext:: item {} not found", itemId);
+      log.warn("rebuildCheckInResponseWithInventoryItem:: item {} not found", itemId);
       return;
     }
 
     var location = inventoryService.fetchLocation(item.getEffectiveLocationId());
     if (location == null) {
-      log.warn("rebuildStaffSlipContext:: location {} not found",
+      log.warn("rebuildCheckInResponseWithInventoryItem:: location {} not found",
         item.getEffectiveLocationId());
       return;
     }
-    var servicePointName = fetchServicePointName(location.getPrimaryServicePoint().toString());
+    var primaryServicePoint = fetchServicePoint(location.getPrimaryServicePoint().toString());
+
+    rebuildCheckInStaffSlipContext(response, searchInstance, item, primaryServicePoint, location);
+    rebuildCheckInItem(response, searchInstance, item, primaryServicePoint, location);
+    rebuildCheckInLoan(response, searchInstance, item, primaryServicePoint, location);
+  }
+
+  private void rebuildCheckInStaffSlipContext(CheckInResponse response, SearchInstance searchInstance,
+    Item item, ServicePoint servicePoint, Location location) {
+
+    log.info("rebuildCheckInStaffSlipContext:: rebuilding context with inventory item {}",
+      item::getId);
+
+    String servicePointName = servicePoint != null
+      ? servicePoint.getName()
+      : null;
 
     response.getStaffSlipContext()
       .getItem()
@@ -122,8 +145,74 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
 
-    log.info("rebuildStaffSlipContext:: staff slips context for item {} " +
-      "has been successfully rebuilt", itemId);
+    log.info("rebuildCheckInStaffSlipContext:: staff slips context for item {} " +
+      "has been successfully built", item::getId);
+  }
+
+  private void rebuildCheckInItem(CheckInResponse response, SearchInstance searchInstance,
+    Item item, ServicePoint primaryServicePoint, Location location) {
+
+    CheckInResponseItem checkInItem = response.getItem();
+    if (checkInItem == null) {
+      log.warn("rebuildCheckInItem:: item in checkInResponse not found");
+      return;
+    }
+
+    replaceIfExists(checkInItem::getInTransitDestinationServicePointId,
+      checkInItem::setInTransitDestinationServicePointId,
+      location.getPrimaryServicePoint().toString());
+
+    if (primaryServicePoint != null) {
+      replaceIfExists(checkInItem::getInTransitDestinationServicePoint,
+        checkInItem::inTransitDestinationServicePoint,
+        new CheckInResponseItemInTransitDestinationServicePoint()
+          .id(primaryServicePoint.getId())
+          .name(primaryServicePoint.getName()));
+    }
+
+    replaceIfExists(checkInItem::getLocation,
+      checkInItem.getLocation() == null ? null : checkInItem.getLocation()::setName,
+      location.getName());
+    replaceIfExists(checkInItem::getHoldingsRecordId, checkInItem::setHoldingsRecordId,
+      item.getHoldingsRecordId());
+    replaceIfExists(checkInItem::getId, checkInItem::setInstanceId, searchInstance.getId());
+
+    log.info("rebuildCheckInItem:: checkInItem {} has been successfully built", item::getId);
+  }
+
+  private void rebuildCheckInLoan(CheckInResponse response, SearchInstance searchInstance,
+    Item item, ServicePoint primaryServicePoint, Location location) {
+
+    var checkInLoan = response.getLoan();
+    if (checkInLoan == null) {
+      log.info("rebuildCheckInLoan:: loan in checkInResponse not found");
+      return;
+    }
+    var loanItem = checkInLoan.getItem();
+    if (loanItem != null) {
+      log.info("rebuildCheckInLoan:: checkInLoanItem is present");
+
+      replaceIfExists(loanItem::getInTransitDestinationServicePointId,
+        loanItem::setInTransitDestinationServicePointId,
+        location.getPrimaryServicePoint().toString());
+
+      if (primaryServicePoint != null) {
+        replaceIfExists(loanItem::getInTransitDestinationServicePoint,
+          loanItem::inTransitDestinationServicePoint,
+          new CheckInResponseItemInTransitDestinationServicePoint()
+            .id(primaryServicePoint.getId())
+            .name(primaryServicePoint.getName()));
+      }
+
+      replaceIfExists(loanItem::getLocation,
+        loanItem.getLocation() == null ? null : loanItem.getLocation()::setName,
+        location.getName());
+      replaceIfExists(loanItem::getHoldingsRecordId, loanItem::setHoldingsRecordId,
+        item.getHoldingsRecordId());
+      replaceIfExists(loanItem::getId, loanItem::setInstanceId, searchInstance.getId());
+    }
+
+    log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan::getId);
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
@@ -174,15 +263,23 @@ public class CheckInServiceImpl implements CheckInService {
 
   private String fetchServicePointName(String servicePointId) {
     log.info("fetchServicePointName:: libraryId={}", servicePointId);
-    var servicePoint = inventoryService.fetchServicePoint(servicePointId);
+    var servicePoint = fetchServicePoint(servicePointId);
     if (servicePoint == null) {
-      log.warn("fetchServicePointName:: service point {} not found",
-        servicePointId);
+      log.warn("fetchServicePointName:: service point {} not found", servicePointId);
       return null;
     }
     String servicePointName = servicePoint.getName();
-    log.debug("fetchServicePointName:: result: {}", servicePointName);
+    log.info("fetchServicePointName:: result: {}", servicePointName);
+
     return servicePointName;
+  }
+
+  private ServicePoint fetchServicePoint(String servicePointId) {
+    log.info("fetchServicePoint:: libraryId={}", servicePointId);
+    var servicePoint = inventoryService.fetchServicePoint(servicePointId);
+    log.info("fetchServicePoint:: result: {}", servicePoint);
+
+    return servicePoint;
   }
 
   private String getItemTenantId(String itemId, SearchInstance searchInstance) {
@@ -210,4 +307,14 @@ public class CheckInServiceImpl implements CheckInService {
       .orElse(null);
   }
 
+  private <T, S> void replaceIfExists(Supplier<T> nonNullCheckGetter, Consumer<S> setter, S value) {
+    if (nonNullCheckGetter == null || setter == null) {
+      log.info("replaceIfExists:: null getter or setter");
+      return;
+    }
+
+    if (nonNullCheckGetter.get() != null) {
+      setter.accept(value);
+    }
+  }
 }
