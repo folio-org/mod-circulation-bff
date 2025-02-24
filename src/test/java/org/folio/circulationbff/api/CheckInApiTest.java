@@ -110,7 +110,7 @@ class CheckInApiTest extends BaseIT {
     var primaryServicePointId = randomUUID();
     var primaryServicePointName = "updated service point";
     var holdingRecordId = randomId();
-    givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
+    givenCirculationCheckInForInTransitItemSucceed(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
       .holdingsRecordId(holdingRecordId)
@@ -172,6 +172,79 @@ class CheckInApiTest extends BaseIT {
       .andExpect(jsonPath("$.item.location.name", equalTo(location.getName())))
       .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
       .andExpect(jsonPath("$.item.instanceId", equalTo((INSTANCE_ID))));
+  }
+
+  @Test
+  @SneakyThrows
+  void checkInCrossTenantSuccessForDcbItemWithLoan() {
+    var request = generateCheckInRequest();
+    var effectiveLocationId = randomId();
+    var itemId = randomId();
+    var primaryServicePointId = randomUUID();
+    var primaryServicePointName = "updated service point";
+    var holdingRecordId = randomId();
+    givenCirculationCheckInWithLoanSucceed(request, itemId, DCB_INSTANCE_ID);
+    var checkinItem = new Item()
+      .id(itemId)
+      .holdingsRecordId(holdingRecordId)
+      .inTransitDestinationServicePointId(primaryServicePointId.toString())
+      .copyNumber("copyNumber")
+      .effectiveLocationId(effectiveLocationId);
+    givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
+    givenCurrentTenantIsConsortium();
+    wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(checkinItem, SC_OK)));
+
+    var institutionId = randomId();
+    var campusId = randomId();
+    var libraryId = randomId();
+    var location = new Location()
+      .name("location")
+      .primaryServicePoint(primaryServicePointId)
+      .institutionId(institutionId)
+      .campusId(campusId)
+      .libraryId(libraryId);
+    wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(location, SC_OK)));
+    var servicePointResponse = String.format("""
+      {
+        "name": "%s",
+        "id": "%s",
+        "holdShelfClosedLibraryDateManagement": "Keep_the_current_due_date"
+      }
+      """, primaryServicePointName, primaryServicePointId);
+    var institution = new Institution().id(institutionId).name("institution");
+    var campus = new Campus().id(campusId).name("campus");
+    var library = new Library().id(libraryId).name("library");
+    wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePointId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(servicePointResponse, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(institution, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(campus, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(library, SC_OK)));
+
+    checkIn(request)
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", equalTo(institution.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
+      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePointId", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePoint.id", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePoint.name", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.loan.item.location.name", equalTo(location.getName())))
+      .andExpect(jsonPath("$.loan.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
+      .andExpect(jsonPath("$.loan.item.instanceId", equalTo((INSTANCE_ID))));
   }
 
   @Test
@@ -240,6 +313,75 @@ class CheckInApiTest extends BaseIT {
           }
         }
         """, itemId, instanceId);
+    wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
+      .withRequestBody(equalToJson(asJsonString(request)))
+      .willReturn(jsonResponse(checkinResponse, SC_OK)));
+  }
+
+  private void givenCirculationCheckInForInTransitItemSucceed(CheckInRequest request,
+    String itemId, String instanceId) {
+
+    var checkinResponse = String.format("""
+        {
+          "item": {
+            "id": "%s",
+            "instanceId": "%s",
+            "holdingsRecordId": "DCB",
+            "inTransitDestinationServicePointId": "DCB",
+            "inTransitDestinationServicePoint": {
+              "inTransitDestinationServicePointId": "DCB",
+              "inTransitDestinationServicePointName": "DCB SP name"
+            },
+            "location": {
+              "name": "DCB location"
+            }
+          },
+          "staffSlipContext": {
+            "item": {
+              "toServicePoint": "random service point",
+              "effectiveLocationPrimaryServicePointName": "random service point"
+            }
+          }
+        }
+        """, itemId, instanceId);
+    wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
+      .withRequestBody(equalToJson(asJsonString(request)))
+      .willReturn(jsonResponse(checkinResponse, SC_OK)));
+  }
+
+  private void givenCirculationCheckInWithLoanSucceed(CheckInRequest request, String itemId,
+    String instanceId) {
+
+    var checkinResponse = String.format("""
+      {
+        "item": {
+          "id": "%s",
+          "instanceId": "%s",
+          "holdingsRecordId": "DCB"
+        },
+        "loan": {
+          "id": "%s",
+          "item": {
+            "inTransitDestinationServicePointId": "DCB",
+            "inTransitDestinationServicePoint": {
+              "inTransitDestinationServicePointId": "DCB",
+              "inTransitDestinationServicePointName": "DCB SP name"
+            },
+            "location": {
+              "name": "DCB"
+            },
+            "holdingsRecordId": "DCB",
+            "instanceId": "%s"
+          }
+        },
+        "staffSlipContext": {
+          "item": {
+            "toServicePoint": "random service point",
+            "effectiveLocationPrimaryServicePointName": "random service point"
+          }
+        }
+      }
+      """, itemId, instanceId, randomId(), INSTANCE_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
