@@ -327,6 +327,7 @@ class CheckInApiTest extends BaseIT {
           "item": {
             "id": "%s",
             "instanceId": "%s",
+            "holdingsRecordId": "DCB",
             "inTransitDestinationServicePoint": {
               "inTransitDestinationServicePointId": "%s",
               "inTransitDestinationServicePointName": "DCB SP name"
@@ -355,7 +356,8 @@ class CheckInApiTest extends BaseIT {
       {
         "item": {
           "id": "%s",
-          "instanceId": "%s"
+          "instanceId": "%s",
+          "holdingsRecordId": "6eccbe1a-18b1-4c6a-a4b6-4d2d327e5406"
         },
         "loan": {
           "id": "%s",
@@ -366,7 +368,9 @@ class CheckInApiTest extends BaseIT {
             },
             "location": {
               "name": "DCB"
-            }
+            },
+            "holdingsRecordId": "DCB",
+            "instanceId": "DCB"
           }
         },
         "staffSlipContext": {
