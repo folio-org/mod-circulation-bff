@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.folio.circulationbff.service.impl.TenantServiceImpl;
 import org.folio.circulationbff.util.TestUtils;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -51,6 +52,7 @@ public class BaseIT {
   protected static final String TOKEN = "test_token";
   protected static final String TENANT_ID_CONSORTIUM = "consortium";
   protected static final String TENANT_ID_COLLEGE = "college";
+  protected static final String TENANT_ID_SECURE = "secure";
   protected static final String USER_ID = randomId();
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -80,16 +82,18 @@ public class BaseIT {
   void beforeEachTest() {
     contextSetter = initFolioContext();
     wireMockServer.resetAll();
+    TenantServiceImpl.clearCache();
   }
 
   @AfterEach
-  public void afterEachTest() {
+  void afterEachTest() {
     contextSetter.close();
   }
 
   @DynamicPropertySource
   static void overrideProperties(DynamicPropertyRegistry registry) {
     registry.add("folio.okapi-url", wireMockServer::baseUrl);
+    registry.add("folio.tenant.secure-tenant-id", () -> TENANT_ID_SECURE);
   }
 
   @SneakyThrows
