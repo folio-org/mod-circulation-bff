@@ -42,7 +42,6 @@ class CheckInApiTest extends BaseIT {
   private static final String CIRCULATION_CHECK_IN_URL = "/circulation/check-in-by-barcode";
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
   private static final String INSTANCE_ID = "4bd52525-b922-4b20-9b3b-caf7b2d1866f";
-  private static final String IN_TRANSIT_DESTINATION_DCB_SP_ID = "e7f8b319-e186-4462-b6ac-8e35eb4ea3d3";
 
   @Test
   @SneakyThrows
