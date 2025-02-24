@@ -58,6 +58,7 @@ properties:
       callNumber:
         description: Call number of the item
         type: string
+    additionalProperties: true
   staffSlipContext:
     description: Staff slips data
     type: object
@@ -148,6 +149,8 @@ properties:
           fromServicePoint:
             description: Last checked in service point of the item
             type: string
+        additionalProperties: true
+    additionalProperties: true
   loan:
     description: Links the item with the patron and applies certain conditions based on policies
     type: object
@@ -188,4 +191,5 @@ properties:
           holdingsRecordId:
             description: Related holding record id
             type: string
-
+        additionalProperties: true
+    additionalProperties: true
