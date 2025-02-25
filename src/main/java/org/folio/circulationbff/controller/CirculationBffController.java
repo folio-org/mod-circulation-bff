@@ -16,6 +16,7 @@ import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
+import org.folio.circulationbff.domain.dto.PostEcsRequestExternal201Response;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
@@ -48,9 +49,12 @@ public class CirculationBffController implements CirculationBffApi {
   private final CheckInService checkInService;
 
   @Override
-  public ResponseEntity<Request> postEcsRequestExternal(EcsRequestExternal ecsRequestExternal) {
-    return ResponseEntity.status(HttpStatus.OK)
-      .body(ecsRequestExternalService.createEcsRequestExternal(ecsRequestExternal));
+  public ResponseEntity<PostEcsRequestExternal201Response> postEcsRequestExternal(
+    EcsRequestExternal ecsRequestExternal) {
+
+    Object createdRequest = ecsRequestExternalService.createEcsRequestExternal(ecsRequestExternal);
+    return ResponseEntity.status(CREATED)
+      .body((PostEcsRequestExternal201Response) createdRequest);
   }
 
   @Override
