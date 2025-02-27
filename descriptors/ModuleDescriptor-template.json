@@ -139,7 +139,7 @@
     },
     {
       "id": "circulation-bff-loans",
-      "version": "1.1",
+      "version": "1.2",
       "handlers": [
         {
           "methods": [
@@ -165,6 +165,18 @@
             "inventory-storage.location-units.campuses.collection.get",
             "inventory-storage.location-units.institutions.item.get",
             "inventory-storage.location-units.institutions.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/check-out-by-barcode",
+          "permissionsRequired": [
+            "circulation-bff.loans.check-out-by-barcode.post"
+          ],
+          "modulePermissions": [
+            "circulation.check-out-by-barcode.post"
           ]
         }
       ]
@@ -245,6 +257,11 @@
       "permissionName": "circulation-bff.loans.check-in-by-barcode.execute",
       "displayName": "circulation BFF - check-in item",
       "description": "check-in item"
+    },
+    {
+      "permissionName": "circulation-bff.loans.check-out-by-barcode.execute",
+      "displayName": "circulation BFF - check-out item",
+      "description": "check-out item"
     }
   ],
   "requires": [

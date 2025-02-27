@@ -1,0 +1,22 @@
+post:
+  operationId: checkOutByBarcode
+  description: Checks item out by barcode
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: "../../schemas/dto/circulation/check-out-request.yaml"
+    required: true
+  responses:
+    '200':
+      description: Item successfully checked out
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/response/check-out-response.yaml"
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'

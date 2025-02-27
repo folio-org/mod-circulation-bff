@@ -12,6 +12,8 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
+import org.folio.circulationbff.domain.dto.CheckOutRequest;
+import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
@@ -23,6 +25,7 @@ import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.exception.HttpFailureFeignException;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CheckInService;
+import org.folio.circulationbff.service.CheckOutService;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.MediatedRequestsService;
@@ -47,6 +50,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final UserService userService;
   private final EcsRequestExternalService ecsRequestExternalService;
   private final CheckInService checkInService;
+  private final CheckOutService checkOutService;
 
   @Override
   public ResponseEntity<PostEcsRequestExternal201Response> postEcsRequestExternal(
@@ -186,6 +190,12 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<CheckInResponse> checkInByBarcode(CheckInRequest checkInRequest) {
     log.info("checkInByBarcode:: itemBarcode: {}", checkInRequest::getItemBarcode);
     return ResponseEntity.ok(checkInService.checkIn(checkInRequest));
+  }
+
+  @Override
+  public ResponseEntity<CheckOutResponse> checkOutByBarcode(CheckOutRequest checkOutRequest) {
+    log.info("checkOutByBarcode:: itemBarcode: {}", checkOutRequest::getItemBarcode);
+    return ResponseEntity.ok(checkOutService.checkOut(checkOutRequest));
   }
 
   @ExceptionHandler(HttpFailureFeignException.class)
