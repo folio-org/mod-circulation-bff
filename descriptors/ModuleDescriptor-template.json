@@ -173,7 +173,7 @@
           ],
           "pathPattern": "/circulation-bff/loans/check-out-by-barcode",
           "permissionsRequired": [
-            "circulation-bff.loans.check-out-by-barcode.post"
+            "circulation-bff.loans.check-out-by-barcode.execute"
           ],
           "modulePermissions": [
             "circulation.check-out-by-barcode.post"
