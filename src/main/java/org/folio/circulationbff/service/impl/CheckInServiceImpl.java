@@ -45,49 +45,70 @@ public class CheckInServiceImpl implements CheckInService {
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
+
+    String tenantId = determineTenantForCheckIn(request);
+
+    var response = tenantId == null
+      ? checkInLocally(request)
+      : checkInRemotely(request, tenantId);
+
+    processCheckInResponse(response);
+
+    return response;
+  }
+
+  /**
+   * @return Tenant ID to proxy check in operation to; null means local check in.
+   */
+  private String determineTenantForCheckIn(CheckInRequest request) {
+    if (!settingsService.isEcsTlrFeatureEnabled() || !userTenantsService.isCentralTenant()) {
+      log.info("determineTenantForCheckIn:: ECS request feature is disabled or tenant is not " +
+        "central, local check in");
+      return null;
+    }
+
+    // Now we need to determine whether the item is real or circulation item
     if (request == null) {
-      log.warn("checkIn:: check in request is null");
+      log.info("determineTenantForCheckIn:: check in request is null");
       return null;
     }
 
     var itemBarcode = request.getItemBarcode();
     if (itemBarcode == null) {
-      log.warn("checkIn:: itemBarcode is null");
+      log.info("determineTenantForCheckIn:: itemBarcode is null");
       return null;
     }
 
-    log.info("checkIn:: checking in item with barcode {} on service point {}",
-      itemBarcode, request.getServicePointId());
+    log.info("determineTenantForCheckIn:: searching for instance by item barcode {}", itemBarcode);
 
     // Duplication
     var searchInstance = searchService.findInstanceByItemBarcode(itemBarcode);
     if (searchInstance == null) {
-      log.warn("checkIn:: failed to find an instance by item barcode {}", itemBarcode);
+      log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}", itemBarcode);
       return null;
     }
+
+    log.info("determineTenantForCheckIn:: found instance {}", searchInstance::getId);
 
     var searchItem = getItemInfoFromSearchInstance(searchInstance, itemBarcode);
     if (searchItem == null) {
-      log.warn("checkIn:: failed to find an item by item barcode {}", itemBarcode);
+      log.info("determineTenantForCheckIn:: failed to find an item by item barcode {}", itemBarcode);
       return null;
     }
 
+    log.info("determineTenantForCheckIn:: found item {} by barcode {} in the instance {}",
+      searchItem::getId, () -> itemBarcode, searchInstance::getId);
+
     var circulationItem = circulationItemClient.getCirculationItem(searchItem.getId());
     if (circulationItem == null) {
-      log.info("checkIn:: failed to find circulation item by ID {}", searchItem.getId());
+      log.info("determineTenantForCheckIn:: failed to find circulation item by ID {}, " +
+          "proxying to the tenant {}", searchItem::getId, searchItem::getTenantId);
+      return searchItem.getTenantId();
+    } else {
+      log.info("determineTenantForCheckIn:: found circulation item by ID {}, local check in",
+        searchItem.getId());
+      return null;
     }
-
-    var needToProxyToAnotherTenant = userTenantsService.isCentralTenant()
-      && settingsService.isEcsTlrFeatureEnabled()
-      && circulationItem == null;
-
-    var response = needToProxyToAnotherTenant
-      ? checkInLocally(request)
-      : checkInRemotely(request, searchItem.getTenantId());
-
-    processCheckInResponse(response);
-
-    return response;
   }
 
   private CheckInResponse checkInLocally(CheckInRequest request) {
