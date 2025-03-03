@@ -21,6 +21,8 @@ paths:
     $ref: 'paths/ecsRequestExternal/ecsRequestExternal.yaml'
   /circulation-bff/loans/check-in-by-barcode:
     $ref: 'paths/check-in/check-in.yaml'
+  /circulation-bff/loans/check-out-by-barcode:
+    $ref: 'paths/check-out/check-out.yaml'
 
 components:
   schemas:
