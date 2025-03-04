@@ -82,12 +82,13 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("determineTenantForCheckIn:: searching for instance by item barcode {}", itemBarcode);
 
     // TODO: Duplication - search endpoint called twice
-    var searchInstance = searchService.findInstanceByItemBarcode(itemBarcode);
-    if (searchInstance == null) {
+    var searchInstanceOptional = searchService.findInstanceByItemBarcode(itemBarcode);
+    if (searchInstanceOptional.isEmpty()) {
       log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}",
         itemBarcode);
       return null;
     }
+    var searchInstance = searchInstanceOptional.get();
 
     log.info("determineTenantForCheckIn:: found instance {}", searchInstance::getId);
 
