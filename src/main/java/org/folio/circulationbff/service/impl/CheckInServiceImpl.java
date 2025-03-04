@@ -22,7 +22,7 @@ import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.SettingsService;
-import org.folio.circulationbff.service.UserTenantsService;
+import org.folio.circulationbff.service.TenantService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +37,7 @@ public class CheckInServiceImpl implements CheckInService {
   private final CheckInClient checkInClient;
   private final CirculationItemClient circulationItemClient;
   private final SettingsService settingsService;
-  private final UserTenantsService userTenantsService;
+  private final TenantService tenantService;
   private final SearchService searchService;
   private final InventoryService inventoryService;
   private final SystemUserScopedExecutionService executionService;
@@ -61,7 +61,7 @@ public class CheckInServiceImpl implements CheckInService {
    * @return Tenant ID to proxy check in operation to; null means local check in.
    */
   private String determineTenantForCheckIn(CheckInRequest request) {
-    if (!settingsService.isEcsTlrFeatureEnabled() || !userTenantsService.isCentralTenant()) {
+    if (!settingsService.isEcsTlrFeatureEnabled() || !tenantService.isCurrentTenantCentral()) {
       log.info("determineTenantForCheckIn:: ECS request feature is disabled or tenant is not " +
         "central, local check in");
       return null;
