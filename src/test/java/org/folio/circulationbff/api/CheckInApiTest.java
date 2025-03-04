@@ -54,7 +54,7 @@ class CheckInApiTest extends BaseIT {
     var request = buildCheckInRequest();
     var itemId = randomId();
     var effectiveLocationId = randomId();
-    givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
+    givenCirculationCheckInSucceeded(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
       .copyNumber("copyNumber")
@@ -261,7 +261,7 @@ class CheckInApiTest extends BaseIT {
     givenCurrentTenantIsConsortium();
 
     var request = buildCheckInRequest();
-    givenCirculationCheckinSucceed(request, randomId(), DCB_INSTANCE_ID);
+    givenCirculationCheckInSucceeded(request, randomId(), DCB_INSTANCE_ID);
     var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
       .willReturn(jsonResponse(searchInstances, SC_OK)));
@@ -276,7 +276,7 @@ class CheckInApiTest extends BaseIT {
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
-    givenCirculationCheckinSucceed(request, itemId, DCB_INSTANCE_ID);
+    givenCirculationCheckInSucceeded(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
       .copyNumber("copyNumber")
@@ -296,7 +296,7 @@ class CheckInApiTest extends BaseIT {
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var request = buildCheckInRequest();
-    givenCirculationCheckinSucceed(request, randomId(), randomId());
+    givenCirculationCheckInSucceeded(request, randomId(), randomId());
     var searchInstances = new SearchInstances().instances(List.of());
     wireMockServer.stubFor(WireMock.get(urlMatching("/search/instances.*"))
       .willReturn(jsonResponse(searchInstances, SC_OK)));
@@ -311,7 +311,7 @@ class CheckInApiTest extends BaseIT {
       .servicePointId(randomUUID());
   }
 
-  private void givenCirculationCheckinSucceed(CheckInRequest request, String itemId, String instanceId) {
+  private void givenCirculationCheckInSucceeded(CheckInRequest request, String itemId, String instanceId) {
     var checkinResponse = format("""
         {
           "item": {
@@ -492,7 +492,7 @@ class CheckInApiTest extends BaseIT {
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var checkInRequest = buildCheckInRequest();
-    givenCirculationCheckinSucceed(checkInRequest, randomId(), randomId());
+    givenCirculationCheckInSucceeded(checkInRequest, randomId(), randomId());
     var itemId = randomId();
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, new Item().id(itemId));
 
@@ -514,7 +514,7 @@ class CheckInApiTest extends BaseIT {
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var checkInRequest = buildCheckInRequest();
-    givenCirculationCheckinSucceed(checkInRequest, randomId(), randomId());
+    givenCirculationCheckInSucceeded(checkInRequest, randomId(), randomId());
     var itemId = randomId();
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE,
       new SearchItem().id(itemId).barcode("test_barcode"));
@@ -545,7 +545,7 @@ class CheckInApiTest extends BaseIT {
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var checkInRequest = buildCheckInRequest();
-    givenCirculationCheckinSucceed(checkInRequest, randomId(), randomId());
+    givenCirculationCheckInSucceeded(checkInRequest, randomId(), randomId());
     var itemId = randomId();
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE,
       new SearchItem().id(itemId).barcode("test_barcode"));
