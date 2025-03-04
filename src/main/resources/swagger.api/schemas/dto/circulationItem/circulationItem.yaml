@@ -26,7 +26,7 @@ CirculationItem:
       type: "string"
     lendingLibraryCode:
       type: "string"
-  additionalProperties: false
+  additionalProperties: true
 
 
 CirculationItemCollection:
@@ -41,7 +41,7 @@ CirculationItemCollection:
         $ref: "item.yaml#/CirculationItem"
     totalRecords:
       type: "integer"
-  additionalProperties: false
+  additionalProperties: true
 
 Status:
   type: "object"
@@ -52,4 +52,4 @@ Status:
     date:
       type: "string"
       format: "date-time"
-  additionalProperties: false
+  additionalProperties: true

@@ -30,3 +30,4 @@ CirculationItemStatus:
       description: Date of the current item state. E.g. date set when item state was changed by the Check out app
       type: string
       format: date-time
+  additionalProperties: true
