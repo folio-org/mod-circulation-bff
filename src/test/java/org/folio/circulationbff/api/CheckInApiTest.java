@@ -50,7 +50,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSameTenantSuccessForDcbItem() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var itemId = randomId();
     var effectiveLocationId = randomId();
@@ -109,7 +109,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInCrossTenantSuccessForDcbItem() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
@@ -183,7 +183,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInCrossTenantSuccessForDcbItemWithLoan() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
@@ -257,7 +257,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccessWhenInstanceNotFound() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
 
     var request = buildCheckInRequest();
@@ -272,7 +272,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccessWhenItemNotFound() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
@@ -293,7 +293,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkInSuccessForNotDcbItem() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var request = buildCheckInRequest();
     givenCirculationCheckinSucceed(request, randomId(), randomId());
@@ -434,7 +434,7 @@ class CheckInApiTest extends BaseIT {
   @ValueSource(ints = {400, 422, 500})
   @SneakyThrows
   void circulationCheckInErrorsAreForwarded(int responseStatus) {
-    mockEcsTlrSettings(false);
+    mockHelper.mockEcsTlrSettings(false);
     givenCurrentTenantIsConsortium();
 
     CheckInRequest request = new CheckInRequest()
@@ -489,7 +489,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void localCheckInWhenCannotFindItemBarcodeInSearchInstance() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var checkInRequest = buildCheckInRequest();
     givenCirculationCheckinSucceed(checkInRequest, randomId(), randomId());
@@ -511,7 +511,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void localCheckInWhenCirculationItemExists() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var checkInRequest = buildCheckInRequest();
     givenCirculationCheckinSucceed(checkInRequest, randomId(), randomId());
@@ -542,7 +542,7 @@ class CheckInApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void remoteCheckInWhenItemBarcodeFoundInSearchInstanceButCirculationItemDoesNotExist() {
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var checkInRequest = buildCheckInRequest();
     givenCirculationCheckinSucceed(checkInRequest, randomId(), randomId());

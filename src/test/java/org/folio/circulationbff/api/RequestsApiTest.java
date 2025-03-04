@@ -36,8 +36,8 @@ class RequestsApiTest extends BaseIT {
   @SneakyThrows
   void createCirculationRequestInDataTenant() {
     mockUserTenants(wireMockServer, TENANT_ID_COLLEGE, UUID.randomUUID());
-    mockEcsTlrCirculationSettings(true);
-    mockEcsTlrSettings(false);
+    mockHelper.mockEcsTlrCirculationSettings(true);
+    mockHelper.mockEcsTlrSettings(false);
 
     var request = new BffRequest()
       .requesterId(UUID.randomUUID().toString())
@@ -63,8 +63,8 @@ class RequestsApiTest extends BaseIT {
   @SneakyThrows
   void createEcsTlrRequestInCentralTenant() {
     mockUserTenants(wireMockServer, TENANT_ID_CONSORTIUM, UUID.randomUUID());
-    mockEcsTlrCirculationSettings(true);
-    mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrCirculationSettings(true);
+    mockHelper.mockEcsTlrSettings(true);
 
     var request = new BffRequest()
       .requesterId(UUID.randomUUID().toString())
