@@ -87,6 +87,15 @@ public class SearchServiceImpl implements SearchService {
   }
 
   @Override
+  public Optional<SearchInstance> findInstanceByItemBarcode(String itemBarcode) {
+    log.info("findInstanceByItemBarcode:: itemBarcode {}", itemBarcode);
+    return searchClient.findInstances("items.barcode==" + itemBarcode, true)
+      .getInstances()
+      .stream()
+      .findFirst();
+  }
+
+  @Override
   public ConsortiumItem findConsortiumItem(String itemId) {
     log.info("findConsortiumItem:: looking for item {}", itemId);
     // this call is only allowed in central tenant

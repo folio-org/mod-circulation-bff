@@ -12,7 +12,6 @@ import org.folio.circulationbff.client.feign.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.service.impl.UserTenantsServiceImpl;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -34,27 +33,19 @@ class UserTenantsServiceTest {
 
   @ParameterizedTest
   @MethodSource("userTenantCollectionToExpectedValue")
-  void isCentralTenantIdTest(UserTenantCollection userTenantCollection, boolean expectedValue) {
+  void firstUserTenantIdTest(UserTenantCollection userTenantCollection, String expectedValue) {
     when(userTenantsClient.getUserTenants(anyInt())).thenReturn(userTenantCollection);
 
-    assertThat(userTenantsService.isCentralTenant(), equalTo(expectedValue));
-  }
-
-  @Test
-  void getCentralTenantIdTest() {
-    when(userTenantsClient.getUserTenants(anyInt())).thenReturn(new UserTenantCollection()
-      .addUserTenantsItem(new UserTenant().centralTenantId(CENTRAL_TENANT_ID)));
-
-    assertThat(userTenantsService.getCentralTenant(), equalTo(CENTRAL_TENANT_ID));
+    assertThat(userTenantsService.getFirstUserTenant().getTenantId(), equalTo(expectedValue));
+    assertThat(userTenantsService.getFirstUserTenant().getCentralTenantId(),
+      equalTo(CENTRAL_TENANT_ID));
   }
 
   private static Stream<Arguments> userTenantCollectionToExpectedValue() {
     return Stream.of(
-      Arguments.of(buildCollection(TENANT_ID), false),
-      Arguments.of(buildCollection(CENTRAL_TENANT_ID), true),
-      Arguments.of(buildCollection(null), false),
-      Arguments.of(null, false),
-      Arguments.of(new UserTenantCollection().addUserTenantsItem(null), false)
+      Arguments.of(buildCollection(TENANT_ID), TENANT_ID),
+      Arguments.of(buildCollection(CENTRAL_TENANT_ID), CENTRAL_TENANT_ID),
+      Arguments.of(buildCollection(null), null)
     );
   }
 

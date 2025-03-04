@@ -60,5 +60,7 @@ components:
       $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
     ecs-tlr:
       $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+    circulationItem:
+      $ref: 'schemas/dto/circulationItem/circulationItem.yaml#/CirculationItem'
     consortium-item:
       $ref: 'schemas/dto/search/consortiumItem.yaml'

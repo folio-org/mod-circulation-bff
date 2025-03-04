@@ -3,7 +3,7 @@ package org.folio.circulationbff.service.impl;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.service.SettingsService;
-import org.folio.circulationbff.service.UserTenantsService;
+import org.folio.circulationbff.service.TenantService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,11 @@ public class SettingsServiceImpl implements SettingsService {
   public static final String ECS_TLR_FEATURE_SETTINGS = "name=ecsTlrFeature";
   private final EcsTlrClient ecsTlrClient;
   private final CirculationClient circulationClient;
-  private final UserTenantsService userTenantsService;
+  private final TenantService tenantService;
 
   @Override
   public boolean isEcsTlrFeatureEnabled() {
-    if (userTenantsService.isCentralTenant()) {
+    if (tenantService.isCurrentTenantCentral()) {
       return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     }
     return isTlrEnabledInCirculationSettings();
@@ -29,7 +29,7 @@ public class SettingsServiceImpl implements SettingsService {
 
   @Override
   public boolean isEcsTlrFeatureEnabled(String tenantId) {
-    if (userTenantsService.isCentralTenant(tenantId)) {
+    if (tenantService.isCentralTenant(tenantId)) {
       return ecsTlrClient.getTlrSettings().getEcsTlrFeatureEnabled();
     }
     return isTlrEnabledInCirculationSettings();

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.folio.circulationbff.service.impl.TenantServiceImpl;
+import org.folio.circulationbff.util.MockHelper;
 import org.folio.circulationbff.util.TestUtils;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -45,15 +46,13 @@ import lombok.SneakyThrows;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class BaseIT {
-  protected static final String USER_TENANTS_URL = "/user-tenants";
-  protected static final String CIRCULATION_SETTINGS_URL = "/circulation/settings";
-  protected static final String TLR_SETTINGS_URL = "/tlr/settings";
-  protected static final String HEADER_TENANT = "x-okapi-tenant";
+  public static final String HEADER_TENANT = "x-okapi-tenant";
   protected static final String TOKEN = "test_token";
-  protected static final String TENANT_ID_CONSORTIUM = "consortium";
-  protected static final String TENANT_ID_COLLEGE = "college";
-  protected static final String TENANT_ID_SECURE = "secure";
+  public static final String TENANT_ID_CONSORTIUM = "consortium";
+  public static final String TENANT_ID_COLLEGE = "college";
+  public static final String TENANT_ID_SECURE = "secure";
   protected static final String USER_ID = randomId();
+  static MockHelper mockHelper;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL)
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -71,6 +70,7 @@ public class BaseIT {
   protected static WireMockServer wireMockServer = new WireMockServer(findAvailableTcpPort());
   static {
     wireMockServer.start();
+    mockHelper = new MockHelper(wireMockServer);
   }
 
   @BeforeAll
@@ -146,7 +146,7 @@ public class BaseIT {
     return new FolioExecutionContextSetter(moduleMetadata, headers);
   }
 
-  protected static String randomId() {
+  public static String randomId() {
     return UUID.randomUUID().toString();
   }
 
