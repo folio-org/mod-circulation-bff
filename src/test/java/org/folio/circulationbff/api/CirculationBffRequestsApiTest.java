@@ -12,17 +12,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints1Inner;
-import org.folio.circulationbff.domain.dto.CirculationSettings;
-import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
-import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
 import org.folio.circulationbff.domain.dto.Request;
-import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
@@ -294,29 +289,6 @@ class CirculationBffRequestsApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(requestTenant))
       .willReturn(jsonResponse(asJsonString(new UserTenantCollection().addUserTenantsItem(userTenant)),
         SC_OK)));
-  }
-
-  private void mockEcsTlrCirculationSettings(boolean enabled) {
-    var circulationSettingsResponse = new CirculationSettingsResponse();
-    circulationSettingsResponse.setTotalRecords(1);
-    circulationSettingsResponse.setCirculationSettings(List.of(
-      new CirculationSettings()
-        .name("ecsTlrFeature")
-        .value(new CirculationSettingsValue().enabled(enabled))
-    ));
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_SETTINGS_URL))
-      .withQueryParam("query", equalTo("name=ecsTlrFeature"))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
-      .willReturn(jsonResponse(asJsonString(circulationSettingsResponse),
-        SC_OK)));
-  }
-
-  private void mockEcsTlrSettings(boolean enabled) {
-    TlrSettings tlrSettings = new TlrSettings();
-    tlrSettings.setEcsTlrFeatureEnabled(enabled);
-    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
   }
 
   private void mockAllowedServicePoints(String requestTenant) {

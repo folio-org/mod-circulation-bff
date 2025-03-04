@@ -1,6 +1,11 @@
 package org.folio.circulationbff.api;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.util.TestSocketUtils.findAvailableTcpPort;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,9 +13,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.folio.circulationbff.domain.dto.CirculationSettings;
+import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
+import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
+import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.circulationbff.service.impl.TenantServiceImpl;
 import org.folio.circulationbff.util.TestUtils;
 import org.folio.spring.FolioModuleMetadata;
@@ -37,6 +47,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 
 import jakarta.servlet.http.Cookie;
 import lombok.SneakyThrows;
@@ -153,6 +164,28 @@ public class BaseIT {
   @SneakyThrows
   public static String asJsonString(Object value) {
     return OBJECT_MAPPER.writeValueAsString(value);
+  }
+
+  void mockEcsTlrSettings(boolean enabled) {
+    TlrSettings tlrSettings = new TlrSettings().ecsTlrFeatureEnabled(enabled);
+    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
+  }
+
+  void mockEcsTlrCirculationSettings(boolean enabled) {
+    var circulationSettingsResponse = new CirculationSettingsResponse();
+    circulationSettingsResponse.setTotalRecords(1);
+    circulationSettingsResponse.setCirculationSettings(List.of(
+      new CirculationSettings()
+        .name("ecsTlrFeature")
+        .value(new CirculationSettingsValue().enabled(enabled))
+    ));
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_SETTINGS_URL))
+      .withQueryParam("query", equalTo("name=ecsTlrFeature"))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(circulationSettingsResponse),
+        SC_OK)));
   }
 
 }

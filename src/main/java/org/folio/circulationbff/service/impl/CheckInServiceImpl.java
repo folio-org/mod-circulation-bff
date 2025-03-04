@@ -81,18 +81,20 @@ public class CheckInServiceImpl implements CheckInService {
 
     log.info("determineTenantForCheckIn:: searching for instance by item barcode {}", itemBarcode);
 
-    // Duplication
+    // Duplication - searched endpoint called twice
     var searchInstance = searchService.findInstanceByItemBarcode(itemBarcode);
     if (searchInstance == null) {
-      log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}", itemBarcode);
+      log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}",
+        itemBarcode);
       return null;
     }
 
     log.info("determineTenantForCheckIn:: found instance {}", searchInstance::getId);
 
-    var searchItem = getItemInfoFromSearchInstance(searchInstance, itemBarcode);
+    var searchItem = getItemFromSearchInstanceByBarcode(searchInstance, itemBarcode);
     if (searchItem == null) {
-      log.info("determineTenantForCheckIn:: failed to find an item by item barcode {}", itemBarcode);
+      log.info("determineTenantForCheckIn:: failed to find an item by item barcode {}",
+        itemBarcode);
       return null;
     }
 
@@ -100,7 +102,7 @@ public class CheckInServiceImpl implements CheckInService {
       searchItem::getId, () -> itemBarcode, searchInstance::getId);
 
     var circulationItem = circulationItemClient.getCirculationItem(searchItem.getId());
-    if (circulationItem == null) {
+    if (circulationItem.isEmpty()) {
       log.info("determineTenantForCheckIn:: failed to find circulation item by ID {}, " +
           "proxying to the tenant {}", searchItem::getId, searchItem::getTenantId);
       return searchItem.getTenantId();
@@ -123,17 +125,17 @@ public class CheckInServiceImpl implements CheckInService {
       () -> checkInClient.checkIn(request));
   }
 
-  private SearchItem getItemInfoFromSearchInstance(SearchInstance searchInstance,
+  private SearchItem getItemFromSearchInstanceByBarcode(SearchInstance searchInstance,
     String itemBarcode) {
 
     if (searchInstance == null) {
-      log.info("getItemInfoFromSearchInstance:: failed to find item {}, instance is null",
+      log.info("getItemFromSearchInstanceByBarcode:: failed to find item {}, instance is null",
         itemBarcode);
       return null;
     }
 
-    log.info("getItemInfoFromSearchInstance:: getting item info by barcode {} from instance {}",
-      () -> itemBarcode, searchInstance::getId);
+    log.info("getItemFromSearchInstanceByBarcode:: getting item info by barcode {} " +
+        "from instance {}", () -> itemBarcode, searchInstance::getId);
 
     return searchInstance.getItems().stream()
       .filter(item -> itemBarcode.equals(item.getBarcode()))

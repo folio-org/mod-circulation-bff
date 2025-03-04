@@ -1,5 +1,7 @@
 package org.folio.circulationbff.client.feign;
 
+import java.util.Optional;
+
 import org.folio.circulationbff.domain.dto.CirculationItem;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -14,14 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CirculationItemClient {
 
   @GetMapping(value = "/{circulationItemId}")
-  CirculationItem getCirculationItem(@PathVariable String circulationItemId);
+  Optional<CirculationItem> getCirculationItem(@PathVariable String circulationItemId);
 
   @PostMapping(value = "/{circulationItemId}")
-  CirculationItem createCirculationItem(@PathVariable String circulationItemId,
+  Optional<CirculationItem> createCirculationItem(@PathVariable String circulationItemId,
     @RequestBody CirculationItem circulationItem);
 
   @PutMapping(value = "/{circulationItemId}")
-  CirculationItem updateCirculationItem(@PathVariable String circulationItemId,
+  Optional<CirculationItem> updateCirculationItem(@PathVariable String circulationItemId,
     @RequestBody CirculationItem circulationItem);
 
 }
