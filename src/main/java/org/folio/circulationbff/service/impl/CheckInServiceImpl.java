@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.client.feign.CirculationItemClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
@@ -138,8 +139,11 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("getItemFromSearchInstanceByBarcode:: getting item info by barcode {} " +
         "from instance {}", () -> itemBarcode, searchInstance::getId);
 
+    // TODO: Check in with wildcard item barcode lookup is currently not supported by this module
+    var itemBarcodeStripped = StringUtils.strip(itemBarcode, "*");
+
     return searchInstance.getItems().stream()
-      .filter(item -> itemBarcode.equals(item.getBarcode()))
+      .filter(item -> itemBarcodeStripped.equals(item.getBarcode()))
       .findFirst()
       .orElse(null);
   }
