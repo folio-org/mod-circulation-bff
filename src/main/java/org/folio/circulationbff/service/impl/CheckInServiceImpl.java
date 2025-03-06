@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.CheckInClient;
+import org.folio.circulationbff.client.feign.CirculationItemClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
@@ -20,6 +22,8 @@ import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.SettingsService;
+import org.folio.circulationbff.service.TenantService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +36,9 @@ import lombok.extern.log4j.Log4j2;
 public class CheckInServiceImpl implements CheckInService {
 
   private final CheckInClient checkInClient;
+  private final CirculationItemClient circulationItemClient;
+  private final SettingsService settingsService;
+  private final TenantService tenantService;
   private final SearchService searchService;
   private final InventoryService inventoryService;
   private final SystemUserScopedExecutionService executionService;
@@ -39,12 +46,106 @@ public class CheckInServiceImpl implements CheckInService {
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
-    log.info("checkIn: checking in item with barcode {} on service point {}",
-      request.getItemBarcode(), request.getServicePointId());
-    var response = checkInClient.checkIn(request);
+
+    String tenantId = determineTenantForCheckIn(request);
+
+    var response = tenantId == null
+      ? checkInLocally(request)
+      : checkInRemotely(request, tenantId);
+
     processCheckInResponse(response);
 
     return response;
+  }
+
+  /**
+   * @return Tenant ID to proxy check in operation to; null means local check in.
+   */
+  private String determineTenantForCheckIn(CheckInRequest request) {
+    if (!settingsService.isEcsTlrFeatureEnabled() || !tenantService.isCurrentTenantCentral()) {
+      log.info("determineTenantForCheckIn:: ECS request feature is disabled or tenant is not " +
+        "central, local check in");
+      return null;
+    }
+
+    // Now we need to determine whether the item is real or circulation item
+    if (request == null) {
+      log.info("determineTenantForCheckIn:: check in request is null");
+      return null;
+    }
+
+    var itemBarcode = request.getItemBarcode();
+    if (itemBarcode == null) {
+      log.info("determineTenantForCheckIn:: itemBarcode is null");
+      return null;
+    }
+
+    log.info("determineTenantForCheckIn:: searching for instance by item barcode {}", itemBarcode);
+
+    // TODO: Duplication - search endpoint called twice
+    var searchInstanceOptional = searchService.findInstanceByItemBarcode(itemBarcode);
+    if (searchInstanceOptional.isEmpty()) {
+      log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}",
+        itemBarcode);
+      return null;
+    }
+    var searchInstance = searchInstanceOptional.get();
+
+    log.info("determineTenantForCheckIn:: found instance {}", searchInstance::getId);
+
+    var searchItem = getItemFromSearchInstanceByBarcode(searchInstance, itemBarcode);
+    if (searchItem == null) {
+      log.info("determineTenantForCheckIn:: failed to find an item by item barcode {}",
+        itemBarcode);
+      return null;
+    }
+
+    log.info("determineTenantForCheckIn:: found item {} by barcode {} in the instance {}",
+      searchItem::getId, () -> itemBarcode, searchInstance::getId);
+
+    var circulationItem = circulationItemClient.getCirculationItem(searchItem.getId());
+    if (circulationItem.isEmpty()) {
+      log.info("determineTenantForCheckIn:: failed to find circulation item by ID {}, " +
+          "proxying to the tenant {}", searchItem::getId, searchItem::getTenantId);
+      return searchItem.getTenantId();
+    } else {
+      log.info("determineTenantForCheckIn:: found circulation item by ID {}, local check in",
+        searchItem.getId());
+      return null;
+    }
+  }
+
+  private CheckInResponse checkInLocally(CheckInRequest request) {
+    log.info("checkInLocally:: item barcode {}", request.getItemBarcode());
+    return checkInClient.checkIn(request);
+  }
+
+  private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {
+    log.info("checkIn:: proxying to a remote tenant {}", tenantId);
+
+    return executionService.executeSystemUserScoped(tenantId,
+      () -> checkInClient.checkIn(request));
+  }
+
+  private SearchItem getItemFromSearchInstanceByBarcode(SearchInstance searchInstance,
+    String itemBarcode) {
+
+    if (searchInstance == null) {
+      log.info("getItemFromSearchInstanceByBarcode:: failed to find item {}, instance is null",
+        itemBarcode);
+      return null;
+    }
+
+    log.info("getItemFromSearchInstanceByBarcode:: getting item info by barcode {} " +
+        "from instance {}", () -> itemBarcode, searchInstance::getId);
+
+    // TODO: Check in with wildcard item barcode lookup is currently not supported by this module
+    var itemBarcodeStripped = StringUtils.strip(itemBarcode, "*");
+
+    return searchInstance.getItems().stream()
+      .filter(item -> itemBarcodeStripped.equals(item.getBarcode()))
+      .findFirst()
+      .orElse(null);
   }
 
   private void processCheckInResponse(CheckInResponse response) {
