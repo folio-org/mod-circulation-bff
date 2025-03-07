@@ -4,12 +4,11 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.UserTenant;
+import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.util.UUID.randomUUID;
@@ -27,9 +26,7 @@ class CheckOutApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkOutSuccess() {
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
-    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
-    mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(false);
 
     CheckOutRequest request = new CheckOutRequest()
@@ -55,9 +52,7 @@ class CheckOutApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkOutCallsModTlrOnCentralTenant() {
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
-    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
-    mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(true);
 
     CheckOutRequest request = new CheckOutRequest()
@@ -84,9 +79,7 @@ class CheckOutApiTest extends BaseIT {
   @ValueSource(ints = {400, 422, 500})
   @SneakyThrows
   void circulationCheckOutErrorsAreForwarded(int responseStatus) {
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
-    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
-    mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(false);
 
     CheckOutRequest request = new CheckOutRequest()
@@ -103,6 +96,13 @@ class CheckOutApiTest extends BaseIT {
     checkOut(request)
       .andExpect(status().is(responseStatus))
       .andExpect(content().string(responseBody));
+  }
+
+  public UserTenantCollection buildUserTenant(String tenantId) {
+    var userTenant = new UserTenant();
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    userTenant.setTenantId(tenantId);
+    return new UserTenantCollection().addUserTenantsItem(userTenant);
   }
 
   @Test
