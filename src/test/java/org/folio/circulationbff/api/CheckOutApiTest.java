@@ -13,7 +13,10 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -43,7 +46,7 @@ class CheckOutApiTest extends BaseIT {
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
-    checkOut(request)
+    checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isOk())
       .andExpect(content().json(asJsonString(mockResponse)));
   }
@@ -65,9 +68,31 @@ class CheckOutApiTest extends BaseIT {
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
-    checkOut(request)
+    checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isOk())
       .andExpect(content().json(asJsonString(mockResponse)));
+  }
+
+  @Test
+  @SneakyThrows
+  void checkOutCallsModCirculationOnDataTenant() {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_COLLEGE), TENANT_ID_COLLEGE);
+    mockHelper.mockEcsTlrCirculationSettings(true);
+    CheckOutRequest request = new CheckOutRequest()
+      .itemBarcode("test_barcode")
+      .userBarcode("user_barcode")
+      .servicePointId(randomUUID());
+
+    var mockResponse = new CheckOutResponse().id(UUID.randomUUID().toString());
+
+    wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
+      .withRequestBody(equalToJson(asJsonString(request)))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
+
+    checkOut(request, TENANT_ID_COLLEGE)
+       .andExpect(status().isOk())
+       .andExpect(content().json(asJsonString(mockResponse)));
   }
 
   @ParameterizedTest
@@ -88,7 +113,7 @@ class CheckOutApiTest extends BaseIT {
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(aResponse().withStatus(responseStatus).withBody(responseBody)));
 
-    checkOut(request)
+    checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().is(responseStatus))
       .andExpect(content().string(responseBody));
   }
@@ -107,7 +132,7 @@ class CheckOutApiTest extends BaseIT {
       .userBarcode("user_barcode")
       .servicePointId(randomUUID());
 
-    checkOut(request)
+    checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isBadRequest());
   }
 
@@ -118,7 +143,7 @@ class CheckOutApiTest extends BaseIT {
       .itemBarcode("item_barcode")
       .servicePointId(randomUUID());
 
-    checkOut(request)
+    checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isBadRequest());
   }
 
@@ -129,14 +154,14 @@ class CheckOutApiTest extends BaseIT {
       .itemBarcode("item_barcode")
       .userBarcode("user_barcode");
 
-    checkOut(request)
+    checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isBadRequest());
   }
 
   @SneakyThrows
-  private ResultActions checkOut(CheckOutRequest checkOutRequest) {
+  private ResultActions checkOut(CheckOutRequest checkOutRequest, String tenantId) {
     return mockMvc.perform(post(CHECK_OUT_URL)
       .content(asJsonString(checkOutRequest))
-      .headers(defaultHeaders()));
+      .headers(buildHeaders(tenantId)));
   }
 }
