@@ -1,3 +1,7 @@
+## 1.0.11 2025-03-07
+* Check-out API (MCBFF-68)
+* Check in all items from Central tenant (MCBFF-66)
+
 ## 1.0.10 2025-02-24
 * Rebuild check-in response - item, loan (MCBFF-67)
 
