@@ -3,12 +3,15 @@ package org.folio.circulationbff.api;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
+import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.util.UUID.randomUUID;
@@ -34,19 +37,15 @@ class CheckOutApiTest extends BaseIT {
       .userBarcode("user_barcode")
       .servicePointId(randomUUID());
 
-    String mockResponse = """
-      {
-        "randomProperty": "randomValue"
-      }
-      """;
+    var mockResponse = new CheckOutResponse().id(UUID.randomUUID().toString());
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
-      .willReturn(jsonResponse(mockResponse, SC_OK)));
+      .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
     checkOut(request)
       .andExpect(status().isOk())
-      .andExpect(content().json(mockResponse));
+      .andExpect(content().json(asJsonString(mockResponse)));
   }
 
   @Test
@@ -60,19 +59,15 @@ class CheckOutApiTest extends BaseIT {
       .userBarcode("user_barcode")
       .servicePointId(randomUUID());
 
-    String mockResponse = """
-      {
-        "randomProperty": "randomValue"
-      }
-      """;
+    var mockResponse = new CheckOutResponse().id(UUID.randomUUID().toString());
 
     wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
-      .willReturn(jsonResponse(mockResponse, SC_OK)));
+      .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
     checkOut(request)
       .andExpect(status().isOk())
-      .andExpect(content().json(mockResponse));
+      .andExpect(content().json(asJsonString(mockResponse)));
   }
 
   @ParameterizedTest
