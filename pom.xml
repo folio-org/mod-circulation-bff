@@ -27,13 +27,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- runtime dependencies -->
-        <folio-spring-support.version>8.2.2</folio-spring-support.version>
+        <folio-spring-support.version>9.0.0</folio-spring-support.version>
         <openapi-generator.version>7.3.0</openapi-generator.version>
         <mapstruct.version>1.6.2</mapstruct.version>
 
         <!-- test dependencies -->
-        <wiremock.version>3.2.0</wiremock.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <wiremock.version>3.12.1</wiremock.version>
+        <testcontainers.version>1.20.6</testcontainers.version>
     </properties>
 
     <dependencies>
