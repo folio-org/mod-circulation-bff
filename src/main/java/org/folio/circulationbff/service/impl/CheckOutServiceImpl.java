@@ -8,7 +8,7 @@ import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.service.CheckOutService;
 import org.folio.circulationbff.service.SettingsService;
-import org.folio.circulationbff.service.UserTenantsService;
+import org.folio.circulationbff.service.TenantService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class CheckOutServiceImpl implements CheckOutService {
 
   private final SettingsService settingsService;
-  private final UserTenantsService userTenantsService;
+  private final TenantService tenantService;
   private final CheckOutClient checkOutClient;
   private final EcsTlrClient ecsTlrClient;
 
@@ -25,7 +25,7 @@ public class CheckOutServiceImpl implements CheckOutService {
   public CheckOutResponse checkOut(CheckOutRequest request) {
     log.info("checkOut: checking out item with barcode {} from service point {}",
       request.getItemBarcode(), request.getServicePointId());
-    if (settingsService.isEcsTlrFeatureEnabled() && userTenantsService.isCentralTenant()) {
+    if (settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral()) {
       log.info("Check out by barcode in mod-tlr module");
       return ecsTlrClient.checkOutByBarcode(request);
     }

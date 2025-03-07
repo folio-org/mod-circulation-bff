@@ -3,9 +3,7 @@ package org.folio.circulationbff.api;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
-import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.circulationbff.domain.dto.UserTenant;
-import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,8 +29,8 @@ class CheckOutApiTest extends BaseIT {
   void checkOutSuccess() {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
-    mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
-    mockEcsTlrSettings(false);
+    mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(false);
 
     CheckOutRequest request = new CheckOutRequest()
       .itemBarcode("test_barcode")
@@ -59,8 +57,8 @@ class CheckOutApiTest extends BaseIT {
   void checkOutCallsModTlrOnCentralTenant() {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
-    mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
-    mockEcsTlrSettings(true);
+    mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
 
     CheckOutRequest request = new CheckOutRequest()
             .itemBarcode("test_barcode")
@@ -88,8 +86,8 @@ class CheckOutApiTest extends BaseIT {
   void circulationCheckOutErrorsAreForwarded(int responseStatus) {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
-    mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
-    mockEcsTlrSettings(false);
+    mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(false);
 
     CheckOutRequest request = new CheckOutRequest()
       .itemBarcode("item_barcode")
@@ -146,21 +144,4 @@ class CheckOutApiTest extends BaseIT {
       .content(asJsonString(checkOutRequest))
       .headers(defaultHeaders()));
   }
-
-  private void mockUserTenants(UserTenant userTenant, String requestTenant) {
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(USER_TENANTS_URL))
-            .withQueryParam("limit", matching("\\d*"))
-            .withHeader(HEADER_TENANT, equalTo(requestTenant))
-            .willReturn(jsonResponse(asJsonString(new UserTenantCollection().addUserTenantsItem(userTenant)),
-                    SC_OK)));
-  }
-
-  private void mockEcsTlrSettings(boolean enabled) {
-    TlrSettings tlrSettings = new TlrSettings();
-    tlrSettings.setEcsTlrFeatureEnabled(enabled);
-    wireMockServer.stubFor(WireMock.get(urlMatching(TLR_SETTINGS_URL))
-            .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-            .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
-  }
-
 }
