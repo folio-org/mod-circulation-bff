@@ -51,20 +51,23 @@ class CheckOutApiTest extends BaseIT {
       .andExpect(content().json(asJsonString(mockResponse)));
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @SneakyThrows
-  void checkOutCallsModTlrOnCentralTenant() {
+  void checkOutCallsCorrectEndpointBasedOnTlrSetting(boolean enableTlr) {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
-    mockHelper.mockEcsTlrSettings(true);
+    mockHelper.mockEcsTlrSettings(enableTlr);
 
     CheckOutRequest request = new CheckOutRequest()
       .itemBarcode("test_barcode")
       .userBarcode("user_barcode")
       .servicePointId(randomUUID());
 
-    var mockResponse = new CheckOutResponse().id(UUID.randomUUID().toString());
+    var mockResponse = new CheckOutResponse().id(randomUUID().toString());
 
-    wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
+    String expectedUrl = enableTlr ? TLR_CHECK_OUT_URL : CIRCULATION_CHECK_OUT_URL;
+
+    wireMockServer.stubFor(WireMock.post(urlMatching(expectedUrl))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
@@ -73,11 +76,13 @@ class CheckOutApiTest extends BaseIT {
       .andExpect(content().json(asJsonString(mockResponse)));
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @SneakyThrows
-  void checkOutCallsModCirculationOnDataTenant() {
+  void checkOutCallsModCirculationOnDataTenant(boolean enableTlr) {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_COLLEGE), TENANT_ID_COLLEGE);
-    mockHelper.mockEcsTlrCirculationSettings(true);
+    mockHelper.mockEcsTlrCirculationSettings(enableTlr);
+
     CheckOutRequest request = new CheckOutRequest()
       .itemBarcode("test_barcode")
       .userBarcode("user_barcode")
