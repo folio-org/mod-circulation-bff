@@ -24,6 +24,7 @@ class CheckOutApiTest extends BaseIT {
 
   private static final String CHECK_OUT_URL = "/circulation-bff/loans/check-out-by-barcode";
   private static final String CIRCULATION_CHECK_OUT_URL = "/circulation/check-out-by-barcode";
+  private static final String TLR_CHECK_OUT_URL = "/tlr/loans/check-out-by-barcode";
 
   @Test
   @SneakyThrows
@@ -51,6 +52,34 @@ class CheckOutApiTest extends BaseIT {
     checkOut(request)
       .andExpect(status().isOk())
       .andExpect(content().json(mockResponse));
+  }
+
+  @Test
+  @SneakyThrows
+  void checkOutCallsModTlrOnCentralTenant() {
+    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
+    mockEcsTlrSettings(true);
+
+    CheckOutRequest request = new CheckOutRequest()
+            .itemBarcode("test_barcode")
+            .userBarcode("user_barcode")
+            .servicePointId(randomUUID());
+
+    String mockResponse = """
+      {
+        "randomProperty": "randomValue"
+      }
+      """;
+
+    wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
+            .withRequestBody(equalToJson(asJsonString(request)))
+            .willReturn(jsonResponse(mockResponse, SC_OK)));
+
+    checkOut(request)
+            .andExpect(status().isOk())
+            .andExpect(content().json(mockResponse));
   }
 
   @ParameterizedTest
