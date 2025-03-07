@@ -22,3 +22,5 @@ user-tenants.collection.get
 consortium-search.items.collection.get
 consortium-search.items.item.get
 circulation.check-in-by-barcode.post
+tlr.ecs-tlr-allowed-service-points.get
+tlr.ecs-request-external.post
