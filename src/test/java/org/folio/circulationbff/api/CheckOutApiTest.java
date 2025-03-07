@@ -56,9 +56,9 @@ class CheckOutApiTest extends BaseIT {
     mockHelper.mockEcsTlrSettings(true);
 
     CheckOutRequest request = new CheckOutRequest()
-            .itemBarcode("test_barcode")
-            .userBarcode("user_barcode")
-            .servicePointId(randomUUID());
+      .itemBarcode("test_barcode")
+      .userBarcode("user_barcode")
+      .servicePointId(randomUUID());
 
     String mockResponse = """
       {
@@ -67,12 +67,12 @@ class CheckOutApiTest extends BaseIT {
       """;
 
     wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
-            .withRequestBody(equalToJson(asJsonString(request)))
-            .willReturn(jsonResponse(mockResponse, SC_OK)));
+      .withRequestBody(equalToJson(asJsonString(request)))
+      .willReturn(jsonResponse(mockResponse, SC_OK)));
 
     checkOut(request)
-            .andExpect(status().isOk())
-            .andExpect(content().json(mockResponse));
+      .andExpect(status().isOk())
+      .andExpect(content().json(mockResponse));
   }
 
   @ParameterizedTest

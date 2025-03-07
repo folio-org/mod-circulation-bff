@@ -1,6 +1,15 @@
 package org.folio.circulationbff.client.feign;
 
-import org.folio.circulationbff.domain.dto.*;
+import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
+import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.BffRequest;
+import org.folio.circulationbff.domain.dto.CheckOutRequest;
+import org.folio.circulationbff.domain.dto.CheckOutResponse;
+import org.folio.circulationbff.domain.dto.EcsRequestExternal;
+import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.PickSlipCollection;
+import org.folio.circulationbff.domain.dto.SearchSlipCollection;
+import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;

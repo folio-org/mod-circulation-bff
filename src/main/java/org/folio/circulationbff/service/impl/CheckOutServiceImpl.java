@@ -26,10 +26,10 @@ public class CheckOutServiceImpl implements CheckOutService {
     log.info("checkOut: checking out item with barcode {} from service point {}",
       request.getItemBarcode(), request.getServicePointId());
     if (settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral()) {
-      log.info("Check out by barcode in mod-tlr module");
+      log.info("checkOut: Check out by barcode in mod-tlr module");
       return ecsTlrClient.checkOutByBarcode(request);
     }
-    log.info("Check out by barcode in mod-circulation module");
+    log.info("checkOut: Check out by barcode in mod-circulation module");
     return checkOutClient.checkOut(request);
   }
 }
