@@ -1,4 +1,4 @@
-FROM folioci/alpine-jre-openjdk21:latest
+FROM folioci/alpine-jre-openjdk17:latest
 
 # Copy your fat jar to the container provide the actual name for your fat jar file for example mod-notes-fat.jar
 ENV APP_FILE mod-circulation-bff.jar
