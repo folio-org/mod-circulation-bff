@@ -24,3 +24,6 @@ user-tenants.collection.get
 consortium-search.items.collection.get
 consortium-search.items.item.get
 circulation.check-in-by-barcode.post
+mod-settings.entries.item.get
+mod-settings.entries.collection.get
+mod-settings.global.read.circulation

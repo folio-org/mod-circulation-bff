@@ -10,7 +10,7 @@
     <groupId>org.folio</groupId>
     <artifactId>mod-circulation-bff</artifactId>
     <name>mod-circulation-bff</name>
-    <version>1.0.12-SNAPSHOT</version>
+    <version>1.0.13-SNAPSHOT</version>
     <description>FOLIO mod-circulation-bff module</description>
     <packaging>jar</packaging>
 
