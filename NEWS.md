@@ -1,3 +1,6 @@
+## 1.0.12 2025-03-10
+* Add mod-settings permissions to the system user (MCBFF-77)
+
 ## 1.0.11 2025-03-07
 * Check-out API (MCBFF-68)
 * Check in all items from Central tenant (MCBFF-66)
