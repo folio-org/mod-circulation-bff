@@ -7,7 +7,7 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
 ## Goal
 
-Module that provides a facade layer (backed-for-frontend) for FOLIO circulation 
+Module that provides a facade layer (backed-for-frontend) for FOLIO circulation
 applications.
 
 ### Environment variables
