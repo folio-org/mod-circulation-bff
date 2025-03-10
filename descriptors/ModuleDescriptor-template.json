@@ -396,7 +396,10 @@
         "inventory-storage.location-units.campuses.collection.get",
         "inventory-storage.location-units.institutions.item.get",
         "inventory-storage.location-units.institutions.collection.get",
-        "circulation.check-in-by-barcode.post"
+        "circulation.check-in-by-barcode.post",
+        "mod-settings.entries.item.get",
+        "mod-settings.entries.collection.get",
+        "mod-settings.global.read.circulation"
       ]
     }
   },
