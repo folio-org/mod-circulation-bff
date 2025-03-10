@@ -1,3 +1,6 @@
+## 1.0.13 2025-03-10
+* Proxy check out based on condition (MCBFF-69)
+
 ## 1.0.12 2025-03-10
 * Add mod-settings permissions to the system user (MCBFF-77)
 

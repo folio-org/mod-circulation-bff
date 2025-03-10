@@ -176,7 +176,8 @@
             "circulation-bff.loans.check-out-by-barcode.execute"
           ],
           "modulePermissions": [
-            "circulation.check-out-by-barcode.post"
+            "circulation.check-out-by-barcode.post",
+            "tlr.loans.check-out-by-barcode.execute"
           ]
         }
       ]
