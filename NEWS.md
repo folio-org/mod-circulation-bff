@@ -1,3 +1,34 @@
+## 1.1.0 2025-03-13
+
+* Proxy check out based on condition (MCBFF-69)
+* Add mod-settings permissions to the system user (MCBFF-77)
+* Update to Java 21 (MCBFF-81)
+* Check-out API (MCBFF-68)
+* Check in all items from Central tenant (MCBFF-66)
+* Rebuild check-in response - item, loan (MCBFF-67)
+* Create external mediated requests (MCBFF-46)
+* Fetch item details for external request (MCBFF-44)
+* Populate staff slip context for non-DCB items (MCBFF-51)
+* Update hardcoded effective location during check-in (MCBFF-38)
+* Change allowed service point logic (MCBFF-52)
+* Fix Allowed SP for non-ECS requests (MCBFF-36)
+* Add missing required interfaces (MCBFF-40)
+* Check-in API (MCBFF-37)
+* Endpoint `create-ecs-request-external` returns primary request (MCBFF-32)
+* Failsafe approach to ECS requesting (MCBFF-21)
+* Add editions to instance search results (MCBFF-17)
+* Fix staff slip token name (MCBFF-27)
+* Pass patron group to allowed SP call for non-central ECS case (MCBFF-25)
+* Add `tlr-settings` interface dependency (MCBFF-26)
+* Add system user to module descriptor (MCBFF-24)
+* Make mod-tlr dependency optional, fix allowed SP routing (MCBFF-20)
+* Make `pickupServicePointId` field non-required for POST `/circulation-bff/requests` endpoint (MCBFF-19)
+* Add new endpoints to proxy to old or new slip endpoints (MCBFF-12)
+* Add excludes config `api-doc`
+* Increase minor version, fix typo requestLevel (MCBFF-6)
+* Add endpoint to resolve external user IDs (MCBFF-7)
+* Update folio-spring-support to 8.2 (MCBFF-15)
+
 ## 1.0.0 2024-11-01
 
 * Add `hrid` parameter to request schema (MCBFF-13)
