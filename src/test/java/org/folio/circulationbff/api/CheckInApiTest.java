@@ -60,7 +60,8 @@ class CheckInApiTest extends BaseIT {
     var checkinItem = new Item()
       .id(itemId)
       .copyNumber("copyNumber")
-      .effectiveLocationId(effectiveLocationId);
+      .effectiveLocationId(effectiveLocationId)
+      .itemLevelCallNumber("CN");
     givenSearchInstanceReturnsItem(TENANT_ID_CONSORTIUM, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
@@ -281,7 +282,8 @@ class CheckInApiTest extends BaseIT {
       .holdingsRecordId(holdingRecordId)
       .inTransitDestinationServicePointId(primaryServicePointId.toString())
       .copyNumber("copyNumber")
-      .effectiveLocationId(effectiveLocationId);
+      .effectiveLocationId(effectiveLocationId)
+      .itemLevelCallNumber("CN");
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
