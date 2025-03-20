@@ -246,7 +246,7 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
 
-    if(item.getItemLevelCallNumber() == null) {
+    if(item.getItemLevelCallNumber() != null) {
       response.getStaffSlipContext().getItem()
         .callNumber(item.getItemLevelCallNumber())
         .callNumberPrefix(item.getItemLevelCallNumberPrefix())
