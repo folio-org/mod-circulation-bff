@@ -9,11 +9,13 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.client.feign.CirculationItemClient;
+import org.folio.circulationbff.client.feign.HoldingsStorageClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
 import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
 import org.folio.circulationbff.domain.dto.Contributor;
+import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
@@ -37,6 +39,7 @@ public class CheckInServiceImpl implements CheckInService {
 
   private final CheckInClient checkInClient;
   private final CirculationItemClient circulationItemClient;
+  private final HoldingsStorageClient holdingsStorageClient;
   private final SettingsService settingsService;
   private final TenantService tenantService;
   private final SearchService searchService;
@@ -222,9 +225,6 @@ public class CheckInServiceImpl implements CheckInService {
       .primaryContributor(getPrimaryContributorName(searchInstance.getContributors()))
       .allContributors(formatContributorNames(searchInstance.getContributors()))
       .barcode(item.getBarcode())
-      .callNumber(item.getItemLevelCallNumber())
-      .callNumberPrefix(item.getItemLevelCallNumberPrefix())
-      .callNumberSuffix(item.getItemLevelCallNumberSuffix())
       .copy(item.getCopyNumber())
       .displaySummary(item.getDisplaySummary())
       .enumeration(item.getEnumeration())
@@ -245,6 +245,19 @@ public class CheckInServiceImpl implements CheckInService {
       .effectiveLocationCampus(fetchCampusName(location.getCampusId()))
       .effectiveLocationLibrary(fetchLocationLibraryName(location.getLibraryId()))
       .effectiveLocationSpecific(location.getName());
+
+    if(item.getItemLevelCallNumber() == null) {
+      response.getStaffSlipContext().getItem()
+        .callNumber(item.getItemLevelCallNumber())
+        .callNumberPrefix(item.getItemLevelCallNumberPrefix())
+        .callNumberSuffix(item.getItemLevelCallNumberSuffix());
+    } else {
+      HoldingsRecord holdingsRecord = holdingsStorageClient.findHoldingsRecord(item.getHoldingsRecordId());
+      response.getStaffSlipContext().getItem()
+        .callNumber(holdingsRecord.getCallNumber())
+        .callNumberPrefix(holdingsRecord.getCallNumberPrefix())
+        .callNumberSuffix(holdingsRecord.getCallNumberSuffix());
+    }
 
     log.info("rebuildCheckInStaffSlipContext:: staff slips context for item {} " +
       "has been successfully built", item::getId);
