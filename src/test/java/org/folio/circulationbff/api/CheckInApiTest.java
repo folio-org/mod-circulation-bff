@@ -256,6 +256,7 @@ class CheckInApiTest extends BaseIT {
       .callNumberSuffix(cnSuffix);
 
     wireMockServer.stubFor(WireMock.get(urlMatching(format(HOLDING_STORAGE_URL, holdingRecordId)))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(asJsonString(holdingRecordResponse), SC_OK)));
 
     checkIn(request).andExpect(status().isOk())
