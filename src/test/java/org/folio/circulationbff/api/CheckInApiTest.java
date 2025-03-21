@@ -218,8 +218,8 @@ class CheckInApiTest extends BaseIT {
       .campusId(campusId)
       .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
-            .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
-            .willReturn(jsonResponse(location, SC_OK)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(location, SC_OK)));
 
     var servicePointResponse = format("""
       {
@@ -233,30 +233,30 @@ class CheckInApiTest extends BaseIT {
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePointId))
-            .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
-            .willReturn(jsonResponse(servicePointResponse, SC_OK)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(servicePointResponse, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
-            .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
-            .willReturn(jsonResponse(institution, SC_OK)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(institution, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
-            .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
-            .willReturn(jsonResponse(campus, SC_OK)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(campus, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
-            .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
-            .willReturn(jsonResponse(library, SC_OK)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(library, SC_OK)));
 
     var cn = "CN-TST-HOLDING";
     var cnPrefix = "PRFX";
     var cnSuffix = "SFX";
 
     var holdingRecordResponse = new HoldingsRecord()
-            .id(holdingRecordId)
-            .callNumber(cn)
-            .callNumberPrefix(cnPrefix)
-            .callNumberSuffix(cnSuffix);
+      .id(holdingRecordId)
+      .callNumber(cn)
+      .callNumberPrefix(cnPrefix)
+      .callNumberSuffix(cnSuffix);
 
     wireMockServer.stubFor(WireMock.get(urlMatching(format(HOLDING_STORAGE_URL, holdingRecordId)))
-            .willReturn(jsonResponse(asJsonString(holdingRecordResponse), SC_OK)));
+      .willReturn(jsonResponse(asJsonString(holdingRecordResponse), SC_OK)));
 
     checkIn(request).andExpect(status().isOk())
       .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
