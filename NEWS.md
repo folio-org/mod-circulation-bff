@@ -1,3 +1,6 @@
+## 1.0.14 2025-03-28
+* Use holding CN in the check-in slip when item CN is missing (MCBFF-75)
+
 ## 1.0.13 2025-03-10
 * Proxy check out based on condition (MCBFF-69)
 
