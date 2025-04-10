@@ -28,6 +28,7 @@ import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.CheckOutService;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
+import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
@@ -46,6 +47,7 @@ public class CirculationBffController implements CirculationBffApi {
 
   private final CirculationBffService circulationBffService;
   private final SearchService searchService;
+  private final InventoryService inventoryService;
   private final MediatedRequestsService mediatedRequestsService;
   private final UserService userService;
   private final EcsRequestExternalService ecsRequestExternalService;
@@ -114,9 +116,16 @@ public class CirculationBffController implements CirculationBffApi {
     // frontend expects either a single instance, or an empty JSON
     BffSearchInstance response = instances.stream()
       .findFirst()
+//      .map(searchInstance -> addPropertiesForItems(searchInstance))
       .orElseGet(EmptyBffSearchInstance::new);
 
     return ResponseEntity.ok(response);
+  }
+
+  private BffSearchInstance addPropertiesForItems(BffSearchInstance bffSearchInstance) {
+    bffSearchInstance.getItems().forEach(item -> item.getEffectiveLocation());
+
+    return bffSearchInstance;
   }
 
   @Override
