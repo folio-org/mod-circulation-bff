@@ -260,7 +260,7 @@ public class SearchServiceImpl implements SearchService {
       .filter(Objects::nonNull)
       .collect(Collectors.toSet());
 
-    log.info("fetchLoanTypes: fetching {} loan types", ids.size());
+    log.info("fetchLoanTypes:: fetching {} loan types", ids.size());
 
     return fetchingService.fetch(loanTypeClient, ids, LoanTypes::getLoantypes, LoanType::getId);
   }
