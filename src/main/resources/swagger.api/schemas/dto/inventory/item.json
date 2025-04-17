@@ -308,6 +308,34 @@
       "type": "string",
       "description": "Temporary loan type, is the temporary loan type for a given item."
     },
+    "permanentLoanType": {
+      "description": "Permanent loan type, is the default loan type for a given item. Loan types are tenant-defined in a reference table in Settings, Inventory, Item, Loan type (e.g. Can circulate, Course reserves, Reading room, Selected)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Permanent loan type Id, refers to a loan type reference record",
+          "type": "string"
+        },
+        "name": {
+          "description": "Permanent loan type name",
+          "type": "string"
+        }
+      }
+    },
+    "temporaryLoanType": {
+      "description": "Temporary loan type, is the temporary loan type for a given item. Loan types are tenant-defined in a reference table in Settings, Inventory, Item, Loan type (e.g. Can circulate, Course reserves, Reading room, Selected)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Temporary loan type Id, refers to a loan type reference record",
+          "type": "string"
+        },
+        "name": {
+          "description": "Temporary loan type name",
+          "type": "string"
+        }
+      }
+    },
     "permanentLocationId": {
       "type": "string",
       "description": "Permanent item location is the default location, shelving location, or holding which is a physical place where items are stored, or an Online location."
