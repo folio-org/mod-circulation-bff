@@ -318,16 +318,28 @@ public class SearchServiceImpl implements SearchService {
 
     var permanentLoanTypeId = item.getPermanentLoanTypeId();
     if (permanentLoanTypeId != null) {
-      bffSearchItem.permanentLoanType(new BffSearchItemPermanentLoanType()
-        .id(item.getPermanentLoanTypeId())
-        .name(itemContext.permanentLoanType.getName()));
+      var permanentLoanType = itemContext.permanentLoanType();
+      if (permanentLoanType != null) {
+        bffSearchItem.permanentLoanType(new BffSearchItemPermanentLoanType()
+          .id(permanentLoanTypeId)
+          .name(permanentLoanType.getName()));
+      } else {
+        log.info("buildBffSearchItem:: permanent loan type is null for item with permanentLoanTypeId: {}",
+          permanentLoanTypeId);
+      }
     }
 
     var temporaryLoanTypeId = item.getTemporaryLoanTypeId();
     if (temporaryLoanTypeId != null) {
-      bffSearchItem.temporaryLoanType(new BffSearchItemTemporaryLoanType()
-        .id(item.getTemporaryLoanTypeId())
-        .name(itemContext.temporaryLoanType.getName()));
+      var temporaryLoanType = itemContext.temporaryLoanType();
+      if (temporaryLoanType != null) {
+        bffSearchItem.temporaryLoanType(new BffSearchItemTemporaryLoanType()
+          .id(temporaryLoanTypeId)
+          .name(temporaryLoanType.getName()));
+      } else {
+        log.info("buildBffSearchItem:: is null for item with temporaryLoanTypeId: {}",
+          temporaryLoanTypeId);
+      }
     }
 
     Optional.ofNullable(searchInstance.getContributors())

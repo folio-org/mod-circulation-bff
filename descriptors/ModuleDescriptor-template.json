@@ -327,6 +327,10 @@
       "version": "2.2"
     },
     {
+      "id":  "loan-types",
+      "version": "2.3"
+    },
+    {
       "id":  "circulation",
       "version": "14.4"
     },
