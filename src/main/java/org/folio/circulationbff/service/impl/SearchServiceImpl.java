@@ -8,17 +8,20 @@ import static java.util.stream.Collectors.toSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.HoldingsStorageClient;
 import org.folio.circulationbff.client.feign.InstanceStorageClient;
 import org.folio.circulationbff.client.feign.ItemStorageClient;
+import org.folio.circulationbff.client.feign.LoanTypeClient;
 import org.folio.circulationbff.client.feign.LocationClient;
 import org.folio.circulationbff.client.feign.MaterialTypeClient;
 import org.folio.circulationbff.client.feign.SearchClient;
@@ -26,10 +29,12 @@ import org.folio.circulationbff.client.feign.ServicePointClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.BffSearchItem;
 import org.folio.circulationbff.domain.dto.BffSearchItemCallNumberComponents;
+import org.folio.circulationbff.domain.dto.BffSearchItemEffectiveLocation;
 import org.folio.circulationbff.domain.dto.BffSearchItemInTransitDestinationServicePoint;
-import org.folio.circulationbff.domain.dto.BffSearchItemLocation;
 import org.folio.circulationbff.domain.dto.BffSearchItemMaterialType;
+import org.folio.circulationbff.domain.dto.BffSearchItemPermanentLoanType;
 import org.folio.circulationbff.domain.dto.BffSearchItemStatus;
+import org.folio.circulationbff.domain.dto.BffSearchItemTemporaryLoanType;
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
@@ -39,6 +44,8 @@ import org.folio.circulationbff.domain.dto.Instances;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.Items;
+import org.folio.circulationbff.domain.dto.LoanType;
+import org.folio.circulationbff.domain.dto.LoanTypes;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.Locations;
 import org.folio.circulationbff.domain.dto.MaterialType;
@@ -67,6 +74,7 @@ public class SearchServiceImpl implements SearchService {
   private final HoldingsStorageClient holdingsStorageClient;
   private final LocationClient locationClient;
   private final MaterialTypeClient materialTypeClient;
+  private final LoanTypeClient loanTypeClient;
   private final ServicePointClient servicePointClient;
   private final SearchClient searchClient;
   private final InstanceStorageClient instanceStorageClient;
@@ -200,6 +208,7 @@ public class SearchServiceImpl implements SearchService {
     Map<String, MaterialType> materialTypesById = fetchMaterialTypes(items);
     Map<String, String> itemIdToTenantId = searchItems.stream()
       .collect(toMap(SearchItem::getId, SearchItem::getTenantId));
+    Map<String, LoanType> loanTypeIdToLoanType = fetchLoanTypes(items);
 
     return items.stream()
       .map(item -> new ItemContext(item,
@@ -207,7 +216,9 @@ public class SearchServiceImpl implements SearchService {
         holdingsRecordsById.get(item.getHoldingsRecordId()),
         locationsById.get(item.getEffectiveLocationId()),
         materialTypesById.get(item.getMaterialTypeId()),
-        servicePointsById.get(item.getInTransitDestinationServicePointId())))
+        servicePointsById.get(item.getInTransitDestinationServicePointId()),
+        loanTypeIdToLoanType.get(item.getPermanentLoanTypeId()),
+        loanTypeIdToLoanType.get(item.getTemporaryLoanTypeId())))
       .toList();
   }
 
@@ -241,6 +252,17 @@ public class SearchServiceImpl implements SearchService {
     log.info("fetchMaterialTypes: fetching {} material types", ids::size);
     return fetchingService.fetch(materialTypeClient, ids, MaterialTypes::getMtypes,
       MaterialType::getId);
+  }
+
+  private Map<String, LoanType> fetchLoanTypes(Collection<Item> items) {
+    Set<String> ids = items.stream()
+      .flatMap(item -> Stream.of(item.getPermanentLoanTypeId(), item.getTemporaryLoanTypeId()))
+      .filter(Objects::nonNull)
+      .collect(Collectors.toSet());
+
+    log.info("fetchLoanTypes:: fetching {} loan types", ids.size());
+
+    return fetchingService.fetch(loanTypeClient, ids, LoanTypes::getLoantypes, LoanType::getId);
   }
 
   private Collection<BffSearchInstance> buildBffSearchInstances(
@@ -294,6 +316,32 @@ public class SearchServiceImpl implements SearchService {
       .volume(item.getVolume())
       .inTransitDestinationServicePointId(toUUID(item.getInTransitDestinationServicePointId()));
 
+    var permanentLoanTypeId = item.getPermanentLoanTypeId();
+    if (permanentLoanTypeId != null) {
+      var permanentLoanType = itemContext.permanentLoanType();
+      if (permanentLoanType != null) {
+        bffSearchItem.permanentLoanType(new BffSearchItemPermanentLoanType()
+          .id(permanentLoanTypeId)
+          .name(permanentLoanType.getName()));
+      } else {
+        log.info("buildBffSearchItem:: permanent loan type is null for item with permanentLoanTypeId: {}",
+          permanentLoanTypeId);
+      }
+    }
+
+    var temporaryLoanTypeId = item.getTemporaryLoanTypeId();
+    if (temporaryLoanTypeId != null) {
+      var temporaryLoanType = itemContext.temporaryLoanType();
+      if (temporaryLoanType != null) {
+        bffSearchItem.temporaryLoanType(new BffSearchItemTemporaryLoanType()
+          .id(temporaryLoanTypeId)
+          .name(temporaryLoanType.getName()));
+      } else {
+        log.info("buildBffSearchItem:: is null for item with temporaryLoanTypeId: {}",
+          temporaryLoanTypeId);
+      }
+    }
+
     Optional.ofNullable(searchInstance.getContributors())
       .map(contributors -> contributors.stream()
         .map(Contributor::getName)
@@ -319,8 +367,8 @@ public class SearchServiceImpl implements SearchService {
       .ifPresent(bffSearchItem::setInTransitDestinationServicePoint);
 
     Optional.ofNullable(itemContext.location())
-      .map(loc -> new BffSearchItemLocation().name(loc.getName()))
-      .ifPresent(bffSearchItem::setLocation);
+      .map(loc -> new BffSearchItemEffectiveLocation().name(loc.getName()))
+      .ifPresent(bffSearchItem::setEffectiveLocation);
 
     Optional.ofNullable(itemContext.materialType())
       .map(mt -> new BffSearchItemMaterialType().name(mt.getName()))
@@ -355,6 +403,7 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private record ItemContext(Item item, String tenantId, HoldingsRecord holdingsRecord,
-    Location location, MaterialType materialType, ServicePoint servicePoint) { }
+    Location location, MaterialType materialType, ServicePoint servicePoint,
+    LoanType permanentLoanType, LoanType temporaryLoanType) { }
 
 }
