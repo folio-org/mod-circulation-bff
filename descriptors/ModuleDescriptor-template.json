@@ -80,7 +80,7 @@
     },
     {
       "id": "circulation-bff-requests",
-      "version": "1.1",
+      "version": "1.2",
       "handlers": [
         {
           "methods": [
@@ -327,6 +327,10 @@
       "version": "2.2"
     },
     {
+      "id":  "loan-types",
+      "version": "2.3"
+    },
+    {
       "id":  "circulation",
       "version": "14.4"
     },
@@ -387,6 +391,8 @@
         "inventory-storage.material-types.collection.get",
         "inventory-storage.instances.item.get",
         "inventory-storage.instances.collection.get",
+        "inventory-storage.loan-types.collection.get",
+        "inventory-storage.loan-types.item.get",
         "consortium-search.items.collection.get",
         "consortium-search.items.item.get",
         "tlr.ecs-request-external.post",
