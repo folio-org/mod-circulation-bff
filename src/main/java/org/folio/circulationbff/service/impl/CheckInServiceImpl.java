@@ -323,7 +323,7 @@ public class CheckInServiceImpl implements CheckInService {
     Consumer<CheckInResponseItemInTransitDestinationServicePoint> setDestinationServicePoint,
     ServicePoint primaryServicePoint, Location location) {
 
-    if (DCB_SERVICE_POINT_ID.equals(getDestinationServicePointId.get())) {
+    if (!DCB_SERVICE_POINT_ID.equals(getDestinationServicePointId.get())) {
       replaceIfExists(getDestinationServicePointId, setDestinationServicePointId,
         location.getPrimaryServicePoint().toString());
 
