@@ -36,6 +36,8 @@ import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.ItemEffectiveCallNumberComponents;
 import org.folio.circulationbff.domain.dto.ItemStatus;
 import org.folio.circulationbff.domain.dto.Items;
+import org.folio.circulationbff.domain.dto.LoanType;
+import org.folio.circulationbff.domain.dto.LoanTypes;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.Locations;
 import org.folio.circulationbff.domain.dto.MaterialType;
@@ -67,8 +69,11 @@ class SearchInstancesApiTest extends BaseIT {
   private static final String LOCATIONS_URL = "/locations";
   private static final String SERVICE_POINTS_URL = "/service-points";
   private static final String MATERIAL_TYPES_URL = "/material-types";
+  private static final String LOAN_TYPES_URL = "/loan-types";
 
   private static final String INSTANCE_STORAGE_URL = "/instance-storage/instances";
+  private static final String PERMANENT_LOAN_TYPE_ID = "22fa71d319-997b-4a60-8cfd-20fdf57efa14";
+  private static final String TEMPORARY_LOAN_TYPE_ID = "2286d4aed0-c76b-4907-983f-1327dfb4b12d";
   @Mock private SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Test
@@ -239,6 +244,17 @@ class SearchInstancesApiTest extends BaseIT {
     createStubForGetByIds(MATERIAL_TYPES_URL, TENANT_ID_CONSORTIUM, mockGetMaterialTypesFromConsortiumResponse);
     createStubForGetByIds(MATERIAL_TYPES_URL, TENANT_ID_COLLEGE, mockGetMaterialTypesFromCollegeResponse);
 
+    // mock loan types
+
+    LoanTypes mockLoanTypeResponse = new LoanTypes()
+      .loantypes(List.of(
+        new LoanType().id(PERMANENT_LOAN_TYPE_ID).name("permanent loan type"),
+        new LoanType().id(TEMPORARY_LOAN_TYPE_ID).name("temporary loan type")))
+      .totalRecords(2);
+
+    createStubForGetByIds(LOAN_TYPES_URL, TENANT_ID_COLLEGE, mockLoanTypeResponse);
+    createStubForGetByIds(LOAN_TYPES_URL, TENANT_ID_CONSORTIUM, mockLoanTypeResponse);
+
     mockMvc.perform(
       get(SEARCH_INSTANCES_URL)
         .queryParam("query", "id==" + instanceId)
@@ -256,6 +272,8 @@ class SearchInstancesApiTest extends BaseIT {
       .andExpect(jsonPath("$.items", hasSize(90)))
       .andExpect(jsonPath("$.items[?(@.tenantId == 'consortium')]", hasSize(MAX_IDS_PER_QUERY)))
       .andExpect(jsonPath("$.items[?(@.tenantId == 'college')]", hasSize(10)))
+      .andExpect(jsonPath("$.items[0].permanentLoanType.name", is("permanent loan type")))
+      .andExpect(jsonPath("$.items[0].temporaryLoanType.name", is("temporary loan type")))
       .andExpect(jsonPath("$.editions", containsInAnyOrder("1st", "2st")));
   }
 
@@ -358,7 +376,9 @@ class SearchInstancesApiTest extends BaseIT {
         .prefix(searchItem.getEffectiveCallNumberComponents().getPrefix())
         .suffix(searchItem.getEffectiveCallNumberComponents().getSuffix()))
       .effectiveLocationId(randomId())
-      .materialTypeId(randomId());
+      .materialTypeId(randomId())
+      .permanentLoanTypeId(PERMANENT_LOAN_TYPE_ID)
+      .temporaryLoanTypeId(TEMPORARY_LOAN_TYPE_ID);
   }
 
   private static List<HoldingsRecord> buildHoldingsRecords(Collection<Item> items) {

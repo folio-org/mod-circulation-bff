@@ -49,12 +49,35 @@ properties:
   barcode:
     description: "The barcode of the item"
     type: string
-  location:
+  effectiveLocation:
     description: "The effective location of the item"
     type: object
     properties:
+      id:
+        description: "Effective location ID"
+        type: string
       name:
         description: "The name of the location"
+        type: string
+  permanentLoanType:
+    description: "The permanent loan type, is the default loan type for a given item. Loan types are tenant-defined"
+    type: object
+    properties:
+      id:
+        description: "Permanent loan type ID, refers to a loan type reference record"
+        type: string
+      name:
+        description: "The name of permanent loan type"
+        type: string
+  temporaryLoanType:
+    description: "Temporary loan type, is the temporary loan type for a given item"
+    type: object
+    properties:
+      id:
+        description: "Temporary loan type Id, refers to a loan type reference record"
+        type: string
+      name:
+        description: "The name of temporary loan type"
         type: string
   status:
     description: "Overall status of the item"
