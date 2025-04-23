@@ -10,7 +10,7 @@
     <groupId>org.folio</groupId>
     <artifactId>mod-circulation-bff</artifactId>
     <name>mod-circulation-bff</name>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.1</version>
     <description>FOLIO mod-circulation-bff module</description>
     <packaging>jar</packaging>
 
@@ -310,7 +310,7 @@
         <url>https://github.com/folio-org/${project.artifactId}</url>
         <connection>scm:git:git://github.com/folio-org/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:folio-org/${project.artifactId}.git</developerConnection>
-        <tag>v1.1.0</tag>
+        <tag>v1.1.1</tag>
     </scm>
 
 </project>
