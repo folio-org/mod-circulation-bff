@@ -1,3 +1,8 @@
+## 1.1.1 2025-04-23
+
+* Add `Location` and `LoanType` fields for `circulation-bff/requests/search-instances` endpoint (MCBFF-87)
+* Populate the CN with the Holdings record CN if item's CN is empty (MCBFF-75)
+
 ## 1.1.0 2025-03-13
 
 * Proxy check out based on condition (MCBFF-69)
