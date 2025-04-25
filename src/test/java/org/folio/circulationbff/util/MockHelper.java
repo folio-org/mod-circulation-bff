@@ -136,6 +136,7 @@ public class MockHelper {
   public AllowedServicePoints1Inner buildAllowedServicePoint(String name) {
     return new AllowedServicePoints1Inner()
       .id(randomId())
+      .discoveryDisplayName(name)
       .name(name);
   }
 
