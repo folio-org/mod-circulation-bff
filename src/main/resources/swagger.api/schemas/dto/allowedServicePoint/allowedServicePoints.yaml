@@ -11,6 +11,9 @@ items:
     name:
       description: Service point name
       type: string
+    discoveryDisplayName:
+      description: discoveryDisplayName of Service point
+      type: string
   required:
     - id
     - name
