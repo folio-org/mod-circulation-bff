@@ -47,6 +47,7 @@ class CheckInApiTest extends BaseIT {
   private static final String CIRCULATION_ITEM_URL = "/circulation-item/%s";
   private static final String HOLDING_STORAGE_URL = "/holdings-storage/holdings/%s";
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
+  private static final String DCB_SERVICE_POINT_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
   private static final String INSTANCE_ID = "4bd52525-b922-4b20-9b3b-caf7b2d1866f";
 
   @Test
@@ -428,10 +429,10 @@ class CheckInApiTest extends BaseIT {
             "id": "%s",
             "instanceId": "%s",
             "holdingsRecordId": "DCB",
-            "inTransitDestinationServicePointId": "DCB",
+            "inTransitDestinationServicePointId": "%s",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "DCB",
-              "inTransitDestinationServicePointName": "DCB SP name"
+              "inTransitDestinationServicePointId": "%s",
+              "inTransitDestinationServicePointName": "DCB"
             },
             "location": {
               "name": "DCB location"
@@ -444,7 +445,7 @@ class CheckInApiTest extends BaseIT {
             }
           }
         }
-        """, itemId, instanceId);
+        """, itemId, instanceId, DCB_SERVICE_POINT_ID, DCB_SERVICE_POINT_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
@@ -463,10 +464,10 @@ class CheckInApiTest extends BaseIT {
         "loan": {
           "id": "%s",
           "item": {
-            "inTransitDestinationServicePointId": "DCB",
+            "inTransitDestinationServicePointId": "%s",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "DCB",
-              "inTransitDestinationServicePointName": "DCB SP name"
+              "inTransitDestinationServicePointId": "%s",
+              "inTransitDestinationServicePointName": "DCB"
             },
             "location": {
               "name": "DCB"
@@ -482,7 +483,7 @@ class CheckInApiTest extends BaseIT {
           }
         }
       }
-      """, itemId, instanceId, randomId(), INSTANCE_ID);
+      """, itemId, instanceId, randomId(), DCB_SERVICE_POINT_ID, DCB_SERVICE_POINT_ID, INSTANCE_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
