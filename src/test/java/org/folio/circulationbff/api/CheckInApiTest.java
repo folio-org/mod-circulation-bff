@@ -268,17 +268,20 @@ class CheckInApiTest extends BaseIT {
       .andExpect(jsonPath("$.staffSlipContext.item.callNumberSuffix", equalTo((cnSuffix))));
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @SneakyThrows
-  void checkInCrossTenantSuccessForDcbItemWithLoan() {
+  void checkInCrossTenantSuccessForDcbItemWithLoan(boolean isDcbServicePoint) {
     mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
     var primaryServicePointId = randomUUID();
     var primaryServicePointName = "updated service point";
+    var destinationServicePointId = isDcbServicePoint ? DCB_SERVICE_POINT_ID : primaryServicePointId;
+    var destinationServicePointName = isDcbServicePoint ? "DCB" : primaryServicePointName;
     var holdingRecordId = randomId();
-    givenCirculationCheckInWithLoanSucceed(request, itemId, DCB_INSTANCE_ID);
+    givenCirculationCheckInWithLoanSucceed(request, itemId, DCB_INSTANCE_ID, destinationServicePointId.toString(), destinationServicePointName);
     var checkinItem = new Item()
       .id(itemId)
       .holdingsRecordId(holdingRecordId)
@@ -452,7 +455,7 @@ class CheckInApiTest extends BaseIT {
   }
 
   private void givenCirculationCheckInWithLoanSucceed(CheckInRequest request, String itemId,
-    String instanceId) {
+    String instanceId, String destinationServicePointId, String destinationServicePointName) {
 
     var checkinResponse = format("""
       {
@@ -466,8 +469,8 @@ class CheckInApiTest extends BaseIT {
           "item": {
             "inTransitDestinationServicePointId": "%s",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "%s",
-              "inTransitDestinationServicePointName": "DCB"
+              "id": "%s",
+              "name": "%s"
             },
             "location": {
               "name": "DCB"
@@ -483,7 +486,7 @@ class CheckInApiTest extends BaseIT {
           }
         }
       }
-      """, itemId, instanceId, randomId(), DCB_SERVICE_POINT_ID, DCB_SERVICE_POINT_ID, INSTANCE_ID);
+      """, itemId, instanceId, randomId(), destinationServicePointId, destinationServicePointId, destinationServicePointName, INSTANCE_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
