@@ -46,6 +46,7 @@ public class CheckInServiceImpl implements CheckInService {
   private final InventoryService inventoryService;
   private final SystemUserScopedExecutionService executionService;
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
+  private static final String DCB_SERVICE_POINT_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
@@ -272,17 +273,10 @@ public class CheckInServiceImpl implements CheckInService {
       return;
     }
 
-    replaceIfExists(checkInItem::getInTransitDestinationServicePointId,
+    handleInTransitDestinationServicePoint(checkInItem::getInTransitDestinationServicePointId,
       checkInItem::setInTransitDestinationServicePointId,
-      location.getPrimaryServicePoint().toString());
-
-    if (primaryServicePoint != null) {
-      replaceIfExists(checkInItem::getInTransitDestinationServicePoint,
-        checkInItem::inTransitDestinationServicePoint,
-        new CheckInResponseItemInTransitDestinationServicePoint()
-          .id(primaryServicePoint.getId())
-          .name(primaryServicePoint.getName()));
-    }
+      checkInItem::getInTransitDestinationServicePoint,
+      checkInItem::inTransitDestinationServicePoint, primaryServicePoint, location);
 
     replaceIfExists(checkInItem::getLocation,
       checkInItem.getLocation() == null ? null : checkInItem.getLocation()::setName,
@@ -302,21 +296,15 @@ public class CheckInServiceImpl implements CheckInService {
       log.info("rebuildCheckInLoan:: loan in checkInResponse not found");
       return;
     }
+
     var loanItem = checkInLoan.getItem();
     if (loanItem != null) {
       log.info("rebuildCheckInLoan:: checkInLoanItem is present");
 
-      replaceIfExists(loanItem::getInTransitDestinationServicePointId,
+      handleInTransitDestinationServicePoint(loanItem::getInTransitDestinationServicePointId,
         loanItem::setInTransitDestinationServicePointId,
-        location.getPrimaryServicePoint().toString());
-
-      if (primaryServicePoint != null) {
-        replaceIfExists(loanItem::getInTransitDestinationServicePoint,
-          loanItem::inTransitDestinationServicePoint,
-          new CheckInResponseItemInTransitDestinationServicePoint()
-            .id(primaryServicePoint.getId())
-            .name(primaryServicePoint.getName()));
-      }
+        loanItem::getInTransitDestinationServicePoint,
+        loanItem::inTransitDestinationServicePoint, primaryServicePoint, location);
 
       replaceIfExists(loanItem::getLocation,
         loanItem.getLocation() == null ? null : loanItem.getLocation()::setName,
@@ -327,6 +315,25 @@ public class CheckInServiceImpl implements CheckInService {
     }
 
     log.info("rebuildCheckInLoan:: checkInLoan {} has been successfully built", checkInLoan::getId);
+  }
+
+  private void handleInTransitDestinationServicePoint(Supplier<String> getDestinationServicePointId,
+    Consumer<String> setDestinationServicePointId,
+    Supplier<CheckInResponseItemInTransitDestinationServicePoint> getDestinationServicePoint,
+    Consumer<CheckInResponseItemInTransitDestinationServicePoint> setDestinationServicePoint,
+    ServicePoint primaryServicePoint, Location location) {
+
+    if (DCB_SERVICE_POINT_ID.equals(getDestinationServicePointId.get())) {
+      replaceIfExists(getDestinationServicePointId, setDestinationServicePointId,
+        location.getPrimaryServicePoint().toString());
+
+      if (primaryServicePoint != null) {
+        replaceIfExists(getDestinationServicePoint, setDestinationServicePoint,
+          new CheckInResponseItemInTransitDestinationServicePoint()
+            .id(primaryServicePoint.getId())
+            .name(primaryServicePoint.getName()));
+      }
+    }
   }
 
   private static String formatContributorNames(List<Contributor> contributors) {
