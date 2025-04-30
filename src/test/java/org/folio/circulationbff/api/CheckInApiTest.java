@@ -271,15 +271,15 @@ class CheckInApiTest extends BaseIT {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   @SneakyThrows
-  void checkInCrossTenantSuccessForDcbItemWithLoan(boolean isDcbServicePoint) {
+  void checkInCrossTenantSuccessForDcbItemWithLoan(boolean isDestinationServicePointDcb) {
     mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
     var primaryServicePointId = randomUUID();
     var primaryServicePointName = "updated service point";
-    var destinationServicePointId = isDcbServicePoint ? DCB_SERVICE_POINT_ID : primaryServicePointId;
-    var destinationServicePointName = isDcbServicePoint ? "DCB" : primaryServicePointName;
+    var destinationServicePointId = isDestinationServicePointDcb ? DCB_SERVICE_POINT_ID : primaryServicePointId;
+    var destinationServicePointName = isDestinationServicePointDcb ? "DCB" : primaryServicePointName;
     var holdingRecordId = randomId();
     givenCirculationCheckInWithLoanSucceed(request, itemId, DCB_INSTANCE_ID, destinationServicePointId.toString(), destinationServicePointName);
     var checkinItem = new Item()
