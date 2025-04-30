@@ -58,6 +58,7 @@ class CheckInApiTest extends BaseIT {
   private static final String LOAN_STORAGE_URL = "/loan-storage/loans";
 
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
+  private static final String DCB_SERVICE_POINT_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
   private static final String INSTANCE_ID = "4bd52525-b922-4b20-9b3b-caf7b2d1866f";
 
   private static final String FIND_OPEN_LOAN_QUERY_TEMPLATE = "itemId==\"%s\" and (status.name==\"Open\")";
@@ -280,17 +281,20 @@ class CheckInApiTest extends BaseIT {
       .andExpect(jsonPath("$.staffSlipContext.item.callNumberSuffix", equalTo((cnSuffix))));
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @SneakyThrows
-  void checkInCrossTenantSuccessForDcbItemWithLoan() {
+  void checkInCrossTenantSuccessForDcbItemWithLoan(boolean isDestinationServicePointDcb) {
     mockHelper.mockEcsTlrSettings(true);
     var request = buildCheckInRequest();
     var effectiveLocationId = randomId();
     var itemId = randomId();
     var primaryServicePointId = randomUUID();
     var primaryServicePointName = "updated service point";
+    var destinationServicePointId = isDestinationServicePointDcb ? DCB_SERVICE_POINT_ID : primaryServicePointId;
+    var destinationServicePointName = isDestinationServicePointDcb ? "DCB" : primaryServicePointName;
     var holdingRecordId = randomId();
-    givenCirculationCheckInWithLoanSucceed(request, itemId, DCB_INSTANCE_ID);
+    givenCirculationCheckInWithLoanSucceed(request, itemId, DCB_INSTANCE_ID, destinationServicePointId.toString(), destinationServicePointName);
     var checkinItem = new Item()
       .id(itemId)
       .holdingsRecordId(holdingRecordId)
@@ -445,10 +449,10 @@ class CheckInApiTest extends BaseIT {
             "id": "%s",
             "instanceId": "%s",
             "holdingsRecordId": "DCB",
-            "inTransitDestinationServicePointId": "DCB",
+            "inTransitDestinationServicePointId": "%s",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "DCB",
-              "inTransitDestinationServicePointName": "DCB SP name"
+              "inTransitDestinationServicePointId": "%s",
+              "inTransitDestinationServicePointName": "DCB"
             },
             "location": {
               "name": "DCB location"
@@ -461,14 +465,14 @@ class CheckInApiTest extends BaseIT {
             }
           }
         }
-        """, itemId, instanceId);
+        """, itemId, instanceId, DCB_SERVICE_POINT_ID, DCB_SERVICE_POINT_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
   }
 
   private void givenCirculationCheckInWithLoanSucceed(CheckInRequest request, String itemId,
-    String instanceId) {
+    String instanceId, String destinationServicePointId, String destinationServicePointName) {
 
     var checkinResponse = format("""
       {
@@ -480,10 +484,10 @@ class CheckInApiTest extends BaseIT {
         "loan": {
           "id": "%s",
           "item": {
-            "inTransitDestinationServicePointId": "DCB",
+            "inTransitDestinationServicePointId": "%s",
             "inTransitDestinationServicePoint": {
-              "inTransitDestinationServicePointId": "DCB",
-              "inTransitDestinationServicePointName": "DCB SP name"
+              "id": "%s",
+              "name": "%s"
             },
             "location": {
               "name": "DCB"
@@ -499,7 +503,7 @@ class CheckInApiTest extends BaseIT {
           }
         }
       }
-      """, itemId, instanceId, randomId(), INSTANCE_ID);
+      """, itemId, instanceId, randomId(), destinationServicePointId, destinationServicePointId, destinationServicePointName, INSTANCE_ID);
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
