@@ -61,7 +61,7 @@ public class CheckInServiceImpl implements CheckInService {
       if (item != null) {
         CirculationItem circulationItem = findCirculationItem(item);
         if (circulationItem == null) {
-          response = doCheckIn(request, item.getTenantId());
+          response = doRemoteCheckIn(request, item.getTenantId());
         } else if (circulationItemIsInStatus(circulationItem, CHECKED_OUT)) {
           closeLoanInSecureTenant(request, circulationItem);
         }
@@ -130,7 +130,7 @@ public class CheckInServiceImpl implements CheckInService {
     return circulationItem.orElse(null);
   }
 
-  private CheckInResponse doCheckIn(CheckInRequest request, String tenantId) {
+  private CheckInResponse doRemoteCheckIn(CheckInRequest request, String tenantId) {
     return executionService.executeSystemUserScoped(tenantId,
       () -> doCheckIn(request));
   }
