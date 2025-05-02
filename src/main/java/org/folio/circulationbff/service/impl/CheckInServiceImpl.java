@@ -1,8 +1,10 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.util.stream.Collectors.joining;
+import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CHECKED_OUT;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -14,14 +16,18 @@ import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
 import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
+import org.folio.circulationbff.domain.dto.CirculationItem;
+import org.folio.circulationbff.domain.dto.CirculationItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Loan;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.service.CheckInService;
+import org.folio.circulationbff.service.CirculationStorageService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.SettingsService;
@@ -44,28 +50,44 @@ public class CheckInServiceImpl implements CheckInService {
   private final TenantService tenantService;
   private final SearchService searchService;
   private final InventoryService inventoryService;
+  private final CirculationStorageService circulationStorageService;
   private final SystemUserScopedExecutionService executionService;
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
+    CheckInResponse response = null;
+    if (isCurrentTenantCentral()) {
+      SearchItem item = findItem(request);
+      if (item != null) {
+        CirculationItem circulationItem = findCirculationItem(item);
+        if (circulationItem == null) {
+          response = doCheckIn(request, item.getTenantId());
+        } else if (circulationItemStatusIs(circulationItem, CHECKED_OUT)) {
+          closeLoanInSecureTenant(request, circulationItem);
+        }
+      }
+    }
 
-    String tenantId = determineTenantForCheckIn(request);
-
-    var response = tenantId == null
-      ? checkInLocally(request)
-      : checkInRemotely(request, tenantId);
+    if (response == null) {
+      response = doCheckIn(request);
+    }
 
     processCheckInResponse(response);
-
     return response;
+  }
+
+  private void closeLoanInSecureTenant(CheckInRequest request, CirculationItem circItem) {
+    tenantService.getSecureTenantId()
+      .ifPresent(secureTenantId -> fetchOpenLoan(circItem.getId().toString(), secureTenantId)
+        .ifPresent(loan -> doCheckIn(request, secureTenantId)));
   }
 
   /**
    * @return Tenant ID to proxy check in operation to; null means local check in.
    */
   private String determineTenantForCheckIn(CheckInRequest request) {
-    if (!settingsService.isEcsTlrFeatureEnabled() || !tenantService.isCurrentTenantCentral()) {
+    if (isCurrentTenantCentral()) {
       log.info("determineTenantForCheckIn:: ECS request feature is disabled or tenant is not " +
         "central, local check in");
       return null;
@@ -118,16 +140,60 @@ public class CheckInServiceImpl implements CheckInService {
     }
   }
 
-  private CheckInResponse checkInLocally(CheckInRequest request) {
-    log.info("checkInLocally:: item barcode {}", request.getItemBarcode());
-    return checkInClient.checkIn(request);
+  private SearchItem findItem(CheckInRequest request) {
+    if (request == null) {
+      log.info("findItem:: check in request is null");
+      return null;
+    }
+
+    var itemBarcode = request.getItemBarcode();
+    if (itemBarcode == null) {
+      log.info("findItem:: itemBarcode is null");
+      return null;
+    }
+
+    log.info("findItem:: searching for instance by item barcode {}", itemBarcode);
+
+    // TODO: Duplication - search endpoint called twice
+    var searchInstanceOptional = searchService.findInstanceByItemBarcode(itemBarcode);
+    if (searchInstanceOptional.isEmpty()) {
+      log.info("findItem:: failed to find an instance by item barcode {}",
+        itemBarcode);
+      return null;
+    }
+    var searchInstance = searchInstanceOptional.get();
+
+    log.info("findItem:: found instance {}", searchInstance::getId);
+
+    var searchItem = getItemFromSearchInstanceByBarcode(searchInstance, itemBarcode);
+    if (searchItem == null) {
+      log.info("findItem:: failed to find an item by item barcode {}",
+        itemBarcode);
+      return null;
+    }
+
+    log.info("findItem:: found item {} by barcode {} in the instance {}",
+      searchItem::getId, () -> itemBarcode, searchInstance::getId);
+    return searchItem;
   }
 
-  private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {
-    log.info("checkIn:: proxying to a remote tenant {}", tenantId);
+  private CirculationItem findCirculationItem(SearchItem searchItem) {
+    String itemId = searchItem.getId();
+    log.info("findCirculationItem:: fetching circulation item {}", itemId);
+    Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
+    log.info("findCirculationItem:: circulation item {} exists: {}", itemId, circulationItem.isPresent());
 
+    return circulationItem.orElse(null);
+  }
+
+  private CheckInResponse doCheckIn(CheckInRequest request, String tenantId) {
     return executionService.executeSystemUserScoped(tenantId,
-      () -> checkInClient.checkIn(request));
+      () -> doCheckIn(request));
+  }
+
+  private CheckInResponse doCheckIn(CheckInRequest request) {
+    log.info("doCheckIn:: checking in item with barcode {}", request::getItemBarcode);
+    return checkInClient.checkIn(request);
   }
 
   private SearchItem getItemFromSearchInstanceByBarcode(SearchInstance searchInstance,
@@ -430,5 +496,28 @@ public class CheckInServiceImpl implements CheckInService {
     if (nonNullCheckGetter.get() != null) {
       setter.accept(value);
     }
+  }
+
+  private boolean isCurrentTenantCentral() {
+    boolean isEcsTlrFeatureEnabled = settingsService.isEcsTlrFeatureEnabled();
+    boolean isCurrentTenantCentral = tenantService.isCurrentTenantCentral();
+    log.info("isCurrentTenantCentral:: isEcsTlrFeatureEnabled={}, isCurrentTenantCentral={}",
+      isEcsTlrFeatureEnabled, isCurrentTenantCentral);
+    return isEcsTlrFeatureEnabled && isCurrentTenantCentral;
+  }
+
+  private Optional<Loan> fetchOpenLoan(String itemId, String tenantId) {
+    return executionService.executeSystemUserScoped(tenantId,
+      () -> circulationStorageService.findOpenLoan(itemId));
+  }
+
+  private static boolean circulationItemStatusIs(CirculationItem circulationItem,
+    CirculationItemStatus.NameEnum expectedStatus) {
+
+    return Optional.ofNullable(circulationItem)
+      .map(CirculationItem::getStatus)
+      .map(CirculationItemStatus::getName)
+      .map(actualStatus -> expectedStatus == actualStatus)
+      .orElse(false);
   }
 }
