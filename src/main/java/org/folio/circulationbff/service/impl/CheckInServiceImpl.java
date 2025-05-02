@@ -21,7 +21,6 @@ import org.folio.circulationbff.domain.dto.CirculationItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.Item;
-import org.folio.circulationbff.domain.dto.Loan;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -63,7 +62,7 @@ public class CheckInServiceImpl implements CheckInService {
         CirculationItem circulationItem = findCirculationItem(item);
         if (circulationItem == null) {
           response = doCheckIn(request, item.getTenantId());
-        } else if (circulationItemStatusIs(circulationItem, CHECKED_OUT)) {
+        } else if (circulationItemIsInStatus(circulationItem, CHECKED_OUT)) {
           closeLoanInSecureTenant(request, circulationItem);
         }
       }
@@ -78,66 +77,11 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private void closeLoanInSecureTenant(CheckInRequest request, CirculationItem circItem) {
-    tenantService.getSecureTenantId()
-      .ifPresent(secureTenantId -> fetchOpenLoan(circItem.getId().toString(), secureTenantId)
-        .ifPresent(loan -> doCheckIn(request, secureTenantId)));
-  }
-
-  /**
-   * @return Tenant ID to proxy check in operation to; null means local check in.
-   */
-  private String determineTenantForCheckIn(CheckInRequest request) {
-    if (isCurrentTenantCentral()) {
-      log.info("determineTenantForCheckIn:: ECS request feature is disabled or tenant is not " +
-        "central, local check in");
-      return null;
-    }
-
-    // Now we need to determine whether the item is real or circulation item
-    if (request == null) {
-      log.info("determineTenantForCheckIn:: check in request is null");
-      return null;
-    }
-
-    var itemBarcode = request.getItemBarcode();
-    if (itemBarcode == null) {
-      log.info("determineTenantForCheckIn:: itemBarcode is null");
-      return null;
-    }
-
-    log.info("determineTenantForCheckIn:: searching for instance by item barcode {}", itemBarcode);
-
-    // TODO: Duplication - search endpoint called twice
-    var searchInstanceOptional = searchService.findInstanceByItemBarcode(itemBarcode);
-    if (searchInstanceOptional.isEmpty()) {
-      log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}",
-        itemBarcode);
-      return null;
-    }
-    var searchInstance = searchInstanceOptional.get();
-
-    log.info("determineTenantForCheckIn:: found instance {}", searchInstance::getId);
-
-    var searchItem = getItemFromSearchInstanceByBarcode(searchInstance, itemBarcode);
-    if (searchItem == null) {
-      log.info("determineTenantForCheckIn:: failed to find an item by item barcode {}",
-        itemBarcode);
-      return null;
-    }
-
-    log.info("determineTenantForCheckIn:: found item {} by barcode {} in the instance {}",
-      searchItem::getId, () -> itemBarcode, searchInstance::getId);
-
-    var circulationItem = circulationItemClient.getCirculationItem(searchItem.getId());
-    if (circulationItem.isEmpty()) {
-      log.info("determineTenantForCheckIn:: failed to find circulation item by ID {}, " +
-          "proxying to the tenant {}", searchItem::getId, searchItem::getTenantId);
-      return searchItem.getTenantId();
-    } else {
-      log.info("determineTenantForCheckIn:: found circulation item by ID {}, local check in",
-        searchItem.getId());
-      return null;
-    }
+    log.info("closeLoanInSecureTenant:: attempting to close loan in secure tenant");
+    String secureTenantId = tenantService.getSecureTenantId().orElseThrow();
+    executionService.executeSystemUserScoped(secureTenantId,
+      () -> circulationStorageService.findOpenLoan(circItem.getId().toString())
+        .map(ignored -> doCheckIn(request)));
   }
 
   private SearchItem findItem(CheckInRequest request) {
@@ -506,18 +450,19 @@ public class CheckInServiceImpl implements CheckInService {
     return isEcsTlrFeatureEnabled && isCurrentTenantCentral;
   }
 
-  private Optional<Loan> fetchOpenLoan(String itemId, String tenantId) {
-    return executionService.executeSystemUserScoped(tenantId,
-      () -> circulationStorageService.findOpenLoan(itemId));
-  }
-
-  private static boolean circulationItemStatusIs(CirculationItem circulationItem,
+  private static boolean circulationItemIsInStatus(CirculationItem circulationItem,
     CirculationItemStatus.NameEnum expectedStatus) {
 
-    return Optional.ofNullable(circulationItem)
+    log.info("circulationItemIsInStatus:: checking if circulation item {} is in status {}",
+      circulationItem::getId, expectedStatus::getValue);
+
+    boolean result = Optional.of(circulationItem)
       .map(CirculationItem::getStatus)
       .map(CirculationItemStatus::getName)
       .map(actualStatus -> expectedStatus == actualStatus)
       .orElse(false);
+
+    log.debug("circulationItemIsInStatus:: result: {}", result);
+    return result;
   }
 }
