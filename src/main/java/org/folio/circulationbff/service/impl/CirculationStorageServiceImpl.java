@@ -24,7 +24,7 @@ public class CirculationStorageServiceImpl implements CirculationStorageService 
   public Collection<Loan> findLoans(CqlQuery query, int limit) {
     log.info("findLoans:: fetching loans by query: {}", query);
     Collection<Loan> loans = loanStorageClient.getByQuery(query, limit)
-        .getLoans();
+      .getLoans();
     log.info("findLoans:: found {} loans", loans.size());
     return loans;
   }
