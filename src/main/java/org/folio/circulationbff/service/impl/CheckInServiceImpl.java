@@ -60,11 +60,12 @@ public class CheckInServiceImpl implements CheckInService {
     if (isCurrentTenantCentral()) {
       SearchItem item = findItem(request);
       if (item != null) {
-        CirculationItem circulationItem = findCirculationItem(item);
-        if (circulationItem == null) {
-          response = doRemoteCheckIn(request, item.getTenantId());
-        } else if (circulationItemIsInStatus(circulationItem, CHECKED_OUT)) {
-          closeLoanInSecureTenant(request, circulationItem);
+        CirculationItem circItem = findCirculationItem(item.getId());
+        String secureTenantId = tenantService.getSecureTenantId().orElse(null);
+        if (circItem == null) {
+          response = checkInRemotely(request, item.getTenantId());
+        } else if (shouldCloseLoanInSecureTenant(circItem, secureTenantId)) {
+          response = checkInRemotely(request, secureTenantId);
         }
       }
     }
@@ -77,12 +78,15 @@ public class CheckInServiceImpl implements CheckInService {
     return response;
   }
 
-  private void closeLoanInSecureTenant(CheckInRequest request, CirculationItem circItem) {
-    log.info("closeLoanInSecureTenant:: attempting to close loan in secure tenant");
-    String secureTenantId = tenantService.getSecureTenantId().orElseThrow();
-    executionService.executeSystemUserScoped(secureTenantId,
-      () -> circulationStorageService.findOpenLoan(circItem.getId().toString())
-        .map(ignored -> doCheckIn(request)));
+  private boolean shouldCloseLoanInSecureTenant(CirculationItem circItem, String secureTenantId) {
+    return secureTenantId != null && circulationItemIsInStatus(circItem, CHECKED_OUT) &&
+        openLoanExists(circItem.getId().toString(), secureTenantId);
+  }
+
+  private boolean openLoanExists(String itemId, String tenantId) {
+    return executionService.executeSystemUserScoped(tenantId,
+        () -> circulationStorageService.findOpenLoan(itemId))
+      .isPresent();
   }
 
   private SearchItem findItem(CheckInRequest request) {
@@ -122,18 +126,17 @@ public class CheckInServiceImpl implements CheckInService {
     return searchItem;
   }
 
-  private CirculationItem findCirculationItem(SearchItem searchItem) {
-    String itemId = searchItem.getId();
+  private CirculationItem findCirculationItem(String itemId) {
     log.info("findCirculationItem:: fetching circulation item {}", itemId);
     Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
-    log.info("findCirculationItem:: circulation item {} exists: {}", itemId, circulationItem.isPresent());
+    log.info("findCirculationItem:: circulation item {} found: {}", itemId, circulationItem.isPresent());
 
     return circulationItem.orElse(null);
   }
 
-  private CheckInResponse doRemoteCheckIn(CheckInRequest request, String tenantId) {
-    return executionService.executeSystemUserScoped(tenantId,
-      () -> doCheckIn(request));
+  private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {
+    log.info("checkInRemotely:: checking in item {} in tenant '{}'", request.getItemBarcode(), tenantId);
+    return executionService.executeSystemUserScoped(tenantId, () -> doCheckIn(request));
   }
 
   private CheckInResponse doCheckIn(CheckInRequest request) {
@@ -469,7 +472,7 @@ public class CheckInServiceImpl implements CheckInService {
       .map(actualStatus -> expectedStatus == actualStatus)
       .orElse(false);
 
-    log.debug("circulationItemIsInStatus:: result: {}", result);
+    log.info("circulationItemIsInStatus:: result: {}", result);
     return result;
   }
 }

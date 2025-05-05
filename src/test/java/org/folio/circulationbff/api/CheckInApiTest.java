@@ -649,7 +649,7 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void checkInOfLocalCirculationItemInStatusCheckedOutAlsoClosesLoanInSecureTenant() {
+  void centralTenantCheckInClosesOpenLoanInSecureTenant() {
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var itemId = randomId();
@@ -683,10 +683,9 @@ class CheckInApiTest extends BaseIT {
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE)));
 
-    // One local check-in (Central tenant)
-    wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
-      .withRequestBody(equalToJson(asJsonString(checkInRequest))));
+    // No local check-ins in central tenant
+    wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
 
     // One check-in in secure tenant
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
@@ -696,7 +695,7 @@ class CheckInApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void checkInOfLocalCirculationItemInStatusCheckedOut() {
+  void centralTenantCheckInClosesLocalLoanWhenNoOpenLoanExistsInSecureTenant() {
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var itemId = randomId();
@@ -724,7 +723,7 @@ class CheckInApiTest extends BaseIT {
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE)));
 
-    // One local check-in (Central tenant)
+    // One local check-in in central tenant
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
