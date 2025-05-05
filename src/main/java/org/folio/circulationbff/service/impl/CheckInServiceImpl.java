@@ -1,8 +1,10 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.util.stream.Collectors.joining;
+import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CHECKED_OUT;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -14,6 +16,8 @@ import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
 import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
+import org.folio.circulationbff.domain.dto.CirculationItem;
+import org.folio.circulationbff.domain.dto.CirculationItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.Item;
@@ -22,6 +26,7 @@ import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.service.CheckInService;
+import org.folio.circulationbff.service.CirculationStorageService;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.SettingsService;
@@ -44,91 +49,99 @@ public class CheckInServiceImpl implements CheckInService {
   private final TenantService tenantService;
   private final SearchService searchService;
   private final InventoryService inventoryService;
+  private final CirculationStorageService circulationStorageService;
   private final SystemUserScopedExecutionService executionService;
   private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
   private static final String DCB_SERVICE_POINT_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
+    CheckInResponse response = null;
+    if (settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral()) {
+      SearchItem item = findItem(request);
+      if (item != null) {
+        CirculationItem circItem = findCirculationItem(item.getId());
+        String secureTenantId = tenantService.getSecureTenantId().orElse(null);
+        if (circItem == null) {
+          response = checkInRemotely(request, item.getTenantId());
+        } else if (shouldCloseLoanInSecureTenant(circItem, secureTenantId)) {
+          response = checkInRemotely(request, secureTenantId);
+        }
+      }
+    }
 
-    String tenantId = determineTenantForCheckIn(request);
-
-    var response = tenantId == null
-      ? checkInLocally(request)
-      : checkInRemotely(request, tenantId);
+    if (response == null) {
+      response = doCheckIn(request);
+    }
 
     processCheckInResponse(response);
-
     return response;
   }
 
-  /**
-   * @return Tenant ID to proxy check in operation to; null means local check in.
-   */
-  private String determineTenantForCheckIn(CheckInRequest request) {
-    if (!settingsService.isEcsTlrFeatureEnabled() || !tenantService.isCurrentTenantCentral()) {
-      log.info("determineTenantForCheckIn:: ECS request feature is disabled or tenant is not " +
-        "central, local check in");
-      return null;
-    }
+  private boolean shouldCloseLoanInSecureTenant(CirculationItem circItem, String secureTenantId) {
+    return secureTenantId != null && circulationItemIsInStatus(circItem, CHECKED_OUT) &&
+        openLoanExists(circItem.getId().toString(), secureTenantId);
+  }
 
-    // Now we need to determine whether the item is real or circulation item
+  private boolean openLoanExists(String itemId, String tenantId) {
+    return executionService.executeSystemUserScoped(tenantId,
+        () -> circulationStorageService.findOpenLoan(itemId))
+      .isPresent();
+  }
+
+  private SearchItem findItem(CheckInRequest request) {
     if (request == null) {
-      log.info("determineTenantForCheckIn:: check in request is null");
+      log.info("findItem:: check in request is null");
       return null;
     }
 
     var itemBarcode = request.getItemBarcode();
     if (itemBarcode == null) {
-      log.info("determineTenantForCheckIn:: itemBarcode is null");
+      log.info("findItem:: itemBarcode is null");
       return null;
     }
 
-    log.info("determineTenantForCheckIn:: searching for instance by item barcode {}", itemBarcode);
+    log.info("findItem:: searching for instance by item barcode {}", itemBarcode);
 
     // TODO: Duplication - search endpoint called twice
     var searchInstanceOptional = searchService.findInstanceByItemBarcode(itemBarcode);
     if (searchInstanceOptional.isEmpty()) {
-      log.info("determineTenantForCheckIn:: failed to find an instance by item barcode {}",
+      log.info("findItem:: failed to find an instance by item barcode {}",
         itemBarcode);
       return null;
     }
     var searchInstance = searchInstanceOptional.get();
 
-    log.info("determineTenantForCheckIn:: found instance {}", searchInstance::getId);
+    log.info("findItem:: found instance {}", searchInstance::getId);
 
     var searchItem = getItemFromSearchInstanceByBarcode(searchInstance, itemBarcode);
     if (searchItem == null) {
-      log.info("determineTenantForCheckIn:: failed to find an item by item barcode {}",
+      log.info("findItem:: failed to find an item by item barcode {}",
         itemBarcode);
       return null;
     }
 
-    log.info("determineTenantForCheckIn:: found item {} by barcode {} in the instance {}",
+    log.info("findItem:: found item {} by barcode {} in the instance {}",
       searchItem::getId, () -> itemBarcode, searchInstance::getId);
-
-    var circulationItem = circulationItemClient.getCirculationItem(searchItem.getId());
-    if (circulationItem.isEmpty()) {
-      log.info("determineTenantForCheckIn:: failed to find circulation item by ID {}, " +
-          "proxying to the tenant {}", searchItem::getId, searchItem::getTenantId);
-      return searchItem.getTenantId();
-    } else {
-      log.info("determineTenantForCheckIn:: found circulation item by ID {}, local check in",
-        searchItem.getId());
-      return null;
-    }
+    return searchItem;
   }
 
-  private CheckInResponse checkInLocally(CheckInRequest request) {
-    log.info("checkInLocally:: item barcode {}", request.getItemBarcode());
-    return checkInClient.checkIn(request);
+  private CirculationItem findCirculationItem(String itemId) {
+    log.info("findCirculationItem:: fetching circulation item {}", itemId);
+    Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
+    log.info("findCirculationItem:: circulation item {} found: {}", itemId, circulationItem.isPresent());
+
+    return circulationItem.orElse(null);
   }
 
   private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {
-    log.info("checkIn:: proxying to a remote tenant {}", tenantId);
+    log.info("checkInRemotely:: checking in item {} in tenant '{}'", request.getItemBarcode(), tenantId);
+    return executionService.executeSystemUserScoped(tenantId, () -> doCheckIn(request));
+  }
 
-    return executionService.executeSystemUserScoped(tenantId,
-      () -> checkInClient.checkIn(request));
+  private CheckInResponse doCheckIn(CheckInRequest request) {
+    log.info("doCheckIn:: checking in item with barcode {}", request::getItemBarcode);
+    return checkInClient.checkIn(request);
   }
 
   private SearchItem getItemFromSearchInstanceByBarcode(SearchInstance searchInstance,
@@ -437,5 +450,21 @@ public class CheckInServiceImpl implements CheckInService {
     if (nonNullCheckGetter.get() != null) {
       setter.accept(value);
     }
+  }
+
+  private static boolean circulationItemIsInStatus(CirculationItem circulationItem,
+    CirculationItemStatus.NameEnum expectedStatus) {
+
+    log.info("circulationItemIsInStatus:: checking if circulation item {} is in status {}",
+      circulationItem::getId, expectedStatus::getValue);
+
+    boolean result = Optional.of(circulationItem)
+      .map(CirculationItem::getStatus)
+      .map(CirculationItemStatus::getName)
+      .map(actualStatus -> expectedStatus == actualStatus)
+      .orElse(false);
+
+    log.info("circulationItemIsInStatus:: result: {}", result);
+    return result;
   }
 }
