@@ -57,7 +57,7 @@ public class CheckInServiceImpl implements CheckInService {
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
     CheckInResponse response = null;
-    if (isCurrentTenantCentral()) {
+    if (settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral()) {
       SearchItem item = findItem(request);
       if (item != null) {
         CirculationItem circItem = findCirculationItem(item.getId());
@@ -450,14 +450,6 @@ public class CheckInServiceImpl implements CheckInService {
     if (nonNullCheckGetter.get() != null) {
       setter.accept(value);
     }
-  }
-
-  private boolean isCurrentTenantCentral() {
-    boolean isEcsTlrFeatureEnabled = settingsService.isEcsTlrFeatureEnabled();
-    boolean isCurrentTenantCentral = tenantService.isCurrentTenantCentral();
-    log.info("isCurrentTenantCentral:: isEcsTlrFeatureEnabled={}, isCurrentTenantCentral={}",
-      isEcsTlrFeatureEnabled, isCurrentTenantCentral);
-    return isEcsTlrFeatureEnabled && isCurrentTenantCentral;
   }
 
   private static boolean circulationItemIsInStatus(CirculationItem circulationItem,
