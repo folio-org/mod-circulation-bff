@@ -1,3 +1,6 @@
+## 1.0.15 2025-05-06
+* [LOC Locate requirement] Allowed Service points should return discovery display name. (MCBFF-93)
+
 ## 1.0.14 2025-03-28
 * Use holding CN in the check-in slip when item CN is missing (MCBFF-75)
 
