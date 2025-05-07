@@ -1,3 +1,8 @@
+## 1.0.16 2025-05-07
+* Add location and loan type to `search-intances` response (MCBFF-87)
+* Fix central tenant check-in for item with hold request (MCBFF-88)
+* Close loan in secure tenant upon check-in in central tenant (MCBFF-90)
+
 ## 1.0.15 2025-05-06
 * [LOC Locate requirement] Allowed Service points should return discovery display name. (MCBFF-93)
 
