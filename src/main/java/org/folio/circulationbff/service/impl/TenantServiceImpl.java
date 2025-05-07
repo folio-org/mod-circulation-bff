@@ -54,7 +54,11 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Optional<String> getSecureTenantId() {
-    return Optional.ofNullable(tenantConfig.getSecureTenantId());
+    Optional<String> secureTenantId = Optional.ofNullable(tenantConfig.getSecureTenantId());
+    if (secureTenantId.isEmpty()) {
+      log.warn("getSecureTenantId:: failed to resolve secure tenant ID");
+    }
+    return secureTenantId;
   }
 
   @Override

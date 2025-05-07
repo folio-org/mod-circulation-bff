@@ -327,6 +327,10 @@
       "version": "2.2"
     },
     {
+      "id":  "loan-types",
+      "version": "2.3"
+    },
+    {
       "id":  "circulation",
       "version": "14.4"
     },
@@ -337,6 +341,10 @@
     {
       "id":  "instance-storage",
       "version": "11.0"
+    },
+    {
+      "id":  "loan-storage",
+      "version": "7.3"
     }
   ],
   "optional": [
@@ -391,6 +399,8 @@
         "inventory-storage.material-types.collection.get",
         "inventory-storage.instances.item.get",
         "inventory-storage.instances.collection.get",
+        "inventory-storage.loan-types.collection.get",
+        "inventory-storage.loan-types.item.get",
         "consortium-search.items.collection.get",
         "consortium-search.items.item.get",
         "tlr.ecs-request-external.post",
@@ -401,6 +411,8 @@
         "inventory-storage.location-units.institutions.item.get",
         "inventory-storage.location-units.institutions.collection.get",
         "circulation.check-in-by-barcode.post",
+        "circulation-storage.loans.item.get",
+        "circulation-storage.loans.collection.get",
         "mod-settings.entries.item.get",
         "mod-settings.entries.collection.get",
         "mod-settings.global.read.circulation"

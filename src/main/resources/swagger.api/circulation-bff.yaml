@@ -48,6 +48,8 @@ components:
       $ref: 'schemas/dto/inventory/institutions.json'
     service-points:
       $ref: 'schemas/dto/inventory/servicePoints.json'
+    loan-types:
+      $ref: 'schemas/dto/inventory/loanTypes.json'
     material-types:
       $ref: 'schemas/dto/inventory/materialTypes.json'
     search-instances:
@@ -64,3 +66,5 @@ components:
       $ref: 'schemas/dto/circulationItem/circulationItem.yaml#/CirculationItem'
     consortium-item:
       $ref: 'schemas/dto/search/consortiumItem.yaml'
+    loans:
+      $ref: 'schemas/dto/circulation/loans.json'
