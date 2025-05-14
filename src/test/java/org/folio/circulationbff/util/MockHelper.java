@@ -7,7 +7,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.circulationbff.api.BaseIT.HEADER_TENANT;
-import static org.folio.circulationbff.api.BaseIT.TENANT_ID_COLLEGE;
 import static org.folio.circulationbff.api.BaseIT.TENANT_ID_CONSORTIUM;
 import static org.folio.circulationbff.api.BaseIT.asJsonString;
 import static org.folio.circulationbff.api.BaseIT.randomId;
