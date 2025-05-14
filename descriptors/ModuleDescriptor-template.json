@@ -404,6 +404,7 @@
         "consortium-search.items.collection.get",
         "consortium-search.items.item.get",
         "tlr.ecs-request-external.post",
+        "tlr.loans.check-out-by-barcode.execute",
         "inventory-storage.location-units.libraries.item.get",
         "inventory-storage.location-units.libraries.collection.get",
         "inventory-storage.location-units.campuses.item.get",

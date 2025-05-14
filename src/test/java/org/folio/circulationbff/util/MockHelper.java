@@ -50,7 +50,7 @@ public class MockHelper {
       .willReturn(jsonResponse(asJsonString(tlrSettings), SC_OK)));
   }
 
-  public void mockEcsTlrCirculationSettings(boolean enabled) {
+  public void mockEcsTlrCirculationSettings(boolean enabled, String tenantId) {
     var circulationSettingsResponse = new CirculationSettingsResponse();
     circulationSettingsResponse.setTotalRecords(1);
     circulationSettingsResponse.setCirculationSettings(List.of(
@@ -60,7 +60,7 @@ public class MockHelper {
     ));
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_SETTINGS_URL))
       .withQueryParam("query", equalTo("name=ecsTlrFeature"))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(circulationSettingsResponse),
         SC_OK)));
   }
