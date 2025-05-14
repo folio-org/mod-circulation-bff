@@ -6,7 +6,6 @@ import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -42,7 +41,7 @@ class CheckOutApiTest extends BaseIT {
     var mockResponse = buildCheckOutResponse();
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
