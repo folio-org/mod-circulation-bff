@@ -130,7 +130,7 @@ class CheckOutApiTest extends BaseIT {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(false);
 
-    CheckOutRequest request =buildCheckOutRequest();
+    CheckOutRequest request = buildCheckOutRequest();
     String responseBody = "Response status is " + responseStatus;
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
