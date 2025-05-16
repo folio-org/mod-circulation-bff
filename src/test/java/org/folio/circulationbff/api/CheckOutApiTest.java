@@ -62,7 +62,7 @@ class CheckOutApiTest extends BaseIT {
 
     String expectedUrl = enableTlr ? TLR_CHECK_OUT_URL : CIRCULATION_CHECK_OUT_URL;
     CheckOutRequest expectedForwarderCheckOutRequest = enableTlr
-      ? buildCheckOutRequest().targetTenantId(TENANT_ID_CONSORTIUM)
+      ? buildCheckOutRequest()
       : request;
 
     wireMockServer.stubFor(WireMock.post(urlMatching(expectedUrl))
@@ -102,8 +102,7 @@ class CheckOutApiTest extends BaseIT {
     mockTlrSettings(targetTenantId);
 
     CheckOutResponse mockTlrCheckOutResponse = buildCheckOutResponse();
-    CheckOutRequest expectedTlrCheckOutRequest = buildCheckOutRequest()
-      .targetTenantId(targetTenantId);
+    CheckOutRequest expectedTlrCheckOutRequest = buildCheckOutRequest();
 
     wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
       .withRequestBody(equalToJson(asJsonString(expectedTlrCheckOutRequest)))

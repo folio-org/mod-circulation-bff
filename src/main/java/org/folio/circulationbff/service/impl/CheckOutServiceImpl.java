@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.circulationbff.client.feign.CheckOutClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
+import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.service.CheckOutService;
@@ -22,6 +23,7 @@ public class CheckOutServiceImpl implements CheckOutService {
   private final CheckOutClient checkOutClient;
   private final EcsTlrClient ecsTlrClient;
   private final SystemUserScopedExecutionService systemUserService;
+  private final RequestMediatedClient requestMediatedClient;
 
   @Override
   public CheckOutResponse checkOut(CheckOutRequest request) {
@@ -29,18 +31,14 @@ public class CheckOutServiceImpl implements CheckOutService {
       request.getItemBarcode(), request.getServicePointId());
 
     if (settingsService.isEcsTlrFeatureEnabled()) {
-      String currentTenantId = tenantService.getCurrentTenantId();
-      String centralTenantId = tenantService.getCentralTenantId().orElseThrow();
-      if (currentTenantId.equals(centralTenantId)) {
-        log.info("checkOut:: doing ECS checkout for central tenant");
-        return ecsTlrClient.checkOutByBarcode(request.targetTenantId(centralTenantId));
-      } else if (tenantService.isSecureTenant(currentTenantId)) {
-        log.info("checkOut:: doing ECS checkout for secure tenant");
-        return systemUserService.executeSystemUserScoped(centralTenantId,
-          () -> ecsTlrClient.checkOutByBarcode(request.targetTenantId(currentTenantId)));
+      if (tenantService.isCurrentTenantCentral()) {
+        log.info("checkOut:: doing ECS checkout in central tenant");
+        return ecsTlrClient.checkOutByBarcode(request);
+      } else if (tenantService.isCurrentTenantSecure()) {
+        log.info("checkOut:: doing ECS checkout in secure tenant");
+        return requestMediatedClient.checkOutByBarcode(request);
       }
     }
-
     log.info("checkOut: doing regular checkout in local tenant");
     return checkOutClient.checkOut(request);
   }
