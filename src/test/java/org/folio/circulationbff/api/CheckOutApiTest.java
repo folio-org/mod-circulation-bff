@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
@@ -28,6 +29,7 @@ class CheckOutApiTest extends BaseIT {
   private static final String CHECK_OUT_URL = "/circulation-bff/loans/check-out-by-barcode";
   private static final String CIRCULATION_CHECK_OUT_URL = "/circulation/check-out-by-barcode";
   private static final String TLR_CHECK_OUT_URL = "/tlr/loans/check-out-by-barcode";
+  private static final UUID SERVICE_POINT_ID = randomUUID();
 
   @Test
   @SneakyThrows
@@ -35,14 +37,11 @@ class CheckOutApiTest extends BaseIT {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(false);
 
-    CheckOutRequest request = new CheckOutRequest()
-      .itemBarcode("test_barcode")
-      .userBarcode("user_barcode")
-      .servicePointId(randomUUID());
-
-    var mockResponse = new CheckOutResponse().id(UUID.randomUUID().toString());
+    CheckOutRequest request = buildCheckOutRequest();
+    var mockResponse = buildCheckOutResponse();
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
@@ -58,17 +57,16 @@ class CheckOutApiTest extends BaseIT {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(enableTlr);
 
-    CheckOutRequest request = new CheckOutRequest()
-      .itemBarcode("test_barcode")
-      .userBarcode("user_barcode")
-      .servicePointId(randomUUID());
-
+    CheckOutRequest request = buildCheckOutRequest();
     var mockResponse = new CheckOutResponse().id(randomUUID().toString());
 
     String expectedUrl = enableTlr ? TLR_CHECK_OUT_URL : CIRCULATION_CHECK_OUT_URL;
+    CheckOutRequest expectedForwarderCheckOutRequest = enableTlr
+      ? buildCheckOutRequest()
+      : request;
 
     wireMockServer.stubFor(WireMock.post(urlMatching(expectedUrl))
-      .withRequestBody(equalToJson(asJsonString(request)))
+      .withRequestBody(equalToJson(asJsonString(expectedForwarderCheckOutRequest)))
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
     checkOut(request, TENANT_ID_CONSORTIUM)
@@ -81,14 +79,10 @@ class CheckOutApiTest extends BaseIT {
   @SneakyThrows
   void checkOutCallsModCirculationOnDataTenant(boolean enableTlr) {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_COLLEGE), TENANT_ID_COLLEGE);
-    mockHelper.mockEcsTlrCirculationSettings(enableTlr);
+    mockHelper.mockEcsTlrCirculationSettings(enableTlr, TENANT_ID_COLLEGE);
 
-    CheckOutRequest request = new CheckOutRequest()
-      .itemBarcode("test_barcode")
-      .userBarcode("user_barcode")
-      .servicePointId(randomUUID());
-
-    var mockResponse = new CheckOutResponse().id(UUID.randomUUID().toString());
+    CheckOutRequest request = buildCheckOutRequest();
+    var mockResponse = buildCheckOutResponse();
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
       .withRequestBody(equalToJson(asJsonString(request)))
@@ -101,17 +95,41 @@ class CheckOutApiTest extends BaseIT {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = { TENANT_ID_CONSORTIUM, TENANT_ID_SECURE })
+  @SneakyThrows
+  void checkOutCallsModTlrInCentralAndSecureTenant(String targetTenantId) {
+    mockHelper.mockUserTenants(buildUserTenant(targetTenantId), targetTenantId);
+    mockTlrSettings(targetTenantId);
+
+    CheckOutResponse mockTlrCheckOutResponse = buildCheckOutResponse();
+    CheckOutRequest expectedTlrCheckOutRequest = buildCheckOutRequest();
+
+    wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
+      .withRequestBody(equalToJson(asJsonString(expectedTlrCheckOutRequest)))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(mockTlrCheckOutResponse), SC_OK)));
+
+    checkOut(buildCheckOutRequest(), targetTenantId)
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(mockTlrCheckOutResponse)));
+  }
+
+  private static void mockTlrSettings(String tenantId) {
+    if (tenantId.equals(TENANT_ID_CONSORTIUM)) {
+      mockHelper.mockEcsTlrSettings(true);
+    } else {
+      mockHelper.mockEcsTlrCirculationSettings(true, tenantId);
+    }
+  }
+
+  @ParameterizedTest
   @ValueSource(ints = {400, 422, 500})
   @SneakyThrows
   void circulationCheckOutErrorsAreForwarded(int responseStatus) {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(false);
 
-    CheckOutRequest request = new CheckOutRequest()
-      .itemBarcode("item_barcode")
-      .userBarcode("user_barcode")
-      .servicePointId(randomUUID());
-
+    CheckOutRequest request = buildCheckOutRequest();
     String responseBody = "Response status is " + responseStatus;
 
     wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_OUT_URL))
@@ -123,7 +141,7 @@ class CheckOutApiTest extends BaseIT {
       .andExpect(content().string(responseBody));
   }
 
-  public UserTenantCollection buildUserTenant(String tenantId) {
+  private static UserTenantCollection buildUserTenant(String tenantId) {
     var userTenant = new UserTenant();
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     userTenant.setTenantId(tenantId);
@@ -133,10 +151,7 @@ class CheckOutApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkOutFailsWhenItemBarcodeIsMissingInRequest() {
-    CheckOutRequest request = new CheckOutRequest()
-      .userBarcode("user_barcode")
-      .servicePointId(randomUUID());
-
+    CheckOutRequest request = buildCheckOutRequest().itemBarcode(null);
     checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isBadRequest());
   }
@@ -144,10 +159,7 @@ class CheckOutApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkOutFailsWhenUserBarcodeIsMissingInRequest() {
-    CheckOutRequest request = new CheckOutRequest()
-      .itemBarcode("item_barcode")
-      .servicePointId(randomUUID());
-
+    CheckOutRequest request = buildCheckOutRequest().userBarcode(null);
     checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isBadRequest());
   }
@@ -155,10 +167,7 @@ class CheckOutApiTest extends BaseIT {
   @Test
   @SneakyThrows
   void checkOutFailsWhenServicePointIdIsMissingInRequest() {
-    CheckOutRequest request = new CheckOutRequest()
-      .itemBarcode("item_barcode")
-      .userBarcode("user_barcode");
-
+    CheckOutRequest request = buildCheckOutRequest().servicePointId(null);
     checkOut(request, TENANT_ID_CONSORTIUM)
       .andExpect(status().isBadRequest());
   }
@@ -168,5 +177,16 @@ class CheckOutApiTest extends BaseIT {
     return mockMvc.perform(post(CHECK_OUT_URL)
       .content(asJsonString(checkOutRequest))
       .headers(buildHeaders(tenantId)));
+  }
+
+  private static CheckOutRequest buildCheckOutRequest() {
+    return new CheckOutRequest()
+      .itemBarcode("test_barcode")
+      .userBarcode("user_barcode")
+      .servicePointId(SERVICE_POINT_ID);
+  }
+
+  private static CheckOutResponse buildCheckOutResponse() {
+    return new CheckOutResponse().id(UUID.randomUUID().toString());
   }
 }

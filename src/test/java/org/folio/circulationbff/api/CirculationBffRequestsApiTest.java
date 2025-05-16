@@ -40,7 +40,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
-    mockHelper.mockEcsTlrCirculationSettings(false);
+    mockHelper.mockEcsTlrCirculationSettings(false, TENANT_ID_COLLEGE);
 
     var allowedSpResponseConsortium = new AllowedServicePoints();
     allowedSpResponseConsortium.setHold(Set.of(
@@ -128,7 +128,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
-    mockHelper.mockEcsTlrCirculationSettings(true);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
 
     User user = new User().patronGroup(UUID.randomUUID().toString());
     wireMockServer.stubFor(WireMock.get(urlMatching(USERS_URL + ".*"))
@@ -180,7 +180,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
-    mockHelper.mockEcsTlrCirculationSettings(true);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
 
     User user = new User().patronGroup(UUID.randomUUID().toString());
     wireMockServer.stubFor(WireMock.get(urlMatching(USERS_URL + ".*"))
@@ -233,7 +233,7 @@ class CirculationBffRequestsApiTest extends BaseIT {
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
-    mockHelper.mockEcsTlrCirculationSettings(true);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
 
     User user = new User().patronGroup(UUID.randomUUID().toString());
     wireMockServer.stubFor(WireMock.get(urlMatching(USERS_URL + ".*"))
