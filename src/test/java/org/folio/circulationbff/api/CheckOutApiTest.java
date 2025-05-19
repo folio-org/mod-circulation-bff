@@ -8,15 +8,19 @@ import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -29,6 +33,8 @@ class CheckOutApiTest extends BaseIT {
   private static final String CHECK_OUT_URL = "/circulation-bff/loans/check-out-by-barcode";
   private static final String CIRCULATION_CHECK_OUT_URL = "/circulation/check-out-by-barcode";
   private static final String TLR_CHECK_OUT_URL = "/tlr/loans/check-out-by-barcode";
+  private static final String REQUESTS_MEDIATED_CHECK_OUT_URL =
+    "/requests-mediated/loans/check-out-by-barcode";
   private static final UUID SERVICE_POINT_ID = randomUUID();
 
   @Test
@@ -95,23 +101,31 @@ class CheckOutApiTest extends BaseIT {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = { TENANT_ID_CONSORTIUM, TENANT_ID_SECURE })
+  @MethodSource("tenantIdToCheckOutUrl")
   @SneakyThrows
-  void checkOutCallsModTlrInCentralAndSecureTenant(String targetTenantId) {
-    mockHelper.mockUserTenants(buildUserTenant(targetTenantId), targetTenantId);
-    mockTlrSettings(targetTenantId);
+  void checkOutIsForwardedToCorrectEndpointWhenEcsTlrFeatureIsEnabled(String tenantId, String url) {
+    mockHelper.mockUserTenants(buildUserTenant(tenantId), tenantId);
+    mockTlrSettings(tenantId);
 
     CheckOutResponse mockTlrCheckOutResponse = buildCheckOutResponse();
     CheckOutRequest expectedTlrCheckOutRequest = buildCheckOutRequest();
 
-    wireMockServer.stubFor(WireMock.post(urlMatching(TLR_CHECK_OUT_URL))
+    wireMockServer.stubFor(WireMock.post(urlEqualTo(url))
       .withRequestBody(equalToJson(asJsonString(expectedTlrCheckOutRequest)))
-      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(mockTlrCheckOutResponse), SC_OK)));
 
-    checkOut(buildCheckOutRequest(), targetTenantId)
+    checkOut(buildCheckOutRequest(), tenantId)
       .andExpect(status().isOk())
       .andExpect(content().json(asJsonString(mockTlrCheckOutResponse)));
+  }
+
+  private static Stream<Arguments> tenantIdToCheckOutUrl() {
+    return Stream.of(
+      Arguments.of(TENANT_ID_CONSORTIUM, TLR_CHECK_OUT_URL),
+      Arguments.of(TENANT_ID_SECURE, REQUESTS_MEDIATED_CHECK_OUT_URL),
+      Arguments.of(TENANT_ID_COLLEGE, CIRCULATION_CHECK_OUT_URL)
+    );
   }
 
   private static void mockTlrSettings(String tenantId) {
@@ -187,6 +201,7 @@ class CheckOutApiTest extends BaseIT {
   }
 
   private static CheckOutResponse buildCheckOutResponse() {
-    return new CheckOutResponse().id(UUID.randomUUID().toString());
+    return new CheckOutResponse()
+      .id(UUID.randomUUID().toString());
   }
 }
