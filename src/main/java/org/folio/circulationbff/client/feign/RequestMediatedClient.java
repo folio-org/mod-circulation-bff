@@ -1,5 +1,7 @@
 package org.folio.circulationbff.client.feign;
 
+import org.folio.circulationbff.domain.dto.CheckOutRequest;
+import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -23,4 +25,7 @@ public interface RequestMediatedClient {
   @PostMapping("/mediated-requests/{requestId}/confirm")
   ResponseEntity<Void> confirmRequestMediated(@PathVariable String requestId,
     @RequestBody MediatedRequest mediatedRequest);
+
+  @PostMapping("/loans/check-out-by-barcode")
+  CheckOutResponse checkOutByBarcode(@RequestBody CheckOutRequest request);
 }
