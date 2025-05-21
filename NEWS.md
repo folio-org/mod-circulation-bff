@@ -1,3 +1,6 @@
+## 1.0.17 2025-05-21
+* Forward check-out requests in secure tenant to mod-requests-mediated (MCBFF-95)
+
 ## 1.0.16 2025-05-07
 * Add location and loan type to `search-intances` response (MCBFF-87)
 * Fix central tenant check-in for item with hold request (MCBFF-88)
