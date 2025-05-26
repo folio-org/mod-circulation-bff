@@ -72,9 +72,8 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
           continue;
         }
 
-        var enrichedItem = enrichLoanItem(loanItem, bffSearchInstance);
         enrichedLoanIds.add(loan.getId());
-        loan.setItem(enrichedItem);
+        loan.setItem(enrichLoanItem(loanItem, bffSearchInstance));
       } else {
         log.debug("findCirculationLoans:: circulation loan not enriched: {}", loan.getId());
       }
@@ -117,14 +116,12 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   }
 
   private LoanItem enrichLoanItem(LoanItem loanItem, BffSearchInstance bffSearchInstance) {
-    var loanItemId = loanItem.getId();
-    var bffSearchItem = getBffSearchItem(loanItemId, bffSearchInstance);
+    var bffSearchItem = getBffSearchItem(loanItem.getId(), bffSearchInstance);
     return circulationLoanMapper.enrichLoanItem(loanItem, bffSearchInstance, bffSearchItem);
   }
 
   private Map<String, BffSearchInstance> getBffInstancesByItemId(List<String> itemIds) {
-    var cqlQuery = CqlQuery.exactMatchAny("item.id", itemIds);
-    return searchService.findInstances(cqlQuery.toString()).stream()
+   return searchService.findInstances(exactMatchAny("item.id", itemIds).toString()).stream()
       .flatMap(CirculationLoanServiceImpl::getInstanceByItemEntry)
       .collect(toMap(Entry::getKey, Entry::getValue, (o1, o2) -> o2));
   }
