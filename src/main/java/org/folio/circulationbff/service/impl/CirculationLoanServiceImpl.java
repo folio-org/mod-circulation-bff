@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.folio.circulationbff.domain.mapping.CirculationLoanMapper.toStream;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,18 +46,23 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   @Override
   public CirculationLoans findCirculationLoans(String query, Integer limit,
     Integer offset, String totalRecords) {
-    var circulationLoans = circulationClient.findLoansByQuery(query, limit, offset, totalRecords);
 
+    log.info("findCirculationLoans:: enriching circulation loans by parameters: " +
+      "query={}, limit={}, offset={}, totalRecords={}", query, limit, offset, totalRecords);
+    var circulationLoans = circulationClient.findLoansByQuery(query, limit, offset, totalRecords);
     var dcbItemIds = circulationLoans.getLoans().stream()
       .filter(CirculationLoanServiceImpl::shouldEnrichCirculationLoan)
       .map(CirculationLoan::getItemId)
       .toList();
 
     if (CollectionUtils.isEmpty(dcbItemIds) || !isEnrichOperationAllowed()) {
+      var cause = "(DCB items not found | not tenant central | TLR disabled)";
+      log.info("getCirculationLoanById:: circulation loans not enriched: {}", cause);
       return circulationLoans;
     }
 
     var bffInstances = getBffInstancesByItemId(dcbItemIds);
+    var enrichedLoanIds = new ArrayList<>();
 
     for (var loan : circulationLoans.getLoans()) {
       if (shouldEnrichCirculationLoan(loan)) {
@@ -67,18 +73,26 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
           continue;
         }
 
-        var enrichedItem = getEnrichedItem(loanItem, bffSearchInstance);
+        var enrichedItem = enrichLoanItem(loanItem, bffSearchInstance);
+        enrichedLoanIds.add(loan.getId());
         loan.setItem(enrichedItem);
+      } else {
+        log.debug("findCirculationLoans:: circulation loan not enriched: {}", loan.getId());
       }
     }
+
+    log.info("getCirculationLoanById:: circulation loans are enriched for ids: {}", enrichedLoanIds);
 
     return circulationLoans;
   }
 
   @Override
   public CirculationLoan getCirculationLoanById(UUID loanId) {
+    log.info("getCirculationLoanById:: enriching circulation loan by id: {}", loanId);
     var circulationLoan = circulationClient.findLoanById(loanId);
     if (!(shouldEnrichCirculationLoan(circulationLoan) && isEnrichOperationAllowed())) {
+      var cause = "(non DCB item | not tenant central | TLR disabled)";
+      log.info("getCirculationLoanById:: circulation loan not enriched ({}): {}", cause, loanId);
       return circulationLoan;
     }
 
@@ -90,7 +104,8 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
       return circulationLoan;
     }
 
-    circulationLoan.setItem(getEnrichedItem(circulationLoan.getItem(), bffSearchInstance));
+    log.info("getCirculationLoanById:: circulation loan is enriched: {}", loanId);
+    circulationLoan.setItem(enrichLoanItem(circulationLoan.getItem(), bffSearchInstance));
     return circulationLoan;
   }
 
@@ -102,10 +117,10 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
     return TRUE.equals(loan.getIsDcb()) && loan.getItem() != null;
   }
 
-  private LoanItem getEnrichedItem(LoanItem loanItem, BffSearchInstance bffSearchInstance) {
+  private LoanItem enrichLoanItem(LoanItem loanItem, BffSearchInstance bffSearchInstance) {
     var loanItemId = loanItem.getId();
     var bffSearchItem = getBffSearchItem(loanItemId, bffSearchInstance);
-    return circulationLoanMapper.enrichLoan(loanItem, bffSearchInstance, bffSearchItem);
+    return circulationLoanMapper.enrichLoanItem(loanItem, bffSearchInstance, bffSearchItem);
   }
 
   private Map<String, BffSearchInstance> getBffInstancesByItemId(List<String> itemIds) {

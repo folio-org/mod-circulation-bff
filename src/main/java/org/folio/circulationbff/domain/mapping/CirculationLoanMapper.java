@@ -45,7 +45,7 @@ public interface CirculationLoanMapper {
   @Mapping(target = "physicalDescriptions", source = "instance.physicalDescriptions")
   @Mapping(target = "primaryContributor", expression = "java(getPrimaryContributorName(instance))")
   @Mapping(target = "datesOfPublication", expression = "java(getDatesOfPublication(instance))")
-  LoanItem enrichLoan(LoanItem loanItem, BffSearchInstance instance, BffSearchItem item);
+  LoanItem enrichLoanItem(LoanItem loanItem, BffSearchInstance instance, BffSearchItem item);
 
   default String getPrimaryContributorName(BffSearchInstance searchInstance) {
     return toStream(searchInstance.getContributors())
