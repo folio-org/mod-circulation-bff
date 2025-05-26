@@ -3,6 +3,7 @@ package org.folio.circulationbff.service.impl;
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static org.folio.circulationbff.support.CqlQuery.exactMatchAny;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import org.folio.circulationbff.service.CirculationLoanService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
-import org.folio.circulationbff.support.CqlQuery;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
