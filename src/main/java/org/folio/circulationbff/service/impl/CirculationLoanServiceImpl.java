@@ -2,7 +2,7 @@ package org.folio.circulationbff.service.impl;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toMap;
-import static org.folio.circulationbff.domain.mapping.CirculationLoanMapper.toStream;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.BffSearchItem;
@@ -131,12 +130,12 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   }
 
   private static Stream<Entry<String, BffSearchInstance>> getInstanceByItemEntry(BffSearchInstance instance) {
-    return ListUtils.emptyIfNull(instance.getItems()).stream()
+    return emptyIfNull(instance.getItems()).stream()
       .map(item -> new SimpleImmutableEntry<>(item.getId(), instance));
   }
 
   private static BffSearchItem getBffSearchItem(String itemId, BffSearchInstance searchInstance) {
-    return toStream(searchInstance.getItems())
+    return emptyIfNull(searchInstance.getItems()).stream()
       .filter(bffSearchItem -> Objects.equals(bffSearchItem.getId(), itemId))
       .findFirst()
       .orElse(null);

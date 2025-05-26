@@ -42,7 +42,7 @@ import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 
-public class CirculationLoanApiTest extends BaseIT {
+class CirculationLoanApiTest extends BaseIT {
 
   @Test
   void findCirculationLoansForItem() throws Exception {

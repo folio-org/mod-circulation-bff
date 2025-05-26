@@ -1,11 +1,11 @@
 package org.folio.circulationbff.domain.mapping;
 
+import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.BffSearchItem;
 import org.folio.circulationbff.domain.dto.Contributor;
@@ -48,7 +48,7 @@ public interface CirculationLoanMapper {
   LoanItem enrichLoanItem(LoanItem loanItem, BffSearchInstance instance, BffSearchItem item);
 
   default String getPrimaryContributorName(BffSearchInstance searchInstance) {
-    return toStream(searchInstance.getContributors())
+    return emptyIfNull(searchInstance.getContributors()).stream()
       .filter(Contributor::getPrimary)
       .findFirst()
       .map(Contributor::getName)
@@ -62,9 +62,5 @@ public interface CirculationLoanMapper {
       .map(Publication::getDateOfPublication)
       .distinct()
       .toList();
-  }
-
-  static <T> Stream<T> toStream(Collection<T> collection) {
-    return CollectionUtils.isEmpty(collection) ? Stream.empty() : collection.stream();
   }
 }
