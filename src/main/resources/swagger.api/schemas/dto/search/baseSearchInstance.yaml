@@ -124,6 +124,12 @@ properties:
     type: array
     items:
       $ref: "../search/searchHolding.yaml"
+  physicalDescriptions:
+    type: array
+    description: "Physical description of the described resource, including its extent, dimensions, and such other physical details as a description of any accompanying materials and unit type and size"
+    items:
+      type: string
+
 required:
   - electronicAccess
   - notes

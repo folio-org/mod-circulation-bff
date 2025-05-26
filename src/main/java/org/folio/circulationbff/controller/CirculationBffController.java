@@ -14,6 +14,8 @@ import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
+import org.folio.circulationbff.domain.dto.CirculationLoan;
+import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
@@ -27,6 +29,7 @@ import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.CheckOutService;
 import org.folio.circulationbff.service.CirculationBffService;
+import org.folio.circulationbff.service.CirculationLoanService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
@@ -51,6 +54,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final EcsRequestExternalService ecsRequestExternalService;
   private final CheckInService checkInService;
   private final CheckOutService checkOutService;
+  private final CirculationLoanService circulationLoanService;
 
   @Override
   public ResponseEntity<PostEcsRequestExternal201Response> postEcsRequestExternal(
@@ -130,6 +134,19 @@ public class CirculationBffController implements CirculationBffApi {
     } else {
       return handleNewRequest(mediatedRequest);
     }
+  }
+
+  @Override
+  public ResponseEntity<CirculationLoans> findCirculationLoansByQuery(
+    String query, Integer limit, Integer offset, String totalRecords) {
+    var foundLoans = circulationLoanService.findCirculationLoans(query, limit, offset, totalRecords);
+    return ResponseEntity.ok(foundLoans);
+  }
+
+  @Override
+  public ResponseEntity<CirculationLoan> getCirculationLoanById(UUID loanId) {
+    var circulationLoanById = circulationLoanService.getCirculationLoanById(loanId);
+    return ResponseEntity.ok(circulationLoanById);
   }
 
   private ResponseEntity<MediatedRequest> handleExistingRequest(MediatedRequest mediatedRequest) {
