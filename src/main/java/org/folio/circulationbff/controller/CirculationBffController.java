@@ -137,9 +137,10 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<CirculationLoans> findCirculationLoansByQuery(
-    String query, Integer limit, Integer offset, String totalRecords) {
-    return ResponseEntity.ok(circulationLoanService.findCirculationLoans(query, limit, offset, totalRecords));
+  public ResponseEntity<CirculationLoans> findCirculationLoansByQuery(String query, Integer limit,
+    Integer offset, String totalRecords) {
+    var loans = circulationLoanService.findCirculationLoans(query, limit, offset, totalRecords);
+    return ResponseEntity.ok(loans);
   }
 
   @Override
