@@ -1,8 +1,13 @@
 package org.folio.circulationbff.client.feign;
 
+import java.util.UUID;
+
+import org.folio.circulationbff.client.feign.config.ErrorForwardingFeignClientConfiguration;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
+import org.folio.circulationbff.domain.dto.CirculationLoan;
+import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
@@ -17,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "circulation", url = "circulation",
-  configuration = FeignClientConfiguration.class)
+  configuration = { FeignClientConfiguration.class, ErrorForwardingFeignClientConfiguration.class })
 public interface CirculationClient {
 
   @GetMapping("/requests/allowed-service-points")
@@ -38,4 +43,13 @@ public interface CirculationClient {
   @GetMapping("/search-slips/{servicePointId}")
   SearchSlipCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
 
+  @GetMapping("/loans/{id}")
+  CirculationLoan findLoanById(@PathVariable("id") UUID id);
+
+  @GetMapping("/loans")
+  CirculationLoans findLoansByQuery(
+    @RequestParam("query") String query,
+    @RequestParam("limit") Integer limit,
+    @RequestParam("offset") Integer offset,
+    @RequestParam("totalRecords") String totalRecords);
 }

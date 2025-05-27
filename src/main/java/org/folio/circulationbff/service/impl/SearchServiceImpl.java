@@ -185,6 +185,7 @@ public class SearchServiceImpl implements SearchService {
       Instance instance = instanceMap.get(searchInstance.getId());
       if (instance != null) {
         searchInstance.setEditions(instance.getEditions());
+        searchInstance.setPhysicalDescriptions(instance.getPhysicalDescriptions());
       }
     });
 
@@ -314,6 +315,7 @@ public class SearchServiceImpl implements SearchService {
       .chronology(item.getChronology())
       .displaySummary(item.getDisplaySummary())
       .volume(item.getVolume())
+      .accessionNumber(item.getAccessionNumber())
       .inTransitDestinationServicePointId(toUUID(item.getInTransitDestinationServicePointId()));
 
     var permanentLoanTypeId = item.getPermanentLoanTypeId();

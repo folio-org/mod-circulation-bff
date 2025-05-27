@@ -14,18 +14,7 @@ properties:
     description: "The call number from the holdings record"
     type: string
   callNumberComponents:
-    type: object
-    description: "Elements of a full call number generated from the item or holding"
-    properties:
-      callNumber:
-        type: string
-        description: "Effective Call Number is an identifier assigned to an item or its holding and associated with the item"
-      prefix:
-        type: string
-        description: "Effective Call Number Prefix is the prefix of the identifier assigned to an item or its holding and associated with the item"
-      suffix:
-        type: string
-        description: "Effective Call Number Suffix is the suffix of the identifier assigned to an item or its holding and associated with the item"
+    $ref: "bffSearchItemCallNumberComponents.yaml"
   materialType:
     description: "The material type from the item record"
     type: object
@@ -110,13 +99,7 @@ properties:
     type: string
     format: uuid
   inTransitDestinationServicePoint:
-    description: "Service point an item is intended to be transited to (should only be present when in transit)"
-    type: object
-    properties:
-      id:
-        description: "The ID of the service point"
-        type: string
-        format: uuid
-      name:
-        description: "Name of the service point"
-        type: string
+    $ref: "bffSearchItemInTransitDestinationServicePoint.yaml"
+  accessionNumber:
+    type: string
+    description: "Also called inventory number"
