@@ -24,6 +24,48 @@
           "Content-Type": "application/json"
         }
       }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "urlPathPattern": "/perms/users/.*/permissions",
+        "queryParameters": {
+          "indexField": {
+            "equalTo": "userId"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "permissions": [],
+          "totalRecords": 0
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/perms/users/.*/permissions",
+        "queryParameters": {
+          "indexField": {
+            "equalTo": "userId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "permissions": [],
+          "totalRecords": 0
+        }
+      }
     }
   ]
 }
