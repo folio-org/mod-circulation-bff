@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.folio.circulationbff.util.CirculationLoanTestData.HOLDINGS_RECORD_ID;
 import static org.folio.circulationbff.util.CirculationLoanTestData.INSTANCE_ID;
 import static org.folio.circulationbff.util.CirculationLoanTestData.IN_TRANSIT_DESTINATION_SERVICE_POINT_ID;
 import static org.folio.circulationbff.util.CirculationLoanTestData.ITEM_ID;
@@ -48,6 +49,24 @@ class CirculationLoanApiTest extends BaseIT {
   void findCirculationLoansForItem() throws Exception {
     var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
     mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, false, enrichedLoanItem()));
+
+    var expectedLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(USER_ID, false, enrichedLoanItem())))
+      .totalRecords(1);
+
+    mockMvc.perform(get("/circulation-bff/loans")
+        .queryParam("query", loanQuery)
+        .param("limit", "2000")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoans)));
+  }
+
+  @Test
+  void findCirculationLoansForItemWithUnknownFields() throws Exception {
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockLoansRequestWithUnknownField(loanQuery);
 
     var expectedLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(USER_ID, false, enrichedLoanItem())))
@@ -201,6 +220,17 @@ class CirculationLoanApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(circulationLoans), 200)));
   }
 
+  private static void mockLoansRequestWithUnknownField(String loanQuery) {
+    var circulationLoansJson = getCirculationLoanJsonWithUnknownFields();
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/circulation/loans"))
+      .withQueryParam("query", equalTo(loanQuery))
+      .withQueryParam("limit", equalTo("2000"))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(circulationLoansJson, 200)));
+  }
+
+
   private static void mockCirculationLoanBydRequest(CirculationLoan loan) {
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/circulation/loans/" + LOAN_ID))
       .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
@@ -259,5 +289,95 @@ class CirculationLoanApiTest extends BaseIT {
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     userTenant.setTenantId(tenantId);
     return new UserTenantCollection().addUserTenantsItem(userTenant);
+  }
+
+
+  private static String getCirculationLoanJsonWithUnknownFields() {
+    return """
+      {
+        "loans": [
+          {
+            "id": "{loanId}",
+            "userId": "{userId}",
+            "itemId": "{itemId}",
+            "unknownField": "unknownValue",
+            "item": {
+              "id": "{itemId}",
+              "tenantId": "college",
+              "title": "Test Item",
+              "callNumber": "testCallNumber",
+              "unknownField": "unknownValue",
+              "callNumberComponents": {
+                "callNumber": "testCallNumber",
+                "prefix": "testCallNumber Prefix",
+                "suffix": "testCallNumber Suffix",
+                "unknownField": "unknownValue"
+              },
+              "copyNumber": "testCopyNumber",
+              "editions": [
+                "edition1",
+                "edition2"
+              ],
+              "materialType": {
+                "name": "text"
+              },
+              "contributors": [
+                {
+                  "name": "TestContributor1",
+                  "unknownField": "unknownValue"
+                },
+                {
+                  "name": "TestContributor2",
+                  "unknownField": "unknownValue"
+                },
+                {
+                  "name": "TestContributor3",
+                  "unknownField": "unknownValue"
+                }
+              ],
+              "primaryContributor": "TestContributor2",
+              "holdingsRecordId": "{holdingsRecordId}",
+              "instanceId": "{instanceId}",
+              "instanceHrid": "in00000000001",
+              "barcode": "testbarcode",
+              "location": {
+                "name": "DCB"
+              },
+              "status": {
+                "name": "Checked Out",
+                "date": "1970-01-01T00:00:01.000+00:00",
+                "unknownField": "unknownValue"
+              },
+              "inTransitDestinationServicePointId": "{inTransitDSPId}",
+              "inTransitDestinationServicePoint": {
+                "id": "{inTransitDSPId}",
+                "name": "test-library",
+                "unknownField": "unknownValue"
+              },
+              "enumeration": "testEnumeration",
+              "chronology": "testChronology",
+              "volume": "testVolume",
+              "displaySummary": "testDisplaySummary",
+              "datesOfPublication": [
+                "1999",
+                "2000"
+              ],
+              "accessionNumber": "testAccessionNumber",
+              "physicalDescriptions": [
+                "testPhysicalDescription1",
+                "testPhysicalDescription2"
+              ]
+            },
+            "isDcb": false
+          }
+        ],
+        "totalRecords": 1
+      }"""
+      .replaceAll("\\{loanId}", LOAN_ID)
+      .replaceAll("\\{userId}", USER_ID)
+      .replaceAll("\\{itemId}", ITEM_ID)
+      .replaceAll("\\{holdingsRecordId}", HOLDINGS_RECORD_ID)
+      .replaceAll("\\{instanceId}", INSTANCE_ID)
+      .replaceAll("\\{inTransitDSPId}", IN_TRANSIT_DESTINATION_SERVICE_POINT_ID.toString());
   }
 }
