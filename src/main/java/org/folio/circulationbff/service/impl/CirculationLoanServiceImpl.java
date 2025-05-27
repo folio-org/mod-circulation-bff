@@ -56,7 +56,7 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
 
     if (CollectionUtils.isEmpty(dcbItemIds) || !isEnrichOperationAllowed()) {
       var cause = "(DCB items not found | not tenant central | TLR disabled)";
-      log.info("getCirculationLoanById:: circulation loans not enriched: {}", cause);
+      log.info("findCirculationLoans:: circulation loans not enriched: {}", cause);
       return circulationLoans;
     }
 
@@ -79,7 +79,7 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
       }
     }
 
-    log.info("getCirculationLoanById:: circulation loans are enriched for ids: {}", enrichedLoanIds);
+    log.info("findCirculationLoans:: circulation loans are enriched: {}", enrichedLoanIds);
 
     return circulationLoans;
   }
