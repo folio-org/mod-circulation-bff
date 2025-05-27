@@ -1,0 +1,10 @@
+type: object
+description: "Service point an item is intended to be transited to (should only be present when in transit)"
+properties:
+  id:
+    description: "The ID of the service point"
+    type: string
+    format: uuid
+  name:
+    description: "Name of the service point"
+    type: string

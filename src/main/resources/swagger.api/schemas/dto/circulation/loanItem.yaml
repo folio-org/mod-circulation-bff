@@ -1,0 +1,113 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+type: object
+title: CirculationLoanItem
+description: Circulation Loan Item
+properties:
+  id:
+    description: ID of the item
+    type: string
+    pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  tenantId:
+    description: Tenant identifier
+    type: string
+  title:
+    description: The title of the item lent to the patron
+    type: string
+  callNumber:
+    description: Deprecated call number from the holdings record, use callNumberComponents.callNumber instead
+    type: string
+  callNumberComponents:
+    $ref: "../search/bffSearchItemCallNumberComponents.yaml"
+  copyNumber:
+    description: Item copy number
+    type: string
+  editions:
+    description: The edition statements, imprints and other publication source information
+    type: array
+    uniqueItems: true
+    items:
+      description: The edition statement, imprint and other publication source information
+      type: string
+  materialType:
+    description: The material type from the item record
+    type: object
+    properties:
+      name:
+        description: Name of the material type
+        type: string
+  contributors:
+    description: Contributors from the instance record
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          description: Name of the contributor
+          type: string
+  primaryContributor:
+    description: primary contributor of the item
+    type: string
+  holdingsRecordId:
+    description: The ID of the holdings for the item
+    type: string
+    pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  instanceId:
+    description: The ID of the instance for the item
+    type: string
+    pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  instanceHrid:
+    type: string
+    description: The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID
+  barcode:
+    description: The barcode of the item
+    type: string
+  location:
+    description: The effective location of the item
+    type: object
+    properties:
+      name:
+        description: The name of the location
+        type: string
+  status:
+    description: Overall status of the item
+    type: object
+    properties:
+      name:
+        description: Name of the item status
+        type: string
+      date:
+        type: string
+        description: Date time when status was last changed
+        format: date-time
+  inTransitDestinationServicePointId:
+    description: "Service point an item is intended to be transited to (should only be present when in transit)"
+    type: string
+    format: uuid
+  inTransitDestinationServicePoint:
+    $ref: "../search/bffSearchItemInTransitDestinationServicePoint.yaml"
+  enumeration:
+    description: Item`s enumeration
+    type: string
+  chronology:
+    description: Item`s chronology
+    type: string
+  volume:
+    description: Item`s volume
+    type: string
+  displaySummary:
+    description: Display summary about the item
+    type: string
+  datesOfPublication:
+    type: array
+    description: Dates of publication, distribution, etc.
+    items:
+      description: Date (year YYYY) of publication, distribution, etc.
+      type: string
+  accessionNumber:
+    type: string
+    description: Also called inventory number
+  physicalDescriptions:
+    type: array
+    description: "Physical description of the described resource, including its extent, dimensions, and such other physical details as a description of any accompanying materials and unit type and size"
+    items:
+      type: string

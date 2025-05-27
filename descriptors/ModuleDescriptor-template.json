@@ -139,8 +139,56 @@
     },
     {
       "id": "circulation-bff-loans",
-      "version": "1.4",
+      "version": "1.5",
       "handlers": [
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/circulation-bff/loans",
+          "permissionsRequired": [
+            "circulation-bff.loans.collection.get"
+          ],
+          "modulePermissions": [
+            "circulation.loans.collection.get",
+            "user-tenants.collection.get",
+            "search.instances.collection.get",
+            "inventory-storage.items.item.get",
+            "inventory-storage.items.collection.get",
+            "inventory-storage.locations.item.get",
+            "inventory-storage.locations.collection.get",
+            "inventory-storage.service-points.item.get",
+            "inventory-storage.service-points.collection.get",
+            "inventory-storage.location-units.libraries.item.get",
+            "inventory-storage.location-units.libraries.collection.get",
+            "inventory-storage.location-units.campuses.item.get",
+            "inventory-storage.location-units.campuses.collection.get",
+            "inventory-storage.location-units.institutions.item.get",
+            "inventory-storage.location-units.institutions.collection.get"
+          ]
+        },
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/circulation-bff/loans/{id}",
+          "permissionsRequired": [
+            "circulation-bff.loans.item.get"
+          ],
+          "modulePermissions": [
+            "circulation.loans.item.get",
+            "user-tenants.collection.get",
+            "search.instances.collection.get",
+            "inventory-storage.items.item.get",
+            "inventory-storage.items.collection.get",
+            "inventory-storage.locations.item.get",
+            "inventory-storage.locations.collection.get",
+            "inventory-storage.service-points.item.get",
+            "inventory-storage.service-points.collection.get",
+            "inventory-storage.location-units.libraries.item.get",
+            "inventory-storage.location-units.libraries.collection.get",
+            "inventory-storage.location-units.campuses.item.get",
+            "inventory-storage.location-units.campuses.collection.get",
+            "inventory-storage.location-units.institutions.item.get",
+            "inventory-storage.location-units.institutions.collection.get"
+          ]
+        },
         {
           "methods": [
             "POST"
@@ -283,6 +331,16 @@
       "permissionName": "circulation-bff.loans.declare-item-lost.execute",
       "displayName": "circulation BFF - declare item lost",
       "description": "declare item lost"
+    },
+    {
+      "permissionName": "circulation-bff.loans.item.get",
+      "displayName": "circulation BFF - circulation loan by id",
+      "description": "circulation loan by id with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.collection.get",
+      "displayName": "circulation BFF - circulation loans by query",
+      "description": "circulation loans by query with extended instance/holding information"
     }
   ],
   "requires": [
@@ -441,6 +499,8 @@
         "circulation.check-in-by-barcode.post",
         "circulation-storage.loans.item.get",
         "circulation-storage.loans.collection.get",
+        "circulation.loans.item.get",
+        "circulation.loans.collection.get",
         "mod-settings.entries.item.get",
         "mod-settings.entries.collection.get",
         "mod-settings.global.read.circulation"
