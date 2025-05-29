@@ -1,0 +1,23 @@
+get:
+  operationId: findCirculationLoansByQuery
+  description: Find circulation loans by query
+  parameters:
+    - $ref: '../../parameters/query.yaml'
+    - $ref: '../../parameters/limit.yaml'
+    - $ref: '../../parameters/offset.yaml'
+    - $ref: '../../parameters/totalRecords.yaml'
+  tags:
+    - circulation-loans
+  responses:
+    '200':
+      description: 'List of circulation loans with extended information'
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/dto/circulation/circulationLoans.yaml'
+    '400':
+      $ref: '../../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'

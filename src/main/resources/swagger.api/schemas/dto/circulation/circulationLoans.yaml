@@ -1,0 +1,14 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+title: "Collection of loans"
+description: "Collection of circulation loans"
+type: "object"
+properties:
+  loans:
+    description: "Paged collection of circulation loans"
+    id: "loans"
+    type: "array"
+    items:
+      $ref: "circulationLoan.yaml"
+  totalRecords:
+    description: "Total number of circulation loan records"
+    type: "integer"
