@@ -1,5 +1,5 @@
-## 1.0.18 2025-05-26
-* Populated DCB item fields for circulation loans (MCBFF-102)
+## 1.0.18 2025-05-29
+* Populate DCB item fields for circulation loans (MCBFF-102)
 
 ## 1.0.17 2025-05-21
 * Forward check-out requests in secure tenant to mod-requests-mediated (MCBFF-95)
