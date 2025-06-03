@@ -87,6 +87,30 @@ class CirculationLoanServiceTest {
   }
 
   @Test
+  void findCirculationLoansForDcbItemForNonCentralSecureTenant() {
+    var query = "(userId==" + USER_ID + ")";
+    var nonDcbItem = circulationLoan(false, enrichedLoanItem());
+    var foundLoans = new CirculationLoans()
+      .loans(List.of(nonDcbItem, circulationLoan(true, dcbLoanItem())))
+      .totalRecords(1);
+
+    when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
+    when(tenantService.isCurrentTenantCentral()).thenReturn(false);
+    when(tenantService.isCurrentTenantSecure()).thenReturn(true);
+    when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
+
+    var expectedItemsCql = String.format("item.id==(\"%s\")", ITEM_ID);
+    var bffSearchInstance = bffSearchInstance(bffSearchItem());
+    when(searchService.findInstances(expectedItemsCql)).thenReturn(List.of(bffSearchInstance));
+    var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
+
+    var expectedResult = new CirculationLoans()
+      .loans(List.of(nonDcbItem, circulationLoan(true, enrichedLoanItem())))
+      .totalRecords(1);
+    assertEquals(expectedResult, result);
+  }
+
+  @Test
   void findCirculationLoansWhenLoanItemIsNull() {
     var query = "(userId==" + USER_ID + ")";
     var foundLoans = new CirculationLoans()
@@ -147,7 +171,7 @@ class CirculationLoanServiceTest {
   }
 
   @Test
-  void findCirculationLoansForDcbItemWhenTenantIsNotCentral() {
+  void findCirculationLoansForDcbItemWhenTenantIsNotCentralAndNotSecure() {
     var query = "(userId==" + USER_ID + ")";
     var foundLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(true, dcbLoanItem())))
@@ -155,6 +179,7 @@ class CirculationLoanServiceTest {
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(false);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
+    when(tenantService.isCurrentTenantSecure()).thenReturn(false);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
 
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
@@ -214,6 +239,23 @@ class CirculationLoanServiceTest {
   }
 
   @Test
+  void getCirculationLoanByIdForDcbItemWhenNonCentralSecureTenant() {
+    var loanId = UUID.fromString(LOAN_ID);
+    var circulationLoan = circulationLoan(true, dcbLoanItem());
+
+    when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
+    when(tenantService.isCurrentTenantSecure()).thenReturn(true);
+    when(tenantService.isCurrentTenantCentral()).thenReturn(false);
+
+    var query = "item.id==(\"" + ITEM_ID + "\")";
+    when(searchService.findInstances(query)).thenReturn(List.of(bffSearchInstance(bffSearchItem())));
+    when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
+
+    var result = circulationLoanService.getCirculationLoanById(loanId);
+    assertEquals(circulationLoan(true, enrichedLoanItem()), result);
+  }
+
+  @Test
   void getCirculationLoanByIdForDcbItemWhenItemNotFound() {
     var loanId = UUID.fromString(LOAN_ID);
     var circulationLoan = circulationLoan(true, dcbLoanItem());
@@ -242,11 +284,12 @@ class CirculationLoanServiceTest {
   }
 
   @Test
-  void getCirculationLoanByIdForDcbItemWhenNotCentralTenant() {
+  void getCirculationLoanByIdForDcbItemWhenNotCentralNonSecureTenant() {
     var loanId = UUID.fromString(LOAN_ID);
     var circulationLoan = circulationLoan(true, dcbLoanItem());
 
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
+    when(tenantService.isCurrentTenantSecure()).thenReturn(false);
     when(tenantService.isCurrentTenantCentral()).thenReturn(false);
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
