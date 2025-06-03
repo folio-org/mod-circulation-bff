@@ -108,7 +108,8 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   }
 
   private boolean isEnrichOperationAllowed() {
-    return settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral();
+    return settingsService.isEcsTlrFeatureEnabled() &&
+      (tenantService.isCurrentTenantCentral() || tenantService.isCurrentTenantSecure());
   }
 
   private static boolean shouldEnrichCirculationLoan(CirculationLoan loan) {
@@ -121,7 +122,7 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   }
 
   private Map<String, BffSearchInstance> getBffInstancesByItemId(List<String> itemIds) {
-   return searchService.findInstances(exactMatchAny("item.id", itemIds).toString()).stream()
+    return searchService.findInstances(exactMatchAny("item.id", itemIds).toString()).stream()
       .flatMap(CirculationLoanServiceImpl::getInstanceByItemEntry)
       .collect(toMap(Entry::getKey, Entry::getValue, (o1, o2) -> o2));
   }
