@@ -40,9 +40,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 
+@TestPropertySource(properties = { "folio.tenant.secure-tenant-id=secure" })
 class CirculationLoanApiTest extends BaseIT {
 
   @Test
@@ -99,6 +101,56 @@ class CirculationLoanApiTest extends BaseIT {
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().is(status))
       .andExpect(content().string(responseBody));
+  }
+
+  @Test
+  void findCirculationLoansForDcbItemForNonCentralTenant() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_COLLEGE);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
+
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    var circulationLoan = circulationLoan(USER_ID, true, dcbLoanItem());
+
+    mockCirculationLoansRequest(loanQuery, TENANT_ID_COLLEGE, circulationLoan);
+
+    var expectedLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan))
+      .totalRecords(1);
+
+    mockMvc.perform(get("/circulation-bff/loans")
+        .queryParam("query", loanQuery)
+        .param("limit", "2000")
+        .headers(buildHeaders(TENANT_ID_COLLEGE))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoans)));
+  }
+
+  @Test
+  void findCirculationLoansForDcbItemForNonCentralSecureTenant() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_SECURE);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_SECURE);
+
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    var circulationLoan = circulationLoan(USER_ID, true, dcbLoanItem());
+
+    mockCirculationLoansRequest(loanQuery, TENANT_ID_SECURE, circulationLoan);
+    mockSearchRequest(List.of(ITEM_ID), TENANT_ID_SECURE, searchInstance(searchItem()));
+    mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
+    mockServicePointsRequest();
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
+
+    var expectedLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan))
+      .totalRecords(1);
+
+    mockMvc.perform(get("/circulation-bff/loans")
+        .queryParam("query", loanQuery)
+        .param("limit", "2000")
+        .headers(buildHeaders(TENANT_ID_SECURE))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoans)));
   }
 
   @Test
@@ -193,6 +245,41 @@ class CirculationLoanApiTest extends BaseIT {
       .andExpect(content().json(asJsonString(expectedLoan)));
   }
 
+
+  @Test
+  void getCirculationLoanByIdForDcbItemForNonCentralTenant() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_COLLEGE);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
+
+    var circulationLoan = circulationLoan(USER_ID, true, dcbLoanItem());
+    mockCirculationLoanBydRequest(TENANT_ID_COLLEGE, circulationLoan);
+
+    mockMvc.perform(get("/circulation-bff/loans/{loanId}", LOAN_ID)
+        .headers(buildHeaders(TENANT_ID_COLLEGE))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(circulationLoan)));
+  }
+
+  @Test
+  void getCirculationLoanByIdForDcbItemForNonCentralSecureTenant() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_SECURE);
+    mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_SECURE);
+
+    mockCirculationLoanBydRequest(TENANT_ID_SECURE, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockSearchRequest(List.of(ITEM_ID), TENANT_ID_SECURE, searchInstance(searchItem()));
+    mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
+    mockServicePointsRequest();
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
+
+    var expectedLoan = circulationLoan(USER_ID, true, enrichedLoanItem());
+    mockMvc.perform(get("/circulation-bff/loans/{loanId}", LOAN_ID)
+        .headers(buildHeaders(TENANT_ID_SECURE))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoan)));
+  }
+
   @Test
   void getCirculationLoanByIdForDcbItemWhenTlrDisabled() throws Exception {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
@@ -209,6 +296,12 @@ class CirculationLoanApiTest extends BaseIT {
   }
 
   private static void mockCirculationLoansRequest(String loanQuery, CirculationLoan... loans) {
+    mockCirculationLoansRequest(loanQuery, TENANT_ID_CONSORTIUM, loans);
+  }
+
+  private static void mockCirculationLoansRequest(String loanQuery, String tenantId,
+    CirculationLoan... loans) {
+
     var circulationLoans = new CirculationLoans()
       .loans(List.of(loans))
       .totalRecords(loans.length);
@@ -216,7 +309,7 @@ class CirculationLoanApiTest extends BaseIT {
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/circulation/loans"))
       .withQueryParam("query", equalTo(loanQuery))
       .withQueryParam("limit", equalTo("2000"))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(circulationLoans), 200)));
   }
 
@@ -230,21 +323,30 @@ class CirculationLoanApiTest extends BaseIT {
       .willReturn(jsonResponse(circulationLoansJson, 200)));
   }
 
-
   private static void mockCirculationLoanBydRequest(CirculationLoan loan) {
+    mockCirculationLoanBydRequest(TENANT_ID_CONSORTIUM, loan);
+  }
+
+  private static void mockCirculationLoanBydRequest(String tenantId, CirculationLoan loan) {
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/circulation/loans/" + LOAN_ID))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(loan), 200)));
   }
 
   private static void mockSearchRequest(List<String> itemIds, SearchInstance... instances) {
+    mockSearchRequest(itemIds, TENANT_ID_CONSORTIUM, instances);
+  }
+
+  private static void mockSearchRequest(List<String> itemIds, String tenantId,
+    SearchInstance... instances) {
+
     var searchInstances = new SearchInstances()
       .instances(List.of(instances))
       .totalRecords(instances.length);
 
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/search/instances"))
       .withQueryParam("query", equalTo(CqlQuery.exactMatchAny("item.id", itemIds).toString()))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(searchInstances), 200)));
   }
 
@@ -290,7 +392,6 @@ class CirculationLoanApiTest extends BaseIT {
     userTenant.setTenantId(tenantId);
     return new UserTenantCollection().addUserTenantsItem(userTenant);
   }
-
 
   private static String getCirculationLoanJsonWithUnknownFields() {
     return """
