@@ -1,3 +1,6 @@
+## 1.0.20 2025-06-04
+* Handle duplicate item IDs in search response (MCBFF-107)
+
 ## 1.0.19 2025-06-04
 * Populate DCB item fields for circulation loans in secure tenant (MCBFF-104)
 
