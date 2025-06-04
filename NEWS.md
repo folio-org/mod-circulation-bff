@@ -1,3 +1,6 @@
+## 1.0.19 2025-06-04
+* Populate DCB item fields for circulation loans in secure tenant (MCBFF-104)
+
 ## 1.0.18 2025-05-29
 * Populate DCB item fields for circulation loans (MCBFF-102)
 
