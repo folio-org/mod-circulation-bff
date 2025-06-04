@@ -208,7 +208,7 @@ public class SearchServiceImpl implements SearchService {
     Map<String, ServicePoint> servicePointsById = fetchServicePoints(items);
     Map<String, MaterialType> materialTypesById = fetchMaterialTypes(items);
     Map<String, String> itemIdToTenantId = searchItems.stream()
-      .collect(toMap(SearchItem::getId, SearchItem::getTenantId));
+      .collect(toMap(SearchItem::getId, SearchItem::getTenantId, (a, b) -> a));
     Map<String, LoanType> loanTypeIdToLoanType = fetchLoanTypes(items);
 
     return items.stream()

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -140,6 +141,42 @@ class SearchServiceTest {
 
     assertThat(bffSearchInstance, is(mockBffSearchInstance));
     assertThat(bffSearchInstance.getItems(), emptyIterable());
+  }
+
+  @Test
+  void duplicateItemIdHandledCorrectly() {
+    String instanceId = UUID.randomUUID().toString();
+    String itemId = UUID.randomUUID().toString();
+
+    SearchItem searchItem1 = new SearchItem()
+      .id(itemId)
+      .tenantId(TENANT_ID_CONSORTIUM);
+    SearchItem searchItem2 = new SearchItem()
+      .id(itemId)
+      .tenantId(TENANT_ID_CONSORTIUM);
+
+    SearchInstance searchInstance = new SearchInstance()
+      .id(instanceId)
+      .tenantId(TENANT_ID_CONSORTIUM)
+      .items(List.of(searchItem1, searchItem2));
+
+    SearchInstances mockSearchResponse = new SearchInstances()
+      .addInstancesItem(searchInstance)
+      .totalRecords(1);
+
+    BffSearchInstance mockBffSearchInstance = new BffSearchInstance()
+      .id(instanceId)
+      .tenantId(TENANT_ID_CONSORTIUM);
+    when(searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance))
+      .thenReturn(mockBffSearchInstance);
+    mockSystemUserScopedExecutionService();
+
+    var query = "items.id==" + itemId;
+    when(searchClient.findInstances(query, true))
+      .thenReturn(mockSearchResponse);
+
+    var response = searchService.findInstances(query);
+    assertNotNull(response);
   }
 
   private void mockSystemUserScopedExecutionService() {
