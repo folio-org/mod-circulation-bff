@@ -198,7 +198,7 @@ properties:
       overrideBlocks:
         type: "object"
         description: "Blocks to override if user has corresponding permissions"
-        $ref: "override-blocks.json"
+        $ref: "overrideBlocks.json"
 required:
   - "requesterId"
   - "requestType"

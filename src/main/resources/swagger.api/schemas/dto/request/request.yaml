@@ -289,11 +289,11 @@ properties:
       overrideBlocks:
         type: "object"
         description: "Blocks to override if user has corresponding permissions"
-        $ref: "override-blocks.json"
+        $ref: "overrideBlocks.json"
   searchIndex:
     description: "Request fields used for search"
     type: "object"
-    $ref: "request-search-index.json"
+    $ref: "requestSearchIndex.json"
 required:
   - "requesterId"
   - "requestType"
