@@ -24,18 +24,18 @@ paths:
   /circulation-bff/create-ecs-request-external:
     $ref: 'paths/ecsRequestExternal/ecsRequestExternal.yaml'
   /circulation-bff/loans/check-in-by-barcode:
-    $ref: 'paths/check-in/check-in.yaml'
+    $ref: 'paths/checkIn/checkIn.yaml'
   /circulation-bff/loans/check-out-by-barcode:
-    $ref: 'paths/check-out/check-out.yaml'
+    $ref: 'paths/checkOut/checkOut.yaml'
 
 components:
   schemas:
     tlr-settings:
-      $ref: 'schemas/dto/TlrSettings.yaml#/TlrSettings'
+      $ref: 'schemas/dto/tlrSettings.yaml'
     circulationSettingsResponse:
-      $ref: 'schemas/response/circulationSettingsResponse.yaml'
+      $ref: 'schemas/dto/circulationSettingsResponse.yaml'
     userTenantCollection:
-      $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
+      $ref: 'schemas/dto/userTenantCollection.yaml'
     items:
       $ref: 'schemas/dto/inventory/items.json'
     holdings-records:
@@ -61,13 +61,13 @@ components:
     patronGroup:
       $ref: 'schemas/dto/request/patronGroup.yaml'
     request:
-      $ref: 'schemas/dto/request/Request.yaml#/Request'
+      $ref: 'schemas/dto/request/request.yaml'
     bff-request:
-      $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
+      $ref: 'schemas/dto/request/bffRequest.yaml'
     ecs-tlr:
-      $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+      $ref: 'schemas/dto/ecs-tlr/ecsTlr.yaml'
     circulationItem:
-      $ref: 'schemas/dto/circulationItem/circulationItem.yaml#/CirculationItem'
+      $ref: 'schemas/dto/circulationItem/circulationItem.yaml'
     consortium-item:
       $ref: 'schemas/dto/search/consortiumItem.yaml'
     loans:

@@ -19,7 +19,6 @@ properties:
     description: Randomly generated UUID which must be the same for all check-in requests issued in scope of the same check-in session
     type: string
     format: uuid
-
 required:
   - itemBarcode
   - servicePointId
