@@ -8,6 +8,7 @@ get:
     - $ref: '../../parameters/totalRecords.yaml'
   tags:
     - circulation-loans
+    - getCirculationLoans
   responses:
     '200':
       description: 'List of circulation loans with extended information'
