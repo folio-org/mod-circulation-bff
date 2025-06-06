@@ -20,21 +20,20 @@ paths:
   /circulation-bff/create-ecs-request-external:
     $ref: 'paths/ecsRequestExternal/ecsRequestExternal.yaml'
   /circulation-bff/loans/check-in-by-barcode:
-    $ref: 'paths/check-in/check-in.yaml'
+    $ref: 'paths/checkIn/checkIn.yaml'
   /circulation-bff/loans/check-out-by-barcode:
-    $ref: 'paths/check-out/check-out.yaml'
-
+    $ref: 'paths/checkOut/checkOut.yaml'
 components:
   schemas:
-    tlr-settings:
-      $ref: 'schemas/dto/TlrSettings.yaml#/TlrSettings'
+    tlrSettings:
+      $ref: 'schemas/dto/tlrSettings.yaml'
     circulationSettingsResponse:
-      $ref: 'schemas/response/circulationSettingsResponse.yaml'
+      $ref: 'schemas/dto/circulationSettingsResponse.yaml'
     userTenantCollection:
-      $ref: 'schemas/dto/UserTenantCollection.yaml#/UserTenantCollection'
+      $ref: 'schemas/dto/userTenantCollection.yaml'
     items:
       $ref: 'schemas/dto/inventory/items.json'
-    holdings-records:
+    holdingsRecords:
       $ref: 'schemas/dto/inventory/holdingsRecords.json'
     instances:
       $ref: 'schemas/dto/inventory/instances.json'
@@ -46,25 +45,25 @@ components:
       $ref: 'schemas/dto/inventory/campuses.json'
     institutions:
       $ref: 'schemas/dto/inventory/institutions.json'
-    service-points:
+    servicePoints:
       $ref: 'schemas/dto/inventory/servicePoints.json'
-    loan-types:
+    loanTypes:
       $ref: 'schemas/dto/inventory/loanTypes.json'
-    material-types:
+    materialTypes:
       $ref: 'schemas/dto/inventory/materialTypes.json'
-    search-instances:
+    searchInstances:
       $ref: 'schemas/dto/search/searchInstances.yaml'
     patronGroup:
       $ref: 'schemas/dto/request/patronGroup.yaml'
     request:
-      $ref: 'schemas/dto/request/Request.yaml#/Request'
-    bff-request:
-      $ref: 'schemas/dto/request/BffRequest.yaml#/BffRequest'
-    ecs-tlr:
-      $ref: 'schemas/dto/ecs-tlr/EcsTlr.yaml#/EcsTlr'
+      $ref: 'schemas/dto/request/request.yaml'
+    bffRequest:
+      $ref: 'schemas/dto/request/bffRequest.yaml'
+    ecsTlr:
+      $ref: 'schemas/dto/ecsTlr/ecsTlr.yaml'
     circulationItem:
-      $ref: 'schemas/dto/circulationItem/circulationItem.yaml#/CirculationItem'
-    consortium-item:
+      $ref: 'schemas/dto/circulationItem/circulationItem.yaml'
+    consortiumItem:
       $ref: 'schemas/dto/search/consortiumItem.yaml'
     loans:
       $ref: 'schemas/dto/circulation/loans.json'

@@ -8,4 +8,4 @@ properties:
     type: "array"
     description: "List of settings found"
     items:
-      $ref: "../dto/CirculationSettings.yaml#/CirculationSettings"
+      $ref: "CirculationSettings.yaml"

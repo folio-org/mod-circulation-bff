@@ -1,26 +1,25 @@
-CirculationSettings:
-  description: Circulation Settings in a data tenant
-  type: "object"
-  properties:
-    id:
-      description: "ID of the Circulation Settings"
-      $ref: "common/uuid.yaml"
-    name:
-      description: "Name of the Circulation Settings"
-      $ref: "common/uuid.yaml"
-    value:
-      description: "Value of the Circulation Settings"
-      type: object
-      properties:
-        enabled:
-          description: "Whether the setting is enabled"
-          type: boolean
-    "metadata": {
-      "type": "object",
-      "$ref": "common/metadata.yaml",
-      "readonly": true
-    }
-  required:
-    - id
-    - name
-    - value
+description: Circulation Settings in a data tenant
+type: "object"
+properties:
+  id:
+    description: "ID of the Circulation Settings"
+    $ref: "common/uuid.yaml"
+  name:
+    description: "Name of the Circulation Settings"
+    $ref: "common/uuid.yaml"
+  value:
+    description: "Value of the Circulation Settings"
+    type: object
+    properties:
+      enabled:
+        description: "Whether the setting is enabled"
+        type: boolean
+  "metadata": {
+    "type": "object",
+    "$ref": "common/metadata.yaml",
+    "readonly": true
+  }
+required:
+  - id
+  - name
+  - value

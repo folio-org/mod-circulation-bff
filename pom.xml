@@ -216,7 +216,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/swagger.api/circulation-bff.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/swagger.api/circulationBff.yaml</inputSpec>
                             <output>${project.build.directory}/generated-sources</output>
                             <generatorName>spring</generatorName>
                             <modelPackage>${project.groupId}.circulationbff.domain.dto</modelPackage>
