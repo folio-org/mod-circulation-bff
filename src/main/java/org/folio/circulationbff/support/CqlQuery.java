@@ -1,6 +1,7 @@
 package org.folio.circulationbff.support;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -30,6 +31,17 @@ public record CqlQuery(String query) {
       .collect(Collectors.joining(" or "));
 
     return new CqlQuery(format("%s==(%s)", index, joinedValues));
+  }
+
+  public CqlQuery and(CqlQuery other) {
+    if (other == null || isBlank(other.query())) {
+      return this;
+    }
+    if (isBlank(query)) {
+      return other;
+    }
+
+    return new CqlQuery(format("%s and (%s)", query, other.query()));
   }
 
   @Override

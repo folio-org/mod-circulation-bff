@@ -1,3 +1,10 @@
+## 1.1.2 2025-06-24
+
+* Handle duplicate item IDs in search response (MCBFF-107)
+* Forward check-out requests in secure tenant to mod-requests-mediated (MCBFF-95)
+* Fix central tenant check-in for item with hold request (MCBFF-88)
+* Close loan in secure tenant upon check-in in central tenant (MCBFF-90)
+
 ## 1.1.1 2025-04-23
 
 * Add `Location` and `LoanType` fields for `circulation-bff/requests/search-instances` endpoint (MCBFF-87)

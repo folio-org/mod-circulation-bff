@@ -177,7 +177,8 @@
           ],
           "modulePermissions": [
             "circulation.check-out-by-barcode.post",
-            "tlr.loans.check-out-by-barcode.execute"
+            "tlr.loans.check-out-by-barcode.execute",
+            "requests-mediated.loans.check-out-by-barcode.execute"
           ]
         }
       ]
@@ -341,6 +342,10 @@
     {
       "id":  "instance-storage",
       "version": "11.0"
+    },
+    {
+      "id":  "loan-storage",
+      "version": "7.3"
     }
   ],
   "optional": [
@@ -363,6 +368,10 @@
     {
       "id": "requests-mediated-actions",
       "version": "1.1"
+    },
+    {
+      "id": "requests-mediated-loans",
+      "version": "1.0"
     },
     {
       "id": "ecs-tlr-allowed-service-points",
@@ -403,6 +412,8 @@
         "inventory-storage.location-units.institutions.item.get",
         "inventory-storage.location-units.institutions.collection.get",
         "circulation.check-in-by-barcode.post",
+        "circulation-storage.loans.item.get",
+        "circulation-storage.loans.collection.get",
         "mod-settings.entries.item.get",
         "mod-settings.entries.collection.get",
         "mod-settings.global.read.circulation"
