@@ -9,12 +9,14 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
+import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,4 +54,9 @@ public interface CirculationClient {
     @RequestParam("limit") Integer limit,
     @RequestParam("offset") Integer offset,
     @RequestParam("totalRecords") String totalRecords);
+
+  @PostMapping("/loans/{loanId}/declare-item-lost")
+  ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,
+    @RequestBody DeclareItemLostRequest request);
+
 }

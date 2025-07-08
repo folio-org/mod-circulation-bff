@@ -1,0 +1,17 @@
+type: object
+description: Request body schema for declare item lost API
+properties:
+  declaredLostDateTime:
+    description: The date and time when the item is to be declared lost
+    type: string
+    format: date-time
+  comment:
+    description: Comment explaining why the item has been declared lost
+    type: string
+  servicePointId:
+    description: Current service point, where the item is being declared lost
+    type: string
+    pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+required:
+  - declaredLostDateTime
+  - servicePointId

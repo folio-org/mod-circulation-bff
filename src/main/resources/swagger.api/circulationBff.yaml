@@ -27,6 +27,8 @@ paths:
     $ref: 'paths/checkIn/checkIn.yaml'
   /circulation-bff/loans/check-out-by-barcode:
     $ref: 'paths/checkOut/checkOut.yaml'
+  /circulation-bff/loans/{loanId}/declare-item-lost:
+    $ref: 'paths/declareItemLost/declareItemLost.yaml'
 components:
   schemas:
     tlrSettings:

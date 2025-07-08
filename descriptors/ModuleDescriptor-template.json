@@ -228,6 +228,20 @@
             "tlr.loans.check-out-by-barcode.execute",
             "requests-mediated.loans.check-out-by-barcode.execute"
           ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/{loanId}/declare-item-lost",
+          "permissionsRequired": [
+            "circulation-bff.loans.declare-item-lost.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.declare-item-lost.execute",
+            "requests-mediated.loans.declare-item-lost.execute",
+            "circulation.loans.declare-item-lost.post"
+          ]
         }
       ]
     },
@@ -322,6 +336,11 @@
       "permissionName": "circulation-bff.loans.collection.get",
       "displayName": "circulation BFF - circulation loans by query",
       "description": "circulation loans by query with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.declare-item-lost.execute",
+      "displayName": "circulation BFF - declare item lost",
+      "description": "declare item lost"
     }
   ],
   "requires": [
