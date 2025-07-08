@@ -23,7 +23,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 
 import lombok.SneakyThrows;
 
-public class CirculationBffDeclareItemLostApiTest extends BaseIT {
+class CirculationBffDeclareItemLostApiTest extends BaseIT {
+
   private static final String DECLARE_ITEM_LOST_PATH = "/circulation-bff/loans/%s/declare-item-lost";
   private static final String CIRCULATION_DECLARE_ITEM_LOST_URL = "/circulation/loans/%s/declare-item-lost";
   private static final String TLR_DECLARE_ITEM_LOST_URL = "/tlr/loans/%s/declare-item-lost";
