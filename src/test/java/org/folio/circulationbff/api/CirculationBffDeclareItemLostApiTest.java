@@ -27,7 +27,7 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
   private static final String DECLARE_ITEM_LOST_PATH = "/circulation-bff/loans/%s/declare-item-lost";
   private static final String CIRCULATION_DECLARE_ITEM_LOST_URL = "/circulation/loans/%s/declare-item-lost";
-  private static final String TLR_DECLARE_ITEM_LOST_URL = "/tlr/loans/%s/declare-item-lost";
+  private static final String TLR_DECLARE_ITEM_LOST_URL = "/tlr/loans/declare-item-lost";
   private static final String REQUESTS_MEDIATED_DECLARE_ITEM_LOST_URL = "/requests-mediated/loans/%s/declare-item-lost";
   @Mock
   private TenantService tenantService;
@@ -74,8 +74,8 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
         .headers(defaultHeaders())
         .contentType(APPLICATION_JSON)
         .content(asJsonString(new DeclareItemLostRequest()
-        .declaredLostDateTime(new Date())
-        .servicePointId(UUID.randomUUID().toString()))))
+          .declaredLostDateTime(new Date())
+          .servicePointId(UUID.randomUUID().toString()))))
       .andExpect(status().isNoContent());
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(TLR_DECLARE_ITEM_LOST_URL, loanId)))

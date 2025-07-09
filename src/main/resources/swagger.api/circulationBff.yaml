@@ -73,3 +73,7 @@ components:
       $ref: 'schemas/dto/search/consortiumItem.yaml'
     loans:
       $ref: 'schemas/dto/circulation/loans.json'
+    declareItemLostRequest:
+      $ref: 'schemas/dto/circulation/declareItemLostRequest.yaml'
+    tlrDeclareItemLostRequest:
+      $ref: 'schemas/dto/ecsTlr/tlrDeclareItemLostRequest.yaml'

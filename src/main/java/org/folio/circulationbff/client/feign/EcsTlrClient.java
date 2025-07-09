@@ -12,6 +12,7 @@ import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
+import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -46,7 +47,6 @@ public interface EcsTlrClient {
   @PostMapping("/loans/check-out-by-barcode")
   CheckOutResponse checkOutByBarcode(@RequestBody CheckOutRequest checkOutRequest);
 
-  @PostMapping("/loans/{loanId}/declare-item-lost")
-  ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,
-    @RequestBody DeclareItemLostRequest request);
+  @PostMapping("/loans/declare-item-lost")
+  ResponseEntity<Void> declareItemLost(@RequestBody TlrDeclareItemLostRequest request);
 }

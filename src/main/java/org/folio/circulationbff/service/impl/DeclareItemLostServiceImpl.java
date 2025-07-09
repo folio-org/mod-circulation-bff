@@ -6,8 +6,8 @@ import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
+import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.service.DeclareItemLostService;
-import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,12 @@ public class DeclareItemLostServiceImpl implements DeclareItemLostService {
 
     if (tenantService.isCentralTenant(currentTenantId)) {
       log.info("declareItemLost:: doing declare item lost in central tenant");
-      return ecsTlrClient.declareItemLost(loanId, itemLostRequest);
+
+      return ecsTlrClient.declareItemLost(new TlrDeclareItemLostRequest()
+        .declaredLostDateTime(itemLostRequest.getDeclaredLostDateTime())
+        .comment(itemLostRequest.getComment())
+        .servicePointId(itemLostRequest.getServicePointId())
+        .loanId(loanId));
     }
 
     if (tenantService.isCurrentTenantSecure()) {

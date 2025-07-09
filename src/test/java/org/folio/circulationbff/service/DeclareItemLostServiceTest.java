@@ -11,6 +11,7 @@ import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
+import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.service.impl.DeclareItemLostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,14 +60,15 @@ class DeclareItemLostServiceTest {
 
   @Test
   void shouldUseEcsTlrClientWhenCentralTenant() {
+    var tlrRequest = new TlrDeclareItemLostRequest().loanId(loanId);
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
-    when(ecsTlrClient.declareItemLost(loanId, request)).thenReturn(response);
+    when(ecsTlrClient.declareItemLost(tlrRequest)).thenReturn(response);
 
     ResponseEntity<Void> result = service.declareItemLost(loanId, request);
 
     assertEquals(response, result);
-    verify(ecsTlrClient).declareItemLost(loanId, request);
+    verify(ecsTlrClient).declareItemLost(tlrRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
 
