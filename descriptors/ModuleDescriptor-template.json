@@ -234,9 +234,7 @@
             "POST"
           ],
           "pathPattern": "/circulation-bff/loans/{loanId}/declare-item-lost",
-          "permissionsRequired": [
-            "circulation-bff.loans.declare-item-lost.execute"
-          ],
+          "permissionsRequired": [],
           "modulePermissions": [
             "tlr.loans.declare-item-lost.execute",
             "requests-mediated.loans.declare-item-lost.execute",
