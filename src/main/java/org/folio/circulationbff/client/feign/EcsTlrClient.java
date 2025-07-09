@@ -1,13 +1,10 @@
 package org.folio.circulationbff.client.feign;
 
-import java.util.UUID;
-
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
-import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
