@@ -72,19 +72,20 @@ class DeclareItemLostServiceTest {
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
 
-  @Test
-  void shouldUseRequestMediatedClientWhenCurrentTenantSecure() {
-    when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
-    when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
-    when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-    when(requestMediatedClient.declareItemLost(loanId, request)).thenReturn(response);
+@Test
+void shouldUseRequestMediatedClientWhenCurrentTenantSecure() {
+  when(tenantService.getCurrentTenantId()).thenReturn(tenantId);
+  when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
+  when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
+  when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
+  when(requestMediatedClient.declareItemLost(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+  ResponseEntity<Void> result = service.declareItemLost(loanId, request);
 
-    assertEquals(response, result);
-    verify(requestMediatedClient).declareItemLost(loanId, request);
-    verifyNoMoreInteractions(circulationClient, ecsTlrClient);
-  }
+  assertEquals(response, result);
+  verify(requestMediatedClient).declareItemLost(loanId, request);
+  verifyNoMoreInteractions(circulationClient, ecsTlrClient);
+}
 
   @Test
   void shouldFallbackToCirculationClientWhenNotCentralOrSecure() {
