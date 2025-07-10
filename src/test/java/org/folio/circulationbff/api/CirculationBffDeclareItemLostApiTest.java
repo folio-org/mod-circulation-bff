@@ -47,7 +47,7 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
     performDeclareItemLost(TENANT_ID_COLLEGE, loanId, new DeclareItemLostRequest()
       .declaredLostDateTime(new Date())
-      .servicePointId(UUID.randomUUID().toString()));
+      .servicePointId(UUID.randomUUID()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(CIRCULATION_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
@@ -68,7 +68,7 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
     performDeclareItemLost(TENANT_ID_CONSORTIUM, loanId, new DeclareItemLostRequest()
       .declaredLostDateTime(new Date())
-      .servicePointId(UUID.randomUUID().toString()));
+      .servicePointId(UUID.randomUUID()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(TLR_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
@@ -90,7 +90,7 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
     performDeclareItemLost(TENANT_ID_SECURE, loanId, new DeclareItemLostRequest()
       .declaredLostDateTime(new Date())
-      .servicePointId(UUID.randomUUID().toString()));
+      .servicePointId(UUID.randomUUID()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(REQUESTS_MEDIATED_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE)));
@@ -112,7 +112,7 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
     performDeclareItemLost(TENANT_ID_COLLEGE, loanId, new DeclareItemLostRequest()
       .declaredLostDateTime(new Date())
-      .servicePointId(UUID.randomUUID().toString()));
+      .servicePointId(UUID.randomUUID()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(CIRCULATION_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
