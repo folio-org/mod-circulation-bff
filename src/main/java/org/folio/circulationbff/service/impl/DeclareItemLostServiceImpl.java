@@ -51,7 +51,7 @@ public class DeclareItemLostServiceImpl implements DeclareItemLostService {
         .loanId(loanId));
     }
 
-    if (tenantService.isCurrentTenantSecure()) {
+    if (tenantService.isSecureTenant(currentTenantId)) {
       log.info("declareItemLost:: doing declare item lost in secure tenant");
       return requestMediatedClient.declareItemLost(loanId, itemLostRequest);
     }

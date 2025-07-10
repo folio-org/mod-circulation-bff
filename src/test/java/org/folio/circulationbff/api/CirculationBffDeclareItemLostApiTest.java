@@ -25,7 +25,7 @@ import lombok.SneakyThrows;
 
 class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
-  private static final String DECLARE_ITEM_LOST_PATH = "/circulation-bff/loans/%s/declare-item-lost";
+  private static final String DECLARE_ITEM_LOST_URL = "/circulation-bff/loans/%s/declare-item-lost";
   private static final String CIRCULATION_DECLARE_ITEM_LOST_URL = "/circulation/loans/%s/declare-item-lost";
   private static final String TLR_DECLARE_ITEM_LOST_URL = "/tlr/loans/declare-item-lost";
   private static final String REQUESTS_MEDIATED_DECLARE_ITEM_LOST_URL = "/requests-mediated/loans/%s/declare-item-lost";
@@ -43,15 +43,11 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
 
     wireMockServer.stubFor(WireMock.post(urlPathEqualTo(String.format(CIRCULATION_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
-      .willReturn(jsonResponse("", SC_NO_CONTENT)));
+      .willReturn(WireMock.noContent()));
 
-    mockMvc.perform(post(String.format(DECLARE_ITEM_LOST_PATH, loanId))
-        .headers(buildHeaders(TENANT_ID_COLLEGE))
-        .contentType(APPLICATION_JSON)
-        .content(asJsonString(new DeclareItemLostRequest()
-        .declaredLostDateTime(new Date())
-        .servicePointId(UUID.randomUUID().toString()))))
-      .andExpect(status().isNoContent());
+    performDeclareItemLost(TENANT_ID_COLLEGE, loanId, new DeclareItemLostRequest()
+      .declaredLostDateTime(new Date())
+      .servicePointId(UUID.randomUUID().toString()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(CIRCULATION_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
@@ -70,13 +66,9 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse("", SC_NO_CONTENT)));
 
-    mockMvc.perform(post(String.format(DECLARE_ITEM_LOST_PATH, loanId))
-        .headers(defaultHeaders())
-        .contentType(APPLICATION_JSON)
-        .content(asJsonString(new DeclareItemLostRequest()
-          .declaredLostDateTime(new Date())
-          .servicePointId(UUID.randomUUID().toString()))))
-      .andExpect(status().isNoContent());
+    performDeclareItemLost(TENANT_ID_CONSORTIUM, loanId, new DeclareItemLostRequest()
+      .declaredLostDateTime(new Date())
+      .servicePointId(UUID.randomUUID().toString()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(TLR_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
@@ -96,13 +88,9 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE))
       .willReturn(jsonResponse("", SC_NO_CONTENT)));
 
-    mockMvc.perform(post(String.format(DECLARE_ITEM_LOST_PATH, loanId))
-        .headers(buildHeaders(TENANT_ID_SECURE))
-        .contentType(APPLICATION_JSON)
-        .content(asJsonString(new DeclareItemLostRequest()
-        .declaredLostDateTime(new Date())
-        .servicePointId(UUID.randomUUID().toString()))))
-      .andExpect(status().isNoContent());
+    performDeclareItemLost(TENANT_ID_SECURE, loanId, new DeclareItemLostRequest()
+      .declaredLostDateTime(new Date())
+      .servicePointId(UUID.randomUUID().toString()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(REQUESTS_MEDIATED_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE)));
@@ -122,15 +110,19 @@ class CirculationBffDeclareItemLostApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse("", SC_NO_CONTENT)));
 
-    mockMvc.perform(post(String.format(DECLARE_ITEM_LOST_PATH, loanId))
-        .headers(buildHeaders(TENANT_ID_COLLEGE))
-        .contentType(APPLICATION_JSON)
-        .content(asJsonString(new DeclareItemLostRequest()
-        .declaredLostDateTime(new Date())
-        .servicePointId(UUID.randomUUID().toString()))))
-      .andExpect(status().isNoContent());
+    performDeclareItemLost(TENANT_ID_COLLEGE, loanId, new DeclareItemLostRequest()
+      .declaredLostDateTime(new Date())
+      .servicePointId(UUID.randomUUID().toString()));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(CIRCULATION_DECLARE_ITEM_LOST_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+  }
+
+  private void performDeclareItemLost(String tenantId, String loanId, DeclareItemLostRequest request) throws Exception {
+    mockMvc.perform(post(String.format(DECLARE_ITEM_LOST_URL, loanId))
+        .headers(buildHeaders(tenantId))
+        .contentType(APPLICATION_JSON)
+        .content(asJsonString(request)))
+      .andExpect(status().isNoContent());
   }
 }
