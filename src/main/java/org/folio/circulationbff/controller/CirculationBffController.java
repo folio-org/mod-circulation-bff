@@ -226,7 +226,7 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<Void> declareItemLost(UUID loanId, DeclareItemLostRequest declareLostRequest) {
-    log.info("declareItemLost:: loanId: {}, declareItemLostRequest: {}", () -> loanId, () -> declareLostRequest);
+    log.info("declareItemLost:: loanId: {}, declareItemLostRequest: {}", loanId, declareLostRequest);
     return declareItemLostService.declareItemLost(loanId, declareLostRequest);
   }
 }
