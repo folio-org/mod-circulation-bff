@@ -1,0 +1,28 @@
+post:
+  operationId: declareItemLost
+  description: Declares item lost
+  tags:
+    - declareItemLost
+  parameters:
+    - name: loanId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the loan
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/dto/circulation/declareItemLostRequest.yaml'
+    required: true
+  responses:
+    '204':
+      description: The loaned item has been successfully declared lost
+    '422':
+      $ref: '../../responses/unprocessableEntityResponse.yaml'
+    '404':
+      $ref: '../../responses/notFoundResponse.yaml'
+    '500':
+      $ref: '../../responses/internalServerErrorResponse.yaml'
