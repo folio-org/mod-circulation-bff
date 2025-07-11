@@ -16,6 +16,7 @@ import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
+import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
@@ -30,6 +31,7 @@ import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.CheckOutService;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.CirculationLoanService;
+import org.folio.circulationbff.service.DeclareItemLostService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
@@ -55,6 +57,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final CheckInService checkInService;
   private final CheckOutService checkOutService;
   private final CirculationLoanService circulationLoanService;
+  private final DeclareItemLostService declareItemLostService;
 
   @Override
   public ResponseEntity<PostEcsRequestExternal201Response> postEcsRequestExternal(
@@ -219,5 +222,11 @@ public class CirculationBffController implements CirculationBffApi {
     log.warn("handleFeignException:: forwarding error response with status {} from {}",
       e::getStatusCode, e::getUrl);
     return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBody());
+  }
+
+  @Override
+  public ResponseEntity<Void> declareItemLost(UUID loanId, DeclareItemLostRequest declareLostRequest) {
+    log.info("declareItemLost:: loanId: {}, declareItemLostRequest: {}", loanId, declareLostRequest);
+    return declareItemLostService.declareItemLost(loanId, declareLostRequest);
   }
 }
