@@ -116,8 +116,7 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public Collection<BffSearchInstance> findInstances(String idIndex, Collection<String> values) {
     Collection<SearchInstance> searchInstances = fetchingService.fetchByUuidIndex(
-      searchInstancesClient, values,
-      idIndex, SearchInstances::getInstances);
+      searchInstancesClient, values, idIndex, SearchInstances::getInstances);
 
     return toBffSearchInstances(searchInstances);
   }
