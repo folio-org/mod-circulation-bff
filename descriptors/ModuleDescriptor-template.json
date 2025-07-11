@@ -80,7 +80,7 @@
     },
     {
       "id": "circulation-bff-requests",
-      "version": "1.2",
+      "version": "1.3",
       "handlers": [
         {
           "methods": [
@@ -139,8 +139,56 @@
     },
     {
       "id": "circulation-bff-loans",
-      "version": "1.2",
+      "version": "1.4",
       "handlers": [
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/circulation-bff/loans",
+          "permissionsRequired": [
+            "circulation-bff.loans.collection.get"
+          ],
+          "modulePermissions": [
+            "circulation.loans.collection.get",
+            "user-tenants.collection.get",
+            "search.instances.collection.get",
+            "inventory-storage.items.item.get",
+            "inventory-storage.items.collection.get",
+            "inventory-storage.locations.item.get",
+            "inventory-storage.locations.collection.get",
+            "inventory-storage.service-points.item.get",
+            "inventory-storage.service-points.collection.get",
+            "inventory-storage.location-units.libraries.item.get",
+            "inventory-storage.location-units.libraries.collection.get",
+            "inventory-storage.location-units.campuses.item.get",
+            "inventory-storage.location-units.campuses.collection.get",
+            "inventory-storage.location-units.institutions.item.get",
+            "inventory-storage.location-units.institutions.collection.get"
+          ]
+        },
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/circulation-bff/loans/{id}",
+          "permissionsRequired": [
+            "circulation-bff.loans.item.get"
+          ],
+          "modulePermissions": [
+            "circulation.loans.item.get",
+            "user-tenants.collection.get",
+            "search.instances.collection.get",
+            "inventory-storage.items.item.get",
+            "inventory-storage.items.collection.get",
+            "inventory-storage.locations.item.get",
+            "inventory-storage.locations.collection.get",
+            "inventory-storage.service-points.item.get",
+            "inventory-storage.service-points.collection.get",
+            "inventory-storage.location-units.libraries.item.get",
+            "inventory-storage.location-units.libraries.collection.get",
+            "inventory-storage.location-units.campuses.item.get",
+            "inventory-storage.location-units.campuses.collection.get",
+            "inventory-storage.location-units.institutions.item.get",
+            "inventory-storage.location-units.institutions.collection.get"
+          ]
+        },
         {
           "methods": [
             "POST"
@@ -179,6 +227,20 @@
             "circulation.check-out-by-barcode.post",
             "tlr.loans.check-out-by-barcode.execute",
             "requests-mediated.loans.check-out-by-barcode.execute"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/{loanId}/declare-item-lost",
+          "permissionsRequired": [
+            "circulation-bff.loans.declare-item-lost.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.declare-item-lost.execute",
+            "requests-mediated.loans.declare-item-lost.execute",
+            "circulation.loans.declare-item-lost.post"
           ]
         }
       ]
@@ -264,6 +326,21 @@
       "permissionName": "circulation-bff.loans.check-out-by-barcode.execute",
       "displayName": "circulation BFF - check-out item",
       "description": "check-out item"
+    },
+    {
+      "permissionName": "circulation-bff.loans.item.get",
+      "displayName": "circulation BFF - circulation loan by id",
+      "description": "circulation loan by id with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.collection.get",
+      "displayName": "circulation BFF - circulation loans by query",
+      "description": "circulation loans by query with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.declare-item-lost.execute",
+      "displayName": "circulation BFF - declare item lost",
+      "description": "declare item lost"
     }
   ],
   "requires": [
@@ -371,15 +448,23 @@
     },
     {
       "id": "requests-mediated-loans",
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "id": "ecs-tlr-allowed-service-points",
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "id": "ecs-tlr",
       "version": "1.0"
+    },
+    {
+      "id": "allowed-service-points",
+      "version": "1.2"
+    },
+    {
+      "id": "ecs-loans",
+      "version": "1.1"
     }
   ],
   "metadata": {
