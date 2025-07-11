@@ -139,7 +139,7 @@
     },
     {
       "id": "circulation-bff-loans",
-      "version": "1.3",
+      "version": "1.4",
       "handlers": [
         {
           "methods": [ "GET" ],
@@ -227,6 +227,20 @@
             "circulation.check-out-by-barcode.post",
             "tlr.loans.check-out-by-barcode.execute",
             "requests-mediated.loans.check-out-by-barcode.execute"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/{loanId}/declare-item-lost",
+          "permissionsRequired": [
+            "circulation-bff.loans.declare-item-lost.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.declare-item-lost.execute",
+            "requests-mediated.loans.declare-item-lost.execute",
+            "circulation.loans.declare-item-lost.post"
           ]
         }
       ]
@@ -322,6 +336,11 @@
       "permissionName": "circulation-bff.loans.collection.get",
       "displayName": "circulation BFF - circulation loans by query",
       "description": "circulation loans by query with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.declare-item-lost.execute",
+      "displayName": "circulation BFF - declare item lost",
+      "description": "declare item lost"
     }
   ],
   "requires": [
@@ -429,7 +448,7 @@
     },
     {
       "id": "requests-mediated-loans",
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "id": "ecs-tlr-allowed-service-points",
@@ -438,6 +457,14 @@
     {
       "id": "ecs-tlr",
       "version": "1.0"
+    },
+    {
+      "id": "allowed-service-points",
+      "version": "1.2"
+    },
+    {
+      "id": "ecs-loans",
+      "version": "1.1"
     }
   ],
   "metadata": {
