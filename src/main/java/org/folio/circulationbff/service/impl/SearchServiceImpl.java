@@ -24,7 +24,8 @@ import org.folio.circulationbff.client.feign.ItemStorageClient;
 import org.folio.circulationbff.client.feign.LoanTypeClient;
 import org.folio.circulationbff.client.feign.LocationClient;
 import org.folio.circulationbff.client.feign.MaterialTypeClient;
-import org.folio.circulationbff.client.feign.SearchClient;
+import org.folio.circulationbff.client.feign.SearchInstancesClient;
+import org.folio.circulationbff.client.feign.SearchItemsClient;
 import org.folio.circulationbff.client.feign.ServicePointClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.BffSearchItem;
@@ -76,7 +77,8 @@ public class SearchServiceImpl implements SearchService {
   private final MaterialTypeClient materialTypeClient;
   private final LoanTypeClient loanTypeClient;
   private final ServicePointClient servicePointClient;
-  private final SearchClient searchClient;
+  private final SearchInstancesClient searchInstancesClient;
+  private final SearchItemsClient searchItemsClient;
   private final InstanceStorageClient instanceStorageClient;
   private final SystemUserScopedExecutionService executionService;
   private final BulkFetchingService fetchingService;
@@ -87,7 +89,7 @@ public class SearchServiceImpl implements SearchService {
   public SearchInstance findInstanceByItemId(String itemId) {
     log.info("findInstanceByItemId:: itemId {}", itemId);
     String query = "items.id==" + itemId;
-    SearchInstances searchResult = searchClient.findInstances(query, true);
+    SearchInstances searchResult = searchInstancesClient.findInstances(query, true);
     if (CollectionUtils.isEmpty(searchResult.getInstances())) {
       return null;
     }
@@ -97,7 +99,7 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public Optional<SearchInstance> findInstanceByItemBarcode(String itemBarcode) {
     log.info("findInstanceByItemBarcode:: itemBarcode {}", itemBarcode);
-    return searchClient.findInstances("items.barcode==" + itemBarcode, true)
+    return searchInstancesClient.findInstances("items.barcode==" + itemBarcode, true)
       .getInstances()
       .stream()
       .findFirst();
@@ -108,14 +110,27 @@ public class SearchServiceImpl implements SearchService {
     log.info("findConsortiumItem:: looking for item {}", itemId);
     // this call is only allowed in central tenant
     return executionService.executeSystemUserScoped(tenantService.getCentralTenantId().orElseThrow(),
-      () -> searchClient.searchItem(itemId));
+      () -> searchItemsClient.searchItem(itemId));
+  }
+
+  @Override
+  public Collection<BffSearchInstance> findInstances(String idIndex, Collection<String> values) {
+    Collection<SearchInstance> searchInstances = fetchingService.fetchByUuidIndex(
+      searchInstancesClient, values, idIndex, SearchInstances::getInstances);
+
+    return toBffSearchInstances(searchInstances);
   }
 
   @Override
   public Collection<BffSearchInstance> findInstances(String query) {
     log.info("findInstances:: searching instances by query: {}", query);
-    final SearchInstances searchResult = searchClient.findInstances(query, true);
-    final List<SearchInstance> searchInstances = searchResult.getInstances();
+    SearchInstances searchResult = searchInstancesClient.findInstances(query, true);
+
+    return toBffSearchInstances(searchResult.getInstances());
+  }
+
+  private Collection<BffSearchInstance> toBffSearchInstances(
+    Collection<SearchInstance> searchInstances) {
 
     if (searchInstances.isEmpty()) {
       log.info("findInstances:: no instances found");
@@ -194,7 +209,7 @@ public class SearchServiceImpl implements SearchService {
 
   private Collection<Instance> fetchInstances(Collection<String> ids) {
     log.info("fetchInstances: fetching {} instances", ids::size);
-    return fetchingService.fetch(instanceStorageClient, ids, Instances::getInstances);
+    return fetchingService.fetchByIds(instanceStorageClient, ids, Instances::getInstances);
   }
 
   private Collection<ItemContext> buildItemContexts(Collection<SearchItem> searchItems) {
@@ -225,33 +240,33 @@ public class SearchServiceImpl implements SearchService {
 
   private Collection<Item> fetchItems(Collection<String> ids) {
     log.info("fetchItems: fetching {} items", ids::size);
-    return fetchingService.fetch(itemStorageClient, ids, Items::getItems);
+    return fetchingService.fetchByIds(itemStorageClient, ids, Items::getItems);
   }
 
   private Map<String, HoldingsRecord> fetchHoldingsRecords(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getHoldingsRecordId);
     log.info("fetchHoldingsRecords: fetching {} holdingsRecords", ids::size);
-    return fetchingService.fetch(holdingsStorageClient, ids, HoldingsRecords::getHoldingsRecords,
+    return fetchingService.fetchByIds(holdingsStorageClient, ids, HoldingsRecords::getHoldingsRecords,
       HoldingsRecord::getId);
   }
 
   private Map<String, Location> fetchLocations(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getEffectiveLocationId);
     log.info("fetchLocations: fetching {} locations", ids::size);
-    return fetchingService.fetch(locationClient, ids, Locations::getLocations, Location::getId);
+    return fetchingService.fetchByIds(locationClient, ids, Locations::getLocations, Location::getId);
   }
 
   private Map<String, ServicePoint> fetchServicePoints(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getInTransitDestinationServicePointId);
     log.info("fetchServicePoints: fetching {} service points", ids::size);
-    return fetchingService.fetch(servicePointClient, ids, ServicePoints::getServicepoints,
+    return fetchingService.fetchByIds(servicePointClient, ids, ServicePoints::getServicepoints,
       ServicePoint::getId);
   }
 
   private Map<String, MaterialType> fetchMaterialTypes(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getMaterialTypeId);
     log.info("fetchMaterialTypes: fetching {} material types", ids::size);
-    return fetchingService.fetch(materialTypeClient, ids, MaterialTypes::getMtypes,
+    return fetchingService.fetchByIds(materialTypeClient, ids, MaterialTypes::getMtypes,
       MaterialType::getId);
   }
 
@@ -263,7 +278,7 @@ public class SearchServiceImpl implements SearchService {
 
     log.info("fetchLoanTypes:: fetching {} loan types", ids.size());
 
-    return fetchingService.fetch(loanTypeClient, ids, LoanTypes::getLoantypes, LoanType::getId);
+    return fetchingService.fetchByIds(loanTypeClient, ids, LoanTypes::getLoantypes, LoanType::getId);
   }
 
   private Collection<BffSearchInstance> buildBffSearchInstances(

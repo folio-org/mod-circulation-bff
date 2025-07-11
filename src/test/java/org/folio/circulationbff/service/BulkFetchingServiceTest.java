@@ -48,28 +48,54 @@ class BulkFetchingServiceTest {
       .toList();
 
     Collection<Integer> result = new BulkFetchingServiceImpl()
-      .fetch(getByQueryClient, ids, identity());
+      .fetchByIds(getByQueryClient, ids, identity());
 
     assertThat(result, containsInAnyOrder(1, 2, 3, 4));
     verify(getByQueryClient, times(2)).getByQuery(cqlQueryArgumentCaptor.capture(), any(Integer.class));
     List<CqlQuery> actualQueries = cqlQueryArgumentCaptor.getAllValues();
     List<String> actualQueryStrings = actualQueries.stream().map(CqlQuery::query).toList();
-    String expectedFirstQueryString = idsToQuery(ids.subList(0, MAX_IDS_PER_QUERY));
-    String expectedSecondQueryString = idsToQuery(ids.subList(MAX_IDS_PER_QUERY, ids.size()));
+    String expectedFirstQueryString = idsToQuery("id", ids.subList(0, MAX_IDS_PER_QUERY));
+    String expectedSecondQueryString = idsToQuery("id", ids.subList(MAX_IDS_PER_QUERY, ids.size()));
     assertThat(actualQueryStrings,
       containsInAnyOrder(expectedFirstQueryString, expectedSecondQueryString));
   }
 
   @Test
-  void fetchDoesNothingWhenListOfIdsIsEmpty() {
-    new BulkFetchingServiceImpl().fetch(getByQueryClient, emptyList(), identity());
+  void fetchMultipleBatchesByUuidIndex() {
+    Collection<Integer> firstPage = List.of(1, 2);
+    Collection<Integer> secondPage = List.of(3, 4);
+
+    when(getByQueryClient.getByQuery(any(CqlQuery.class), any(Integer.class)))
+      .thenReturn(firstPage, secondPage);
+
+    List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
+      .boxed()
+      .map(String::valueOf)
+      .toList();
+
+    Collection<Integer> result = new BulkFetchingServiceImpl()
+      .fetchByUuidIndex(getByQueryClient, ids, "somethingId", identity());
+
+    assertThat(result, containsInAnyOrder(1, 2, 3, 4));
+    verify(getByQueryClient, times(2)).getByQuery(cqlQueryArgumentCaptor.capture(), any(Integer.class));
+    List<CqlQuery> actualQueries = cqlQueryArgumentCaptor.getAllValues();
+    List<String> actualQueryStrings = actualQueries.stream().map(CqlQuery::query).toList();
+    String expectedFirstQueryString = idsToQuery("somethingId", ids.subList(0, MAX_IDS_PER_QUERY));
+    String expectedSecondQueryString = idsToQuery("somethingId", ids.subList(MAX_IDS_PER_QUERY, ids.size()));
+    assertThat(actualQueryStrings,
+      containsInAnyOrder(expectedFirstQueryString, expectedSecondQueryString));
+  }
+
+  @Test
+  void fetchByIdsDoesNothingWhenListOfIdsIsEmpty() {
+    new BulkFetchingServiceImpl().fetchByIds(getByQueryClient, emptyList(), identity());
     verify(getByQueryClient, times(0)).getByQuery(any(CqlQuery.class), any(Integer.class));
   }
 
-  private static <T> String idsToQuery(Collection<T> ids) {
+  private static <T> String idsToQuery(String index, Collection<T> ids) {
     return ids.stream()
       .map(id -> "\"" + id + "\"")
-      .collect(joining(" or ", "id==(", ")"));
+      .collect(joining(" or ", index + "==(", ")"));
   }
 
 }
