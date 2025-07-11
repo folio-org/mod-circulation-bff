@@ -80,7 +80,7 @@
     },
     {
       "id": "circulation-bff-requests",
-      "version": "1.2",
+      "version": "1.3",
       "handlers": [
         {
           "methods": [
@@ -139,7 +139,7 @@
     },
     {
       "id": "circulation-bff-loans",
-      "version": "1.2",
+      "version": "1.4",
       "handlers": [
         {
           "methods": [
@@ -179,6 +179,20 @@
             "circulation.check-out-by-barcode.post",
             "tlr.loans.check-out-by-barcode.execute",
             "requests-mediated.loans.check-out-by-barcode.execute"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/{loanId}/declare-item-lost",
+          "permissionsRequired": [
+            "circulation-bff.loans.declare-item-lost.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.declare-item-lost.execute",
+            "requests-mediated.loans.declare-item-lost.execute",
+            "circulation.loans.declare-item-lost.post"
           ]
         }
       ]
@@ -264,6 +278,21 @@
       "permissionName": "circulation-bff.loans.check-out-by-barcode.execute",
       "displayName": "circulation BFF - check-out item",
       "description": "check-out item"
+    },
+    {
+      "permissionName": "circulation-bff.loans.item.get",
+      "displayName": "circulation BFF - circulation loan by id",
+      "description": "circulation loan by id with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.collection.get",
+      "displayName": "circulation BFF - circulation loans by query",
+      "description": "circulation loans by query with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.declare-item-lost.execute",
+      "displayName": "circulation BFF - declare item lost",
+      "description": "declare item lost"
     }
   ],
   "requires": [
@@ -371,7 +400,7 @@
     },
     {
       "id": "requests-mediated-loans",
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "id": "ecs-tlr-allowed-service-points",
@@ -380,6 +409,14 @@
     {
       "id": "ecs-tlr",
       "version": "1.0"
+    },
+    {
+      "id": "allowed-service-points",
+      "version": "1.2"
+    },
+    {
+      "id": "ecs-loans",
+      "version": "1.1"
     }
   ],
   "metadata": {
