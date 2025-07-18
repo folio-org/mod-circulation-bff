@@ -75,9 +75,8 @@ class CirculationLoanServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
 
-    var expectedItemsCql = String.format("item.id==(\"%s\")", ITEM_ID);
     var bffSearchInstance = bffSearchInstance(bffSearchItem());
-    when(searchService.findInstances(expectedItemsCql)).thenReturn(List.of(bffSearchInstance));
+    when(searchService.findInstances("item.id", List.of(ITEM_ID))).thenReturn(List.of(bffSearchInstance));
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
 
     var expectedResult = new CirculationLoans()
@@ -99,9 +98,8 @@ class CirculationLoanServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
 
-    var expectedItemsCql = String.format("item.id==(\"%s\")", ITEM_ID);
     var bffSearchInstance = bffSearchInstance(bffSearchItem());
-    when(searchService.findInstances(expectedItemsCql)).thenReturn(List.of(bffSearchInstance));
+    when(searchService.findInstances("item.id", List.of(ITEM_ID))).thenReturn(List.of(bffSearchInstance));
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
 
     var expectedResult = new CirculationLoans()
@@ -154,13 +152,12 @@ class CirculationLoanServiceTest {
     var foundLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(true, dcbLoanItem())))
       .totalRecords(1);
-    var expectedItemsCql = String.format("item.id==(\"%s\")", ITEM_ID);
     var bffSearchInstance = bffSearchInstance();
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
-    when(searchService.findInstances(expectedItemsCql)).thenReturn(List.of(bffSearchInstance));
+    when(searchService.findInstances("item.id", List.of(ITEM_ID))).thenReturn(List.of(bffSearchInstance));
 
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
 
@@ -227,11 +224,11 @@ class CirculationLoanServiceTest {
   void getCirculationLoanByIdForDcbItem() {
     var loanId = UUID.fromString(LOAN_ID);
     var circulationLoan = circulationLoan(true, dcbLoanItem());
-    var query = "item.id==(\"" + ITEM_ID + "\")";
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
-    when(searchService.findInstances(query)).thenReturn(List.of(bffSearchInstance(bffSearchItem())));
+    when(searchService.findInstances("item.id", List.of(ITEM_ID)))
+      .thenReturn(List.of(bffSearchInstance(bffSearchItem())));
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
@@ -246,9 +243,8 @@ class CirculationLoanServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(tenantService.isCurrentTenantCentral()).thenReturn(false);
-
-    var query = "item.id==(\"" + ITEM_ID + "\")";
-    when(searchService.findInstances(query)).thenReturn(List.of(bffSearchInstance(bffSearchItem())));
+    when(searchService.findInstances("item.id", List.of(ITEM_ID)))
+      .thenReturn(List.of(bffSearchInstance(bffSearchItem())));
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
@@ -259,11 +255,11 @@ class CirculationLoanServiceTest {
   void getCirculationLoanByIdForDcbItemWhenItemNotFound() {
     var loanId = UUID.fromString(LOAN_ID);
     var circulationLoan = circulationLoan(true, dcbLoanItem());
-    var query = "item.id==(\"" + ITEM_ID + "\")";
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
-    when(searchService.findInstances(query)).thenReturn(List.of(bffSearchInstance()));
+    when(searchService.findInstances("item.id", List.of(ITEM_ID)))
+      .thenReturn(List.of(bffSearchInstance()));
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
