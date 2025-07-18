@@ -3,7 +3,6 @@ package org.folio.circulationbff.service.impl;
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
-import static org.folio.circulationbff.support.CqlQuery.exactMatchAny;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -122,7 +121,8 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   }
 
   private Map<String, BffSearchInstance> getBffInstancesByItemId(List<String> itemIds) {
-    return searchService.findInstances(exactMatchAny("item.id", itemIds).toString()).stream()
+    return searchService.findInstances("item.id", itemIds)
+      .stream()
       .flatMap(CirculationLoanServiceImpl::getInstanceByItemEntry)
       .collect(toMap(Entry::getKey, Entry::getValue, (o1, o2) -> o2));
   }
