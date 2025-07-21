@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import org.folio.circulationbff.client.feign.SearchClient;
+import org.folio.circulationbff.client.feign.SearchInstancesClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.SearchInstance;
@@ -37,7 +37,7 @@ class SearchServiceTest {
 
   private static final String TENANT_ID_CONSORTIUM = "consortium";
 
-  @Mock private SearchClient searchClient;
+  @Mock private SearchInstancesClient searchInstancesClient;
   @Mock private SearchInstanceMapper searchInstanceMapper;
   @Mock private SystemUserScopedExecutionService executionService;
   @Mock private BulkFetchingService fetchingService;
@@ -54,7 +54,7 @@ class SearchServiceTest {
       .instances(List.of(instance))
       .totalRecords(1);
     String query = "items.id==" + itemId;
-    when(searchClient.findInstances(query, true))
+    when(searchInstancesClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
     SearchInstance response = searchService.findInstanceByItemId(itemId);
@@ -70,7 +70,7 @@ class SearchServiceTest {
       .instances(emptyList())
       .totalRecords(0);
 
-    when(searchClient.findInstances(query, true))
+    when(searchInstancesClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
     Collection<BffSearchInstance> response = searchService.findInstances(query);
@@ -87,7 +87,7 @@ class SearchServiceTest {
       .addInstancesItem(searchInstance)
       .totalRecords(1);
 
-    when(searchClient.findInstances(query, true))
+    when(searchInstancesClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
     BffSearchInstance bffSearchInstance = new BffSearchInstance().id(instanceId).tenantId(TENANT_ID_CONSORTIUM);
@@ -97,7 +97,7 @@ class SearchServiceTest {
     mockSystemUserScopedExecutionService();
 
     Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
-    when(fetchingService.fetch(any(), any(), any()))
+    when(fetchingService.fetchByIds(any(), any(), any()))
       .thenReturn(List.of(instance));
 
     Collection<BffSearchInstance> response = searchService.findInstances(query);
@@ -127,7 +127,7 @@ class SearchServiceTest {
 
     BffSearchInstance mockBffSearchInstance = new BffSearchInstance().id(instanceId).tenantId(TENANT_ID_CONSORTIUM);
 
-    when(searchClient.findInstances(query, true))
+    when(searchInstancesClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
     when(searchInstanceMapper.toBffSearchInstanceWithoutItems(searchInstance))
@@ -172,7 +172,7 @@ class SearchServiceTest {
     mockSystemUserScopedExecutionService();
 
     var query = "items.id==" + itemId;
-    when(searchClient.findInstances(query, true))
+    when(searchInstancesClient.findInstances(query, true))
       .thenReturn(mockSearchResponse);
 
     var response = searchService.findInstances(query);
