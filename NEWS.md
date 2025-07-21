@@ -1,3 +1,6 @@
+## 1.0.21 2025-07-21
+* Search instances by itemId in batches (MCBFF-122)
+
 ## 1.0.20 2025-06-04
 * Handle duplicate item IDs in search response (MCBFF-107)
 
