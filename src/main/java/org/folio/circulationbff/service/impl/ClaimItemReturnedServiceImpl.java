@@ -29,7 +29,7 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
 
   @Override
   public ResponseEntity<Void> claimItemReturned(UUID loanId, ClaimItemReturnedRequest claimItemReturnedRequest) {
-    log.info("claimItemReturned:: loanId: {}, claimItemReturnedRequest: {}", () -> loanId, () -> claimItemReturnedRequest);
+    log.info("claimItemReturned:: loanId: {}, claimItemReturnedRequest: {}", loanId, claimItemReturnedRequest);
 
     String currentTenantId = tenantService.getCurrentTenantId();
 
@@ -41,7 +41,7 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
     log.info("claimItemReturned:: ECS TLR feature is enabled for tenant: {}", currentTenantId);
 
     if (tenantService.isCentralTenant(currentTenantId)) {
-      log.info("claimItemReturned:: doing claim item returned in central tenant");
+      log.info("claimItemReturned:: doing claiming item returned in central tenant");
       return ecsTlrClient.claimItemReturned(new TlrClaimItemReturnedRequest()
         .loanId(loanId)
         .itemClaimedReturnedDateTime(claimItemReturnedRequest.getItemClaimedReturnedDateTime())
