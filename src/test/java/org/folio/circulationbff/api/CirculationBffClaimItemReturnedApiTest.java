@@ -27,7 +27,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
   private static final String CLAIM_ITEM_RETURNED_URL = "/circulation-bff/loans/%s/claim-item-returned";
   private static final String CIRCULATION_CLAIM_ITEM_RETURNED_URL = "/circulation/loans/%s/claim-item-returned";
-  private static final String TLR_CLAIM_ITEM_RETURNED_URL = "/tlr/loans/%s/claim-item-returned";
+  private static final String TLR_CLAIM_ITEM_RETURNED_URL = "/tlr/loans/claim-item-returned";
   private static final String REQUESTS_MEDIATED_CLAIM_ITEM_RETURNED_URL = "/requests-mediated/loans/%s/claim-item-returned";
   @Mock
   private TenantService tenantService;
@@ -62,7 +62,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
     mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(true);
 
-    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(String.format(TLR_CLAIM_ITEM_RETURNED_URL, loanId)))
+    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(TLR_CLAIM_ITEM_RETURNED_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse("", SC_NO_CONTENT)));
 
@@ -70,7 +70,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
       .itemClaimedReturnedDateTime(new Date())
       .comment("Returned at desk"));
 
-    wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(TLR_CLAIM_ITEM_RETURNED_URL, loanId)))
+    wireMockServer.verify(postRequestedFor(urlPathEqualTo(TLR_CLAIM_ITEM_RETURNED_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
   }
 
