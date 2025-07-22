@@ -43,9 +43,9 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
     if (tenantService.isCentralTenant(currentTenantId)) {
       log.info("claimItemReturned:: doing claim item returned in central tenant");
       return ecsTlrClient.claimItemReturned(new TlrClaimItemReturnedRequest()
-          .loanId(loanId)
-          .itemClaimedReturnedDateTime(claimItemReturnedRequest.getItemClaimedReturnedDateTime())
-          .comment(claimItemReturnedRequest.getComment()));
+        .loanId(loanId)
+        .itemClaimedReturnedDateTime(claimItemReturnedRequest.getItemClaimedReturnedDateTime())
+        .comment(claimItemReturnedRequest.getComment()));
     }
 
     if (tenantService.isSecureTenant(currentTenantId)) {
