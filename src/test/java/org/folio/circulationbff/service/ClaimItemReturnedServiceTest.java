@@ -10,9 +10,9 @@ import java.util.UUID;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
-import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
-import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
-import org.folio.circulationbff.service.impl.DeclareItemLostServiceImpl;
+import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
+import org.folio.circulationbff.domain.dto.TlrClaimItemReturnedRequest;
+import org.folio.circulationbff.service.impl.ClaimItemReturnedServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,7 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-class DeclareItemLostServiceTest {
+class ClaimItemReturnedServiceTest {
 
   @Mock
   private SettingsService settingsService;
@@ -33,10 +33,10 @@ class DeclareItemLostServiceTest {
   @Mock
   private RequestMediatedClient requestMediatedClient;
   @InjectMocks
-  private DeclareItemLostServiceImpl service;
+  private ClaimItemReturnedServiceImpl service;
 
   private final UUID loanId = UUID.randomUUID();
-  private final DeclareItemLostRequest request = new DeclareItemLostRequest();
+  private final ClaimItemReturnedRequest request = new ClaimItemReturnedRequest();
   private final String tenantId = "tenant";
   private final ResponseEntity<Void> response = ResponseEntity.ok().build();
 
@@ -49,59 +49,56 @@ class DeclareItemLostServiceTest {
   @Test
   void shouldUseCirculationClientWhenEcsTlrFeatureDisabled() {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
-    when(circulationClient.declareItemLost(loanId, request)).thenReturn(response);
+    when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
 
     assertEquals(response, result);
-    verify(circulationClient).declareItemLost(loanId, request);
+    verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
 
   @Test
   void shouldUseEcsTlrClientWhenCentralTenant() {
-    var tlrRequest = new TlrDeclareItemLostRequest()
-      .declaredLostDateTime(request.getDeclaredLostDateTime())
-      .comment(request.getComment())
-      .servicePointId(request.getServicePointId())
+    var tlrClaimItemReturnedRequest = new TlrClaimItemReturnedRequest()
       .loanId(loanId);
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
-    when(ecsTlrClient.declareItemLost(tlrRequest)).thenReturn(response);
+    when(ecsTlrClient.claimItemReturned(tlrClaimItemReturnedRequest)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
 
     assertEquals(response, result);
-    verify(ecsTlrClient).declareItemLost(tlrRequest);
+    verify(ecsTlrClient).claimItemReturned(tlrClaimItemReturnedRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
 
-@Test
-void shouldUseRequestMediatedClientWhenCurrentTenantSecure() {
-  when(tenantService.getCurrentTenantId()).thenReturn(tenantId);
-  when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
-  when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
-  when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
-  when(requestMediatedClient.declareItemLost(loanId, request)).thenReturn(response);
+  @Test
+  void shouldUseRequestMediatedClientWhenCurrentTenantSecure() {
+    when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
+    when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
+    when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
+    when(requestMediatedClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-  ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
 
-  assertEquals(response, result);
-  verify(requestMediatedClient).declareItemLost(loanId, request);
-  verifyNoMoreInteractions(circulationClient, ecsTlrClient);
-}
+    assertEquals(response, result);
+    verify(requestMediatedClient).claimItemReturned(loanId, request);
+    verifyNoMoreInteractions(circulationClient, ecsTlrClient);
+  }
 
   @Test
   void shouldFallbackToCirculationClientWhenNotCentralOrSecure() {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
-    when(tenantService.isCurrentTenantSecure()).thenReturn(false);
-    when(circulationClient.declareItemLost(loanId, request)).thenReturn(response);
+    when(tenantService.isSecureTenant(tenantId)).thenReturn(false);
+    when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
 
     assertEquals(response, result);
-    verify(circulationClient).declareItemLost(loanId, request);
+    verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
 }
+
