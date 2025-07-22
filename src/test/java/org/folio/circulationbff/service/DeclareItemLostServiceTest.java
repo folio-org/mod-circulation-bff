@@ -60,11 +60,7 @@ class DeclareItemLostServiceTest {
 
   @Test
   void shouldUseEcsTlrClientWhenCentralTenant() {
-    var tlrRequest = new TlrDeclareItemLostRequest()
-      .declaredLostDateTime(request.getDeclaredLostDateTime())
-      .comment(request.getComment())
-      .servicePointId(request.getServicePointId())
-      .loanId(loanId);
+    var tlrRequest = new TlrDeclareItemLostRequest().loanId(loanId);
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
     when(ecsTlrClient.declareItemLost(tlrRequest)).thenReturn(response);
