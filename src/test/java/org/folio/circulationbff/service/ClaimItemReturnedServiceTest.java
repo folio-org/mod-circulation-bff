@@ -1,9 +1,11 @@
 package org.folio.circulationbff.service;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.is;
 
 import java.util.UUID;
 
@@ -51,9 +53,7 @@ class ClaimItemReturnedServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
     when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
-
-    assertEquals(response, result);
+    assertEquals(response, service.claimItemReturned(loanId, request));
     verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
@@ -66,9 +66,7 @@ class ClaimItemReturnedServiceTest {
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
     when(ecsTlrClient.claimItemReturned(tlrClaimItemReturnedRequest)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
-
-    assertEquals(response, result);
+    assertThat(service.claimItemReturned(loanId, request), is(response));
     verify(ecsTlrClient).claimItemReturned(tlrClaimItemReturnedRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
@@ -80,9 +78,7 @@ class ClaimItemReturnedServiceTest {
     when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
     when(requestMediatedClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
-
-    assertEquals(response, result);
+    assertThat(service.claimItemReturned(loanId, request), is(response));
     verify(requestMediatedClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(circulationClient, ecsTlrClient);
   }
@@ -94,9 +90,7 @@ class ClaimItemReturnedServiceTest {
     when(tenantService.isSecureTenant(tenantId)).thenReturn(false);
     when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.claimItemReturned(loanId, request);
-
-    assertEquals(response, result);
+    assertThat(service.claimItemReturned(loanId, request), is(response));
     verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
