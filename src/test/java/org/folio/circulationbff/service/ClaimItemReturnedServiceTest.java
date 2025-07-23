@@ -1,11 +1,10 @@
 package org.folio.circulationbff.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.hamcrest.Matchers.is;
 
 import java.util.UUID;
 
@@ -53,7 +52,7 @@ class ClaimItemReturnedServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
     when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    assertEquals(response, service.claimItemReturned(loanId, request));
+    assertThat(service.claimItemReturned(loanId, request), is(response));
     verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }

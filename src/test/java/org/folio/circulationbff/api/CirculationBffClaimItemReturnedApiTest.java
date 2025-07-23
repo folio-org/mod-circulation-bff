@@ -9,13 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Date;
-import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.circulationbff.domain.dto.UserTenant;
-import org.folio.circulationbff.service.TenantService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 
@@ -27,8 +24,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
   private static final String CIRCULATION_CLAIM_ITEM_RETURNED_URL = "/circulation/loans/%s/claim-item-returned";
   private static final String TLR_CLAIM_ITEM_RETURNED_URL = "/tlr/loans/claim-item-returned";
   private static final String REQUESTS_MEDIATED_CLAIM_ITEM_RETURNED_URL = "/requests-mediated/loans/%s/claim-item-returned";
-  @Mock
-  private TenantService tenantService;
+
 
   @Test
   void callsCirculationWhenEcsTlrDisabled() {
