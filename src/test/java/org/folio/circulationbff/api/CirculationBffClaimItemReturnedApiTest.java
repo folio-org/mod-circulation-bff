@@ -1,14 +1,12 @@
 package org.folio.circulationbff.api;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.noContent;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static wiremock.org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
 import java.util.Date;
 import java.util.UUID;
@@ -33,7 +31,6 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
   private TenantService tenantService;
 
   @Test
-  @SneakyThrows
   void callsCirculationWhenEcsTlrDisabled() {
     var loanId = UUID.randomUUID().toString();
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
@@ -43,7 +40,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
     wireMockServer.stubFor(WireMock.post(urlPathEqualTo(String.format(CIRCULATION_CLAIM_ITEM_RETURNED_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
-      .willReturn(WireMock.noContent()));
+      .willReturn(noContent()));
 
     performClaimItemReturned(TENANT_ID_COLLEGE, loanId, new ClaimItemReturnedRequest()
       .itemClaimedReturnedDateTime(new Date())
@@ -54,7 +51,6 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
   }
 
   @Test
-  @SneakyThrows
   void callsTlrWhenEcsTlrEnabledInCentralTenant() {
     var loanId = UUID.randomUUID().toString();
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
@@ -64,7 +60,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
     wireMockServer.stubFor(WireMock.post(urlPathEqualTo(TLR_CLAIM_ITEM_RETURNED_URL))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse("", SC_NO_CONTENT)));
+      .willReturn(noContent()));
 
     performClaimItemReturned(TENANT_ID_CONSORTIUM, loanId, new ClaimItemReturnedRequest()
       .itemClaimedReturnedDateTime(new Date())
@@ -75,18 +71,16 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
   }
 
   @Test
-  @SneakyThrows
   void callsRequestMediatedWhenEcsTlrEnabledAndCurrentTenantSecure() {
     var loanId = UUID.randomUUID().toString();
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_SECURE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_SECURE);
     mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_SECURE);
-    when(tenantService.isCurrentTenantSecure()).thenReturn(true);
 
     wireMockServer.stubFor(WireMock.post(urlPathEqualTo(String.format(REQUESTS_MEDIATED_CLAIM_ITEM_RETURNED_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE))
-      .willReturn(jsonResponse("", SC_NO_CONTENT)));
+      .willReturn(noContent()));
 
     performClaimItemReturned(TENANT_ID_SECURE, loanId, new ClaimItemReturnedRequest()
       .itemClaimedReturnedDateTime(new Date())
@@ -97,18 +91,16 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
   }
 
   @Test
-  @SneakyThrows
   void fallbackToCirculationWhenEcsTlrEnabledButNotCentralOrSecure() {
     var loanId = UUID.randomUUID().toString();
     var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
     mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
-    when(tenantService.isCurrentTenantSecure()).thenReturn(false);
 
     wireMockServer.stubFor(WireMock.post(urlPathEqualTo(String.format(CIRCULATION_CLAIM_ITEM_RETURNED_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
-      .willReturn(jsonResponse("", SC_NO_CONTENT)));
+      .willReturn(noContent()));
 
     performClaimItemReturned(TENANT_ID_COLLEGE, loanId, new ClaimItemReturnedRequest()
       .itemClaimedReturnedDateTime(new Date())
@@ -118,7 +110,8 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
   }
 
-  private void performClaimItemReturned(String tenantId, String loanId, ClaimItemReturnedRequest request) throws Exception {
+  @SneakyThrows
+  private void performClaimItemReturned(String tenantId, String loanId, ClaimItemReturnedRequest request) {
     mockMvc.perform(post(String.format(CLAIM_ITEM_RETURNED_URL, loanId))
         .headers(buildHeaders(tenantId))
         .contentType(APPLICATION_JSON)

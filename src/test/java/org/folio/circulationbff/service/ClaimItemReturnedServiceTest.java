@@ -38,7 +38,7 @@ class ClaimItemReturnedServiceTest {
   private final UUID loanId = UUID.randomUUID();
   private final ClaimItemReturnedRequest request = new ClaimItemReturnedRequest();
   private final String tenantId = "tenant";
-  private final ResponseEntity<Void> response = ResponseEntity.ok().build();
+  private final ResponseEntity<Void> response = ResponseEntity.noContent().build();
 
   @BeforeEach
   void setUp() {
