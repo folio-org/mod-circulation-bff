@@ -41,7 +41,7 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
     log.info("claimItemReturned:: ECS TLR feature is enabled for tenant: {}", currentTenantId);
 
     if (tenantService.isCentralTenant(currentTenantId)) {
-      log.info("claimItemReturned:: doing claiming item returned in central tenant");
+      log.info("claimItemReturned:: claiming item returned in central tenant");
       return ecsTlrClient.claimItemReturned(new TlrClaimItemReturnedRequest()
         .loanId(loanId)
         .itemClaimedReturnedDateTime(claimItemReturnedRequest.getItemClaimedReturnedDateTime())
@@ -49,7 +49,7 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
     }
 
     if (tenantService.isSecureTenant(currentTenantId)) {
-      log.info("claimItemReturned:: doing claim item returned in secure tenant");
+      log.info("claimItemReturned:: claimimg item returned in secure tenant");
       return requestMediatedClient.claimItemReturned(loanId, claimItemReturnedRequest);
     }
 
