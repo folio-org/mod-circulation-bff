@@ -32,8 +32,8 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
   @Test
   void callsCirculationWhenEcsTlrDisabled() {
-    var loanId = UUID.randomUUID().toString();
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
+    var loanId = randomId();
+    var userTenant = new UserTenant(randomId(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
     mockHelper.mockEcsTlrCirculationSettings(false, TENANT_ID_COLLEGE);
@@ -52,8 +52,8 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
   @Test
   void callsTlrWhenEcsTlrEnabledInCentralTenant() {
-    var loanId = UUID.randomUUID().toString();
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_CONSORTIUM);
+    var loanId = randomId();
+    var userTenant = new UserTenant(randomId(), TENANT_ID_CONSORTIUM);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(true);
@@ -72,8 +72,8 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
   @Test
   void callsRequestMediatedWhenEcsTlrEnabledAndCurrentTenantSecure() {
-    var loanId = UUID.randomUUID().toString();
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_SECURE);
+    var loanId = randomId();
+    var userTenant = new UserTenant(randomId(), TENANT_ID_SECURE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_SECURE);
     mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_SECURE);
@@ -92,8 +92,8 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
   @Test
   void fallbackToCirculationWhenEcsTlrEnabledButNotCentralOrSecure() {
-    var loanId = UUID.randomUUID().toString();
-    var userTenant = new UserTenant(UUID.randomUUID().toString(), TENANT_ID_COLLEGE);
+    var loanId = randomId();
+    var userTenant = new UserTenant(randomId(), TENANT_ID_COLLEGE);
     userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
     mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
     mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_COLLEGE);
