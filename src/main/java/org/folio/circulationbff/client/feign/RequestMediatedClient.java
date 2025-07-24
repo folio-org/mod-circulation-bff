@@ -1,7 +1,10 @@
 package org.folio.circulationbff.client.feign;
 
+import java.util.UUID;
+
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
+import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -28,4 +31,8 @@ public interface RequestMediatedClient {
 
   @PostMapping("/loans/check-out-by-barcode")
   CheckOutResponse checkOutByBarcode(@RequestBody CheckOutRequest request);
+
+  @PostMapping("/loans/{loanId}/declare-item-lost")
+  ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,
+    @RequestBody DeclareItemLostRequest request);
 }
