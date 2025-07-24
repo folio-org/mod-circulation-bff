@@ -11,10 +11,6 @@ paths:
     $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
   /circulation-bff/requests:
     $ref: 'paths/requests/requests.yaml'
-  /circulation-bff/loans:
-    $ref: 'paths/loans/loans.yaml'
-  /circulation-bff/loans/{loanId}:
-    $ref: 'paths/loans/loanById.yaml'
   /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
     $ref: 'paths/externalUser/externalUser.yaml'
   /circulation-bff/pick-slips/{servicePointId}:
