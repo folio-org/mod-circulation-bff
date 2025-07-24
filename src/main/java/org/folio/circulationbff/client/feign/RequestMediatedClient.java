@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
+import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.spring.config.FeignClientConfiguration;
@@ -35,4 +36,8 @@ public interface RequestMediatedClient {
   @PostMapping("/loans/{loanId}/declare-item-lost")
   ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,
     @RequestBody DeclareItemLostRequest request);
+
+  @PostMapping("/loans/{loanId}/claim-item-returned")
+  ResponseEntity<Void> claimItemReturned(@PathVariable("loanId") UUID loanId,
+    @RequestBody ClaimItemReturnedRequest request);
 }

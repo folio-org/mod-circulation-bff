@@ -29,6 +29,8 @@ paths:
     $ref: 'paths/checkOut/checkOut.yaml'
   /circulation-bff/loans/{loanId}/declare-item-lost:
     $ref: 'paths/declareItemLost/declareItemLost.yaml'
+  /circulation-bff/loans/{loanId}/claim-item-returned:
+    $ref: 'paths/claimItemReturned/claimItemReturned.yaml'
 components:
   schemas:
     tlrSettings:
@@ -77,3 +79,7 @@ components:
       $ref: 'schemas/dto/circulation/declareItemLostRequest.yaml'
     tlrDeclareItemLostRequest:
       $ref: 'schemas/dto/ecsTlr/tlrDeclareItemLostRequest.yaml'
+    claimItemReturnedRequest:
+      $ref: 'schemas/dto/circulation/claimItemReturnedRequest.yaml'
+    tlrClaimItemReturnedRequest:
+      $ref: 'schemas/dto/ecsTlr/tlrClaimItemReturnedRequest.yaml'
