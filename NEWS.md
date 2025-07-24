@@ -1,3 +1,8 @@
+## 1.1.3 2025-06-24
+
+* Implement Declare item lost API (MCBFF-125)
+* Refactor schemas, OpenAPI files (MCBFF-18)
+
 ## 1.1.2 2025-06-24
 
 * Handle duplicate item IDs in search response (MCBFF-107)
