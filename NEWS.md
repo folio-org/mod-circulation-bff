@@ -1,3 +1,7 @@
+## 1.0.22 2025-07-25
+* Implement Declare item lost API (MCBFF-114)
+* Refactor schemas, OpenAPI files (MCBFF-18)
+
 ## 1.0.21 2025-07-21
 * Search instances by itemId in batches (MCBFF-122)
 
