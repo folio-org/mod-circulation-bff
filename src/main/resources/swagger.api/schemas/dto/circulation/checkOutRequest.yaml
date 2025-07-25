@@ -54,7 +54,6 @@ properties:
       comment:
         description: Reason for override
         type: string
-
 required:
   - itemBarcode
   - userBarcode
