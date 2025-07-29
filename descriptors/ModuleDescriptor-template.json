@@ -242,6 +242,20 @@
             "requests-mediated.loans.declare-item-lost.execute",
             "circulation.loans.declare-item-lost.post"
           ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/{loanId}/claim-item-returned",
+          "permissionsRequired": [
+            "circulation-bff.loans.claim-item-returned.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.claim-item-returned.execute",
+            "requests-mediated.loans.claim-item-returned.execute",
+            "circulation.loans.claim-item-returned.post"
+          ]
         }
       ]
     },
@@ -328,11 +342,6 @@
       "description": "check-out item"
     },
     {
-      "permissionName": "circulation-bff.loans.declare-item-lost.execute",
-      "displayName": "circulation BFF - declare item lost",
-      "description": "declare item lost"
-    },
-    {
       "permissionName": "circulation-bff.loans.item.get",
       "displayName": "circulation BFF - circulation loan by id",
       "description": "circulation loan by id with extended instance/holding information"
@@ -341,6 +350,16 @@
       "permissionName": "circulation-bff.loans.collection.get",
       "displayName": "circulation BFF - circulation loans by query",
       "description": "circulation loans by query with extended instance/holding information"
+    },
+    {
+      "permissionName": "circulation-bff.loans.declare-item-lost.execute",
+      "displayName": "circulation BFF - declare item lost",
+      "description": "declare item lost"
+    },
+    {
+      "permissionName": "circulation-bff.loans.claim-item-returned.execute",
+      "displayName": "circulation BFF - claim item returned",
+      "description": "claim item returned"
     }
   ],
   "requires": [
@@ -353,8 +372,8 @@
       "version": "0.1"
     },
     {
-      "id": "search",
-      "version": "1.3"
+      "id": "search-inventory",
+      "version": "1.0"
     },
     {
       "id": "consortium-search",
@@ -382,7 +401,7 @@
     },
     {
       "id": "item-storage",
-      "version": "10.1"
+      "version": "10.1 11.0"
     },
     {
       "id": "holdings-storage",
@@ -448,7 +467,7 @@
     },
     {
       "id": "requests-mediated-loans",
-      "version": "1.0"
+      "version": "1.1"
     },
     {
       "id": "ecs-tlr-allowed-service-points",
@@ -464,7 +483,7 @@
     },
     {
       "id": "ecs-loans",
-      "version": "1.1"
+      "version": "1.2"
     }
   ],
   "metadata": {
