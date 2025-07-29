@@ -13,6 +13,7 @@ import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.circulationbff.domain.dto.TlrClaimItemReturnedRequest;
+import org.folio.circulationbff.domain.mapping.TlrClaimItemReturnedRequestMapper;
 import org.folio.circulationbff.service.impl.ClaimItemReturnedServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class ClaimItemReturnedServiceTest {
   private CirculationClient circulationClient;
   @Mock
   private RequestMediatedClient requestMediatedClient;
+  @Mock
+  private TlrClaimItemReturnedRequestMapper tlrClaimItemReturnedRequestMapper;
   @InjectMocks
   private ClaimItemReturnedServiceImpl service;
 
@@ -44,6 +47,7 @@ class ClaimItemReturnedServiceTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
+    service = new ClaimItemReturnedServiceImpl(settingsService, tenantService, ecsTlrClient, circulationClient, requestMediatedClient, tlrClaimItemReturnedRequestMapper);
     when(tenantService.getCurrentTenantId()).thenReturn(tenantId);
   }
 
@@ -59,10 +63,10 @@ class ClaimItemReturnedServiceTest {
 
   @Test
   void shouldUseEcsTlrClientWhenCentralTenant() {
-    var tlrClaimItemReturnedRequest = new TlrClaimItemReturnedRequest()
-      .loanId(loanId);
+    var tlrClaimItemReturnedRequest = new TlrClaimItemReturnedRequest().loanId(loanId);
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
+    when(tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, request)).thenReturn(tlrClaimItemReturnedRequest);
     when(ecsTlrClient.claimItemReturned(tlrClaimItemReturnedRequest)).thenReturn(response);
 
     assertThat(service.claimItemReturned(loanId, request), is(response));
@@ -94,4 +98,3 @@ class ClaimItemReturnedServiceTest {
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
 }
-

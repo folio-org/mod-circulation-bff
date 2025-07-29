@@ -6,7 +6,7 @@ import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
-import org.folio.circulationbff.domain.dto.TlrClaimItemReturnedRequest;
+import org.folio.circulationbff.domain.mapping.TlrClaimItemReturnedRequestMapper;
 import org.folio.circulationbff.service.ClaimItemReturnedService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
@@ -26,6 +26,7 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
   private final EcsTlrClient ecsTlrClient;
   private final CirculationClient circulationClient;
   private final RequestMediatedClient requestMediatedClient;
+  private final TlrClaimItemReturnedRequestMapper tlrClaimItemReturnedRequestMapper;
 
   @Override
   public ResponseEntity<Void> claimItemReturned(UUID loanId, ClaimItemReturnedRequest claimItemReturnedRequest) {
@@ -42,10 +43,9 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
 
     if (tenantService.isCentralTenant(currentTenantId)) {
       log.info("claimItemReturned:: claiming item returned in central tenant");
-      return ecsTlrClient.claimItemReturned(new TlrClaimItemReturnedRequest()
-        .loanId(loanId)
-        .itemClaimedReturnedDateTime(claimItemReturnedRequest.getItemClaimedReturnedDateTime())
-        .comment(claimItemReturnedRequest.getComment()));
+      return ecsTlrClient.claimItemReturned(
+        tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, claimItemReturnedRequest)
+      );
     }
 
     if (tenantService.isSecureTenant(currentTenantId)) {
