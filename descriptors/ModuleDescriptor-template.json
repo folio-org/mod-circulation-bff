@@ -139,7 +139,7 @@
     },
     {
       "id": "circulation-bff-loans",
-      "version": "1.4",
+      "version": "1.5",
       "handlers": [
         {
           "methods": [ "GET" ],
@@ -242,6 +242,20 @@
             "requests-mediated.loans.declare-item-lost.execute",
             "circulation.loans.declare-item-lost.post"
           ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/loans/{loanId}/claim-item-returned",
+          "permissionsRequired": [
+            "circulation-bff.loans.claim-item-returned.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.claim-item-returned.execute",
+            "requests-mediated.loans.claim-item-returned.execute",
+            "circulation.loans.claim-item-returned.post"
+          ]
         }
       ]
     },
@@ -341,6 +355,11 @@
       "permissionName": "circulation-bff.loans.declare-item-lost.execute",
       "displayName": "circulation BFF - declare item lost",
       "description": "declare item lost"
+    },
+    {
+      "permissionName": "circulation-bff.loans.claim-item-returned.execute",
+      "displayName": "circulation BFF - claim item returned",
+      "description": "claim item returned"
     }
   ],
   "requires": [
@@ -464,7 +483,7 @@
     },
     {
       "id": "ecs-loans",
-      "version": "1.1"
+      "version": "1.2"
     }
   ],
   "metadata": {
