@@ -49,7 +49,7 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
     }
 
     if (tenantService.isSecureTenant(currentTenantId)) {
-      log.info("claimItemReturned:: claimimg item returned in secure tenant");
+      log.info("claimItemReturned:: claiming item returned in secure tenant");
       return requestMediatedClient.claimItemReturned(loanId, claimItemReturnedRequest);
     }
 
@@ -57,4 +57,3 @@ public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
     return circulationClient.claimItemReturned(loanId, claimItemReturnedRequest);
   }
 }
-
