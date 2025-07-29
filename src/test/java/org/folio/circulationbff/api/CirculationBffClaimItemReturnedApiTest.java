@@ -1,11 +1,14 @@
 package org.folio.circulationbff.api;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.noContent;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Date;
@@ -26,6 +29,7 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
   private static final String REQUESTS_MEDIATED_CLAIM_ITEM_RETURNED_URL = "/requests-mediated/loans/%s/claim-item-returned";
 
 
+  @SneakyThrows
   @Test
   void callsCirculationWhenEcsTlrDisabled() {
     var loanId = randomId();
@@ -38,12 +42,20 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
       .willReturn(noContent()));
 
-    performClaimItemReturned(TENANT_ID_COLLEGE, loanId, new ClaimItemReturnedRequest()
+    var request = new ClaimItemReturnedRequest()
       .itemClaimedReturnedDateTime(new Date())
-      .comment("Returned at desk"));
+      .comment("Returned at desk");
+
+    mockMvc.perform(post(String.format(CLAIM_ITEM_RETURNED_URL, loanId))
+        .headers(buildHeaders(TENANT_ID_COLLEGE))
+        .contentType(APPLICATION_JSON)
+        .content(asJsonString(request)))
+      .andExpect(status().isNoContent())
+      .andExpect(content().string(""));
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(CIRCULATION_CLAIM_ITEM_RETURNED_URL, loanId)))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withRequestBody(containing("Returned at desk")));
   }
 
   @Test
@@ -104,6 +116,48 @@ class CirculationBffClaimItemReturnedApiTest extends BaseIT {
 
     wireMockServer.verify(postRequestedFor(urlPathEqualTo(String.format(CIRCULATION_CLAIM_ITEM_RETURNED_URL, loanId)))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+  }
+
+  @SneakyThrows
+  @Test
+  void validationFailsForMissingRequiredFields() {
+    var loanId = randomId();
+    var userTenant = new UserTenant(randomId(), TENANT_ID_COLLEGE);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
+    mockHelper.mockEcsTlrCirculationSettings(false, TENANT_ID_COLLEGE);
+
+    var invalidRequest = new ClaimItemReturnedRequest();
+
+    mockMvc.perform(post(String.format(CLAIM_ITEM_RETURNED_URL, loanId))
+        .headers(buildHeaders(TENANT_ID_COLLEGE))
+        .contentType(APPLICATION_JSON)
+        .content(asJsonString(invalidRequest)))
+      .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void downstreamServiceErrorIsPropagated() throws Exception {
+    var loanId = randomId();
+    var userTenant = new UserTenant(randomId(), TENANT_ID_COLLEGE);
+    userTenant.setCentralTenantId(TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(userTenant, TENANT_ID_COLLEGE);
+    mockHelper.mockEcsTlrCirculationSettings(false, TENANT_ID_COLLEGE);
+
+    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(String.format(CIRCULATION_CLAIM_ITEM_RETURNED_URL, loanId)))
+      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .willReturn(serverError().withBody("Downstream error")));
+
+    var request = new ClaimItemReturnedRequest()
+      .itemClaimedReturnedDateTime(new Date())
+      .comment("Returned at desk");
+
+    mockMvc.perform(post(String.format(CLAIM_ITEM_RETURNED_URL, loanId))
+        .headers(buildHeaders(TENANT_ID_COLLEGE))
+        .contentType(APPLICATION_JSON)
+        .content(asJsonString(request)))
+      .andExpect(status().isInternalServerError())
+      .andExpect(content().string("Downstream error"));
   }
 
   @SneakyThrows
