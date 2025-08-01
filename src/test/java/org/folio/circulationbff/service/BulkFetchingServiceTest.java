@@ -22,6 +22,7 @@ import java.util.stream.IntStream;
 import org.folio.circulationbff.client.feign.GetByQueryParamsClient;
 import org.folio.circulationbff.service.impl.BulkFetchingServiceImpl;
 import org.folio.circulationbff.support.CqlQuery;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -40,17 +41,13 @@ class BulkFetchingServiceTest {
 
   @Test
   void fetchMultipleBatchesByIds() {
+    List<String> ids = generateIds();
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
     when(getByQueryParamsClient.getByQueryParams(anyMap()))
       .thenReturn(firstPage)
       .thenReturn(secondPage);
-
-    List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
-      .boxed()
-      .map(String::valueOf)
-      .toList();
 
     Collection<Integer> result = new BulkFetchingServiceImpl()
       .fetchByIds(getByQueryParamsClient, ids, identity());
@@ -73,17 +70,13 @@ class BulkFetchingServiceTest {
 
   @Test
   void fetchMultipleBatchesByUuidIndex() {
+    List<String> ids = generateIds();
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
     when(getByQueryParamsClient.getByQueryParams(anyMap()))
       .thenReturn(firstPage)
       .thenReturn(secondPage);
-
-    List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
-      .boxed()
-      .map(String::valueOf)
-      .toList();
 
     Collection<Integer> result = new BulkFetchingServiceImpl()
       .fetchByUuidIndex(getByQueryParamsClient, "somethingId", ids, identity());
@@ -105,18 +98,14 @@ class BulkFetchingServiceTest {
   }
 
   @Test
-  void fetchMultipleBatchesByUuidIndexAndAdditionalQueryParams() {
+  void fetchMultipleBatchesByUuidIndexWithAdditionalQueryParams() {
+    List<String> ids = generateIds();
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
     when(getByQueryParamsClient.getByQueryParams(anyMap()))
       .thenReturn(firstPage)
       .thenReturn(secondPage);
-
-    List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
-      .boxed()
-      .map(String::valueOf)
-      .toList();
 
     Map<String, String> additionalQueryParams = Map.of("k1", "v1", "k2", "v2");
     Collection<Integer> result = new BulkFetchingServiceImpl()
@@ -143,6 +132,38 @@ class BulkFetchingServiceTest {
   }
 
   @Test
+  void fetchMultipleBatchesByUuidIndexWithAdditionalQueryParamsOverridesQueryAndLimit() {
+    List<String> ids = generateIds();
+    Collection<Integer> firstPage = List.of(1, 2);
+    Collection<Integer> secondPage = List.of(3, 4);
+
+    when(getByQueryParamsClient.getByQueryParams(anyMap()))
+      .thenReturn(firstPage)
+      .thenReturn(secondPage);
+
+    Map<String, String> additionalQueryParams = Map.of("k1", "v1", "query", "key=value", "limit", "test");
+    Collection<Integer> result = new BulkFetchingServiceImpl()
+      .fetchByUuidIndex(getByQueryParamsClient, "somethingId", ids, additionalQueryParams, identity());
+
+    assertThat(result, containsInAnyOrder(1, 2, 3, 4));
+    verify(getByQueryParamsClient, times(2)).getByQueryParams(queryParamsArgumentCaptor.capture());
+    List<Map<String, String>> actualQueryParams = queryParamsArgumentCaptor.getAllValues();
+    String expectedQuery1 = idsToQuery("somethingId", ids.subList(0, MAX_IDS_PER_QUERY));
+    String expectedQuery2 = idsToQuery("somethingId", ids.subList(MAX_IDS_PER_QUERY, ids.size()));
+
+    assertThat(actualQueryParams, containsInAnyOrder(
+      allOf(
+        hasEntry("query", expectedQuery1),
+        hasEntry("limit", String.valueOf(MAX_IDS_PER_QUERY)),
+        hasEntry("k1", "v1")),
+      allOf(
+        hasEntry("query", expectedQuery2),
+        hasEntry("limit", "1"),
+        hasEntry("k1", "v1"))
+    ));
+  }
+
+  @Test
   void fetchByIdsDoesNothingWhenListOfIdsIsEmpty() {
     new BulkFetchingServiceImpl().fetchByIds(getByQueryParamsClient, emptyList(), identity());
     verify(getByQueryParamsClient, times(0)).getByQuery(any(CqlQuery.class), any(Integer.class));
@@ -154,4 +175,10 @@ class BulkFetchingServiceTest {
       .collect(joining(" or ", index + "==(", ")"));
   }
 
+  private static List<String> generateIds() {
+    return IntStream.range(0, MAX_IDS_PER_QUERY + 1)
+      .boxed()
+      .map(String::valueOf)
+      .toList();
+  }
 }
