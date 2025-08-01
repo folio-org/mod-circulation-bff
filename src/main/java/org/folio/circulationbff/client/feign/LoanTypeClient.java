@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "loan-types", url = "loan-types",
   configuration = FeignClientConfiguration.class)
-public interface LoanTypeClient extends GetByQueryClient<LoanTypes> {
+public interface LoanTypeClient extends GetByQueryParamsClient<LoanTypes> {
 
   @GetMapping("/{id}")
   LoanType findLoanType(@PathVariable String id);

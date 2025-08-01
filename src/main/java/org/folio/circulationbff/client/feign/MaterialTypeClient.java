@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "material-types", url = "material-types",
   configuration = FeignClientConfiguration.class)
-public interface MaterialTypeClient extends GetByQueryClient<MaterialTypes> {
+public interface MaterialTypeClient extends GetByQueryParamsClient<MaterialTypes> {
 
   @GetMapping("/{id}")
   MaterialType findMaterialType(@PathVariable String id);
