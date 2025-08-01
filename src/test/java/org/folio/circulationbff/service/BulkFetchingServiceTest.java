@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,8 +43,9 @@ class BulkFetchingServiceTest {
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
-    when(getByQueryParamsClient.getByQueryParams(any(Map.class)))
-      .thenReturn(firstPage, secondPage);
+    when(getByQueryParamsClient.getByQueryParams(anyMap()))
+      .thenReturn(firstPage)
+      .thenReturn(secondPage);
 
     List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
       .boxed()
@@ -60,8 +62,12 @@ class BulkFetchingServiceTest {
     String expectedQuery2 = idsToQuery("id", ids.subList(MAX_IDS_PER_QUERY, ids.size()));
 
     assertThat(actualQueryParams, containsInAnyOrder(
-      allOf(hasEntry("query", expectedQuery1), hasEntry("limit", String.valueOf(MAX_IDS_PER_QUERY))),
-      allOf(hasEntry("query", expectedQuery2), hasEntry("limit", String.valueOf(ids.size() - MAX_IDS_PER_QUERY)))
+      allOf(
+        hasEntry("query", expectedQuery1),
+        hasEntry("limit", String.valueOf(MAX_IDS_PER_QUERY))),
+      allOf(
+        hasEntry("query", expectedQuery2),
+        hasEntry("limit", "1"))
     ));
   }
 
@@ -70,8 +76,9 @@ class BulkFetchingServiceTest {
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
-    when(getByQueryParamsClient.getByQueryParams(any(Map.class)))
-      .thenReturn(firstPage, secondPage);
+    when(getByQueryParamsClient.getByQueryParams(anyMap()))
+      .thenReturn(firstPage)
+      .thenReturn(secondPage);
 
     List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
       .boxed()
@@ -88,8 +95,12 @@ class BulkFetchingServiceTest {
     String expectedQuery2 = idsToQuery("somethingId", ids.subList(MAX_IDS_PER_QUERY, ids.size()));
 
     assertThat(actualQueryParams, containsInAnyOrder(
-      allOf(hasEntry("query", expectedQuery1), hasEntry("limit", String.valueOf(MAX_IDS_PER_QUERY))),
-      allOf(hasEntry("query", expectedQuery2), hasEntry("limit", String.valueOf(ids.size() - MAX_IDS_PER_QUERY)))
+      allOf(
+        hasEntry("query", expectedQuery1),
+        hasEntry("limit", String.valueOf(MAX_IDS_PER_QUERY))),
+      allOf(
+        hasEntry("query", expectedQuery2),
+        hasEntry("limit", "1"))
     ));
   }
 
@@ -98,8 +109,9 @@ class BulkFetchingServiceTest {
     Collection<Integer> firstPage = List.of(1, 2);
     Collection<Integer> secondPage = List.of(3, 4);
 
-    when(getByQueryParamsClient.getByQueryParams(any(Map.class)))
-      .thenReturn(firstPage, secondPage);
+    when(getByQueryParamsClient.getByQueryParams(anyMap()))
+      .thenReturn(firstPage)
+      .thenReturn(secondPage);
 
     List<String> ids = IntStream.range(0, MAX_IDS_PER_QUERY + 1)
       .boxed()
@@ -117,8 +129,16 @@ class BulkFetchingServiceTest {
     String expectedQuery2 = idsToQuery("somethingId", ids.subList(MAX_IDS_PER_QUERY, ids.size()));
 
     assertThat(actualQueryParams, containsInAnyOrder(
-      allOf(hasEntry("query", expectedQuery1), hasEntry("k1", "v1"), hasEntry("k2", "v2")),
-      allOf(hasEntry("query", expectedQuery2), hasEntry("k1", "v1"), hasEntry("k2", "v2"))
+      allOf(
+        hasEntry("query", expectedQuery1),
+        hasEntry("limit", String.valueOf(MAX_IDS_PER_QUERY)),
+        hasEntry("k1", "v1"),
+        hasEntry("k2", "v2")),
+      allOf(
+        hasEntry("query", expectedQuery2),
+        hasEntry("limit", "1"),
+        hasEntry("k1", "v1"),
+        hasEntry("k2", "v2"))
     ));
   }
 
