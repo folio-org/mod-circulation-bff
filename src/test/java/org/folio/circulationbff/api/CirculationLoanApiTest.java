@@ -346,6 +346,7 @@ class CirculationLoanApiTest extends BaseIT {
 
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/search/instances"))
       .withQueryParam("query", equalTo(CqlQuery.exactMatchAny("item.id", itemIds).toString()))
+      .withQueryParam("expandAll", equalTo("true"))
       .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(searchInstances), 200)));
   }
