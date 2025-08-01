@@ -35,9 +35,6 @@ class BulkFetchingServiceTest {
   private GetByQueryParamsClient<Collection<Integer>> getByQueryParamsClient;
 
   @Captor
-  private ArgumentCaptor<CqlQuery> cqlQueryArgumentCaptor;
-
-  @Captor
   private ArgumentCaptor<Map<String, String>> queryParamsArgumentCaptor;
 
   @Test
