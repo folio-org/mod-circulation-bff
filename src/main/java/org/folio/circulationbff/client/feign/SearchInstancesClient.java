@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "search", url = "search/instances", configuration = FeignClientConfiguration.class)
-public interface SearchInstancesClient extends GetByQueryClient<SearchInstances> {
+public interface SearchInstancesClient extends GetByQueryParamsClient<SearchInstances> {
 
   @GetMapping
   SearchInstances findInstances(@RequestParam String query, @RequestParam boolean expandAll);

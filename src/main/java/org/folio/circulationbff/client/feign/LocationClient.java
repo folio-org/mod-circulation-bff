@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "locations", url = "locations", configuration = FeignClientConfiguration.class)
-public interface LocationClient extends GetByQueryClient<Locations> {
+public interface LocationClient extends GetByQueryParamsClient<Locations> {
 
   @GetMapping("/{id}")
   Location findLocation(@PathVariable String id);
