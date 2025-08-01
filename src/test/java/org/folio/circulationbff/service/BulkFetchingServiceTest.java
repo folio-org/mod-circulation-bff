@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 import org.folio.circulationbff.client.feign.GetByQueryParamsClient;
 import org.folio.circulationbff.service.impl.BulkFetchingServiceImpl;
 import org.folio.circulationbff.support.CqlQuery;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
