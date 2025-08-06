@@ -249,7 +249,6 @@
           ],
           "pathPattern": "/circulation-bff/loans/{loanId}/claim-item-returned",
           "permissionsRequired": [
-            "circulation-bff.loans.claim-item-returned.execute"
           ],
           "modulePermissions": [
             "tlr.loans.claim-item-returned.execute",
