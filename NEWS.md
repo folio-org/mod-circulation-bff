@@ -1,3 +1,6 @@
+## 1.0.23 2025-08-11
+* Expand instance search to include item details (MCBFF-134)
+
 ## 1.0.22 2025-07-25
 * Implement Declare item lost API (MCBFF-114)
 * Refactor schemas, OpenAPI files (MCBFF-18)
