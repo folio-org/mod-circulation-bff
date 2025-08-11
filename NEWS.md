@@ -1,3 +1,8 @@
+## 1.1.4 2025-08-11
+
+* Tokens are not populated for Due date receipt for Mediated request ([MCBFF-104](https://folio-org.atlassian.net/browse/MCBFF-104))
+* ECS | Tokens are not populated for Due date receipt when requested in Central tenant ([MCBFF-102](https://folio-org.atlassian.net/browse/MCBFF-102))
+
 ## 1.1.3 2025-06-25
 
 * Implement Declare item lost API (MCBFF-125)
