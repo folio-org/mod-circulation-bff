@@ -4,7 +4,7 @@ get:
   parameters:
     - $ref: '../../parameters/loanId.yaml'
   tags:
-    - getCirculationLoanById
+    - circulation-loans
   responses:
     '200':
       description: 'Circulation loans with extended information'

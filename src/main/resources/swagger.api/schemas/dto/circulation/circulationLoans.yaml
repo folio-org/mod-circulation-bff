@@ -1,3 +1,4 @@
+$schema: "http://json-schema.org/draft-04/schema#"
 title: "Collection of loans"
 description: "Collection of circulation loans"
 type: "object"

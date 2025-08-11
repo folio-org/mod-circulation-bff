@@ -1,0 +1,10 @@
+name: offset
+in: query
+required: false
+schema:
+  type: integer
+  description: Skip over a number of elements by specifying an offset value for the query
+  default: 0
+  example: 0
+  minimum: 0
+  maximum: 2147483647
