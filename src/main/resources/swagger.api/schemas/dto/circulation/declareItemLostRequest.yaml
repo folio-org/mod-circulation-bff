@@ -12,6 +12,7 @@ properties:
     description: Current service point, where the item is being declared lost
     type: string
     format: uuid
+additionalProperties: true
 required:
   - declaredLostDateTime
   - servicePointId
