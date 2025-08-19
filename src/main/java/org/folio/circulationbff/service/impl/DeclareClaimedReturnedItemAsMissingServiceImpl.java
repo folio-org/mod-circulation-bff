@@ -18,7 +18,7 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @Log4j2
 public class DeclareClaimedReturnedItemAsMissingServiceImpl
-  extends LoanActionServiceImpl<DeclareClaimedReturnedItemAsMissingRequest>
+  extends AbstractLoanActionService<DeclareClaimedReturnedItemAsMissingRequest>
   implements DeclareClaimedReturnedItemAsMissingService {
 
   private final EcsTlrClient ecsTlrClient;

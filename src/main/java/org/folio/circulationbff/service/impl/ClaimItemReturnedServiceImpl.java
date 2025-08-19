@@ -19,7 +19,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-public class ClaimItemReturnedServiceImpl extends LoanActionServiceImpl<ClaimItemReturnedRequest>
+public class ClaimItemReturnedServiceImpl extends AbstractLoanActionService<ClaimItemReturnedRequest>
   implements ClaimItemReturnedService {
 
   private final EcsTlrClient ecsTlrClient;

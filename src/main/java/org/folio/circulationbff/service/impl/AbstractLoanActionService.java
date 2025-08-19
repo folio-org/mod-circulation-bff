@@ -13,13 +13,13 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public abstract class LoanActionServiceImpl<R> {
+public abstract class AbstractLoanActionService<R> {
 
   private final SettingsService settingsService;
   private final TenantService tenantService;
 
   ResponseEntity<Void> perform(UUID loanId, R request) {
-    log.info("perform:: ({}) loanId: {}, declareItemLostRequest: {}",
+    log.info("perform:: ({}) loanId: {}, request: {}",
       this::getActionName, () -> loanId, () -> toLogString(request));
 
     String currentTenantId = tenantService.getCurrentTenantId();
