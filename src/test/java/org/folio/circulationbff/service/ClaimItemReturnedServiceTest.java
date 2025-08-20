@@ -56,7 +56,8 @@ class ClaimItemReturnedServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
     when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    assertThat(service.claimItemReturned(loanId, request), is(response));
+    service.claimItemReturned(loanId, request);
+
     verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
@@ -69,7 +70,8 @@ class ClaimItemReturnedServiceTest {
     when(tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, request)).thenReturn(tlrClaimItemReturnedRequest);
     when(ecsTlrClient.claimItemReturned(tlrClaimItemReturnedRequest)).thenReturn(response);
 
-    assertThat(service.claimItemReturned(loanId, request), is(response));
+    service.claimItemReturned(loanId, request);
+
     verify(ecsTlrClient).claimItemReturned(tlrClaimItemReturnedRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
@@ -81,7 +83,8 @@ class ClaimItemReturnedServiceTest {
     when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
     when(requestMediatedClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    assertThat(service.claimItemReturned(loanId, request), is(response));
+    service.claimItemReturned(loanId, request);
+
     verify(requestMediatedClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(circulationClient, ecsTlrClient);
   }
@@ -93,7 +96,8 @@ class ClaimItemReturnedServiceTest {
     when(tenantService.isSecureTenant(tenantId)).thenReturn(false);
     when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
 
-    assertThat(service.claimItemReturned(loanId, request), is(response));
+    service.claimItemReturned(loanId, request);
+
     verify(circulationClient).claimItemReturned(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }

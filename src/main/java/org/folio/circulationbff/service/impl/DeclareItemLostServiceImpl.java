@@ -12,7 +12,6 @@ import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.service.DeclareItemLostService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
@@ -37,20 +36,20 @@ public class DeclareItemLostServiceImpl extends AbstractLoanActionService<Declar
   }
 
   @Override
-  public ResponseEntity<Void> declareItemLost(UUID loanId,
+  public void declareItemLost(UUID loanId,
     DeclareItemLostRequest declareItemLostRequest) {
 
-    return perform(loanId, declareItemLostRequest);
+    perform(loanId, declareItemLostRequest);
   }
 
   @Override
-  public ResponseEntity<Void> performInCirculation(UUID loanId, DeclareItemLostRequest request) {
-    return circulationClient.declareItemLost(loanId, request);
+  public void performInCirculation(UUID loanId, DeclareItemLostRequest request) {
+    circulationClient.declareItemLost(loanId, request);
   }
 
   @Override
-  public ResponseEntity<Void> performInTlr(UUID loanId, DeclareItemLostRequest request) {
-    return ecsTlrClient.declareItemLost(new TlrDeclareItemLostRequest()
+  public void performInTlr(UUID loanId, DeclareItemLostRequest request) {
+    ecsTlrClient.declareItemLost(new TlrDeclareItemLostRequest()
       .declaredLostDateTime(request.getDeclaredLostDateTime())
       .comment(request.getComment())
       .servicePointId(request.getServicePointId())
@@ -58,10 +57,10 @@ public class DeclareItemLostServiceImpl extends AbstractLoanActionService<Declar
   }
 
   @Override
-  public ResponseEntity<Void> performInRequestsMediated(UUID loanId,
+  public void performInRequestsMediated(UUID loanId,
     DeclareItemLostRequest request) {
 
-    return requestMediatedClient.declareItemLost(loanId, request);
+    requestMediatedClient.declareItemLost(loanId, request);
   }
 
   @Override

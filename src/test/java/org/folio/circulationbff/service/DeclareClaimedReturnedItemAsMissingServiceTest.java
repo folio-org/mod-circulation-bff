@@ -52,9 +52,8 @@ class DeclareClaimedReturnedItemAsMissingServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
     when(circulationClient.declareClaimedReturnedItemAsMissing(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareClaimedReturnedItemAsMissing(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    assertEquals(response, result);
     verify(circulationClient).declareClaimedReturnedItemAsMissing(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
@@ -66,9 +65,8 @@ class DeclareClaimedReturnedItemAsMissingServiceTest {
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
     when(ecsTlrClient.declareClaimedReturnedItemAsMissing(tlrRequest)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareClaimedReturnedItemAsMissing(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    assertEquals(response, result);
     verify(ecsTlrClient).declareClaimedReturnedItemAsMissing(tlrRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
@@ -80,9 +78,8 @@ class DeclareClaimedReturnedItemAsMissingServiceTest {
     when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
     when(requestMediatedClient.declareClaimedReturnedItemAsMissing(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareClaimedReturnedItemAsMissing(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    assertEquals(response, result);
     verify(requestMediatedClient).declareClaimedReturnedItemAsMissing(loanId, request);
     verifyNoMoreInteractions(circulationClient, ecsTlrClient);
   }
@@ -94,9 +91,8 @@ class DeclareClaimedReturnedItemAsMissingServiceTest {
     when(tenantService.isSecureTenant(tenantId)).thenReturn(false);
     when(circulationClient.declareClaimedReturnedItemAsMissing(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareClaimedReturnedItemAsMissing(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    assertEquals(response, result);
     verify(circulationClient).declareClaimedReturnedItemAsMissing(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }

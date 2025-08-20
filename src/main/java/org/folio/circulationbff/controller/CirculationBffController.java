@@ -235,14 +235,16 @@ public class CirculationBffController implements CirculationBffApi {
     log.info("declareItemLost:: loanId: {}, declareItemLostRequest date: {}, " +
       "declareItemLostRequest service point: {}", () -> loanId,
       declareLostRequest::getDeclaredLostDateTime, declareLostRequest::getServicePointId);
-    return declareItemLostService.declareItemLost(loanId, declareLostRequest);
+    declareItemLostService.declareItemLost(loanId, declareLostRequest);
+    return ResponseEntity.noContent().build();
   }
 
   @Override
   public ResponseEntity<Void> claimItemReturned(UUID loanId, ClaimItemReturnedRequest claimItemReturnedRequest) {
     log.info("claimItemReturned:: loanId: {}, claimItemReturnedRequest date: {}", () -> loanId,
       claimItemReturnedRequest::getItemClaimedReturnedDateTime);
-    return claimItemReturnedService.claimItemReturned(loanId, claimItemReturnedRequest);
+    claimItemReturnedService.claimItemReturned(loanId, claimItemReturnedRequest);
+    return ResponseEntity.noContent().build();
   }
 
   @Override
@@ -250,7 +252,8 @@ public class CirculationBffController implements CirculationBffApi {
     DeclareClaimedReturnedItemAsMissingRequest declareClaimedReturnedItemAsMissingRequest) {
 
     log.info("declareClaimedReturnedItemAsMissing:: loanId: {}", loanId);
-    return declareClaimedReturnedItemAsMissingService.declareClaimedReturnedItemAsMissing(loanId,
+    declareClaimedReturnedItemAsMissingService.declareClaimedReturnedItemAsMissing(loanId,
       declareClaimedReturnedItemAsMissingRequest);
+    return ResponseEntity.noContent().build();
   }
 }

@@ -12,7 +12,6 @@ import org.folio.circulationbff.domain.mapping.TlrClaimItemReturnedRequestMapper
 import org.folio.circulationbff.service.ClaimItemReturnedService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
@@ -40,28 +39,28 @@ public class ClaimItemReturnedServiceImpl extends AbstractLoanActionService<Clai
   }
 
   @Override
-  public ResponseEntity<Void> claimItemReturned(UUID loanId,
+  public void claimItemReturned(UUID loanId,
     ClaimItemReturnedRequest claimItemReturnedRequest) {
 
-    return perform(loanId, claimItemReturnedRequest);
+    perform(loanId, claimItemReturnedRequest);
   }
 
   @Override
-  public ResponseEntity<Void> performInCirculation(UUID loanId, ClaimItemReturnedRequest request) {
-    return circulationClient.claimItemReturned(loanId, request);
+  public void performInCirculation(UUID loanId, ClaimItemReturnedRequest request) {
+    circulationClient.claimItemReturned(loanId, request);
   }
 
   @Override
-  public ResponseEntity<Void> performInTlr(UUID loanId, ClaimItemReturnedRequest request) {
-    return ecsTlrClient.claimItemReturned(
+  public void performInTlr(UUID loanId, ClaimItemReturnedRequest request) {
+    ecsTlrClient.claimItemReturned(
       tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, request));
   }
 
   @Override
-  public ResponseEntity<Void> performInRequestsMediated(UUID loanId,
+  public void performInRequestsMediated(UUID loanId,
     ClaimItemReturnedRequest request) {
 
-    return requestMediatedClient.claimItemReturned(loanId, request);
+    requestMediatedClient.claimItemReturned(loanId, request);
   }
 
   @Override
