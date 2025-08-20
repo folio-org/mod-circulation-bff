@@ -15,15 +15,15 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../../schemas/dto/circulation/claimItemReturnedRequest.yaml'
+          $ref: '../schemas/dto/circulation/claimItemReturnedRequest.yaml'
     required: true
   responses:
     '204':
       description: The loaned item has been successfully claimed returned
     '422':
-      $ref: '../../responses/unprocessableEntityResponse.yaml'
+      $ref: '../responses/unprocessableEntityResponse.yaml'
     '404':
-      $ref: '../../responses/notFoundResponse.yaml'
+      $ref: '../responses/notFoundResponse.yaml'
     '500':
-      $ref: '../../responses/internalServerErrorResponse.yaml'
+      $ref: '../responses/internalServerErrorResponse.yaml'
 

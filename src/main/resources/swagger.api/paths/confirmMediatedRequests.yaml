@@ -7,7 +7,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../../schemas/dto/mediatedRequest/mediatedRequest.yaml'
+          $ref: '../schemas/dto/mediatedRequest/mediatedRequest.yaml'
     required: true
   responses:
     '201':
@@ -15,10 +15,10 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/dto/mediatedRequest/mediatedRequest.yaml'
+            $ref: '../schemas/dto/mediatedRequest/mediatedRequest.yaml'
     '400':
-      $ref: '../../responses/badRequestResponse.yaml'
+      $ref: '../responses/badRequestResponse.yaml'
     '404':
-      $ref: '../../responses/notFoundResponse.yaml'
+      $ref: '../responses/notFoundResponse.yaml'
     '500':
-      $ref: '../../responses/internalServerErrorResponse.yaml'
+      $ref: '../responses/internalServerErrorResponse.yaml'
