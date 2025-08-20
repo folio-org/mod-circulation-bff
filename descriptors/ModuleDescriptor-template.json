@@ -264,6 +264,10 @@
           "pathPattern": "/circulation-bff/loans/{loanId}/declare-claimed-returned-item-as-missing",
           "permissionsRequired": [
             "circulation-bff.loans.declare-claimed-returned-item-as-missing.execute"
+          ],
+          "modulePermissions": [
+            "tlr.loans.declare-claimed-returned-item-as-missing.execute",
+            "circulation.loans.declare-claimed-returned-item-as-missing.post"
           ]
         }
       ]
