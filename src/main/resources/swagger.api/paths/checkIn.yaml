@@ -5,7 +5,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: "../../schemas/dto/circulation/checkInRequest.yaml"
+          $ref: "../schemas/dto/circulation/checkInRequest.yaml"
     required: true
   responses:
     '200':
@@ -13,10 +13,10 @@ post:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/response/checkInResponse.yaml"
+            $ref: "../schemas/response/checkInResponse.yaml"
     '400':
-      $ref: '../../responses/badRequestResponse.yaml'
+      $ref: '../responses/badRequestResponse.yaml'
     '422':
-      $ref: '../../responses/unprocessableEntityResponse.yaml'
+      $ref: '../responses/unprocessableEntityResponse.yaml'
     '500':
-      $ref: '../../responses/internalServerErrorResponse.yaml'
+      $ref: '../responses/internalServerErrorResponse.yaml'

@@ -1,5 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
+import static java.lang.String.format;
+
 import java.util.UUID;
 
 import org.folio.circulationbff.client.feign.CirculationClient;
@@ -10,50 +12,65 @@ import org.folio.circulationbff.domain.mapping.TlrClaimItemReturnedRequestMapper
 import org.folio.circulationbff.service.ClaimItemReturnedService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Service
-@RequiredArgsConstructor
 @Log4j2
-public class ClaimItemReturnedServiceImpl implements ClaimItemReturnedService {
+public class ClaimItemReturnedServiceImpl extends AbstractLoanActionService<ClaimItemReturnedRequest>
+  implements ClaimItemReturnedService {
 
-  private final SettingsService settingsService;
-  private final TenantService tenantService;
   private final EcsTlrClient ecsTlrClient;
   private final CirculationClient circulationClient;
   private final RequestMediatedClient requestMediatedClient;
   private final TlrClaimItemReturnedRequestMapper tlrClaimItemReturnedRequestMapper;
 
+  public ClaimItemReturnedServiceImpl(SettingsService settingsService, TenantService tenantService,
+    EcsTlrClient ecsTlrClient, CirculationClient circulationClient,
+    RequestMediatedClient requestMediatedClient,
+    TlrClaimItemReturnedRequestMapper tlrClaimItemReturnedRequestMapper) {
+
+    super(settingsService, tenantService);
+    this.ecsTlrClient = ecsTlrClient;
+    this.circulationClient = circulationClient;
+    this.requestMediatedClient = requestMediatedClient;
+    this.tlrClaimItemReturnedRequestMapper = tlrClaimItemReturnedRequestMapper;
+  }
+
   @Override
-  public ResponseEntity<Void> claimItemReturned(UUID loanId, ClaimItemReturnedRequest claimItemReturnedRequest) {
-    log.info("claimItemReturned:: loanId: {}, claimItemReturnedRequest: {}", loanId, claimItemReturnedRequest);
+  public void claimItemReturned(UUID loanId,
+    ClaimItemReturnedRequest claimItemReturnedRequest) {
 
-    String currentTenantId = tenantService.getCurrentTenantId();
+    perform(loanId, claimItemReturnedRequest);
+  }
 
-    if (!settingsService.isEcsTlrFeatureEnabled(currentTenantId)) {
-      log.info("claimItemReturned:: ECS TLR feature is not enabled for tenant: {}, using local service", currentTenantId);
-      return circulationClient.claimItemReturned(loanId, claimItemReturnedRequest);
-    }
+  @Override
+  public void performInCirculation(UUID loanId, ClaimItemReturnedRequest request) {
+    circulationClient.claimItemReturned(loanId, request);
+  }
 
-    log.info("claimItemReturned:: ECS TLR feature is enabled for tenant: {}", currentTenantId);
+  @Override
+  public void performInTlr(UUID loanId, ClaimItemReturnedRequest request) {
+    ecsTlrClient.claimItemReturned(
+      tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, request));
+  }
 
-    if (tenantService.isCentralTenant(currentTenantId)) {
-      log.info("claimItemReturned:: claiming item returned in central tenant");
-      return ecsTlrClient.claimItemReturned(
-        tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, claimItemReturnedRequest)
-      );
-    }
+  @Override
+  public void performInRequestsMediated(UUID loanId,
+    ClaimItemReturnedRequest request) {
 
-    if (tenantService.isSecureTenant(currentTenantId)) {
-      log.info("claimItemReturned:: claiming item returned in secure tenant");
-      return requestMediatedClient.claimItemReturned(loanId, claimItemReturnedRequest);
-    }
+    requestMediatedClient.claimItemReturned(loanId, request);
+  }
 
-    log.info("claimItemReturned:: tenant is not central or secure, using local service");
-    return circulationClient.claimItemReturned(loanId, claimItemReturnedRequest);
+  @Override
+  public String getActionName() {
+    return "ClaimItemReturned";
+  }
+
+  @Override
+  public String toLogString(ClaimItemReturnedRequest request) {
+    return format("ClaimItemReturnedRequest(itemClaimedReturnedDateTime=%s)",
+      request.getItemClaimedReturnedDateTime());
   }
 }

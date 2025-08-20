@@ -1,7 +1,7 @@
 get:
   description: Find instances by query and extend with item information
   parameters:
-    - $ref: '../../parameters/query.yaml'
+    - $ref: '../parameters/query.yaml'
   tags:
     - getInstancesByQuery
   responses:
@@ -10,10 +10,10 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/dto/search/bffSearchInstance.yaml'
+            $ref: '../schemas/dto/search/bffSearchInstance.yaml'
     '400':
-      $ref: '../../responses/badRequestResponse.yaml'
+      $ref: '../responses/badRequestResponse.yaml'
     '422':
-      $ref: '../../responses/unprocessableEntityResponse.yaml'
+      $ref: '../responses/unprocessableEntityResponse.yaml'
     '500':
-      $ref: '../../responses/internalServerErrorResponse.yaml'
+      $ref: '../responses/internalServerErrorResponse.yaml'

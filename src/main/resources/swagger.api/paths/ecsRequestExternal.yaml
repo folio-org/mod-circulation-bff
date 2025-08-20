@@ -7,7 +7,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../../schemas/dto/ecsRequestExternal/ecsRequestExternal.yaml'
+          $ref: '../schemas/dto/ecsRequestExternal/ecsRequestExternal.yaml'
     required: true
   responses:
     '201':
@@ -16,9 +16,9 @@ post:
         application/json:
           schema:
             oneOf:
-              - $ref: '../../schemas/dto/mediatedRequest/mediatedRequest.yaml'
-              - $ref: '../../circulationBff.yaml#/components/schemas/request'
+              - $ref: '../schemas/dto/mediatedRequest/mediatedRequest.yaml'
+              - $ref: '../circulationBff.yaml#/components/schemas/request'
     '400':
-      $ref: '../../responses/badRequestResponse.yaml'
+      $ref: '../responses/badRequestResponse.yaml'
     '500':
-      $ref: '../../responses/internalServerErrorResponse.yaml'
+      $ref: '../responses/internalServerErrorResponse.yaml'

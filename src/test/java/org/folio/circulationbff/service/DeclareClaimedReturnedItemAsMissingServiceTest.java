@@ -1,5 +1,7 @@
 package org.folio.circulationbff.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -9,10 +11,10 @@ import java.util.UUID;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
-import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
-import org.folio.circulationbff.domain.dto.TlrClaimItemReturnedRequest;
-import org.folio.circulationbff.domain.mapping.TlrClaimItemReturnedRequestMapper;
-import org.folio.circulationbff.service.impl.ClaimItemReturnedServiceImpl;
+import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRequest;
+import org.folio.circulationbff.domain.dto.TlrDeclareClaimedReturnedItemAsMissingRequest;
+import org.folio.circulationbff.exception.ValidationException;
+import org.folio.circulationbff.service.impl.DeclareClaimedReturnedItemAsMissingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-class ClaimItemReturnedServiceTest {
+class DeclareClaimedReturnedItemAsMissingServiceTest {
 
   @Mock
   private SettingsService settingsService;
@@ -32,45 +34,42 @@ class ClaimItemReturnedServiceTest {
   private CirculationClient circulationClient;
   @Mock
   private RequestMediatedClient requestMediatedClient;
-  @Mock
-  private TlrClaimItemReturnedRequestMapper tlrClaimItemReturnedRequestMapper;
   @InjectMocks
-  private ClaimItemReturnedServiceImpl service;
+  private DeclareClaimedReturnedItemAsMissingServiceImpl service;
 
   private final UUID loanId = UUID.randomUUID();
-  private final ClaimItemReturnedRequest request = new ClaimItemReturnedRequest();
+  private final DeclareClaimedReturnedItemAsMissingRequest request =
+    new DeclareClaimedReturnedItemAsMissingRequest();
   private final String tenantId = "tenant";
-  private final ResponseEntity<Void> response = ResponseEntity.noContent().build();
+  private final ResponseEntity<Void> response = ResponseEntity.ok().build();
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    service = new ClaimItemReturnedServiceImpl(settingsService, tenantService, ecsTlrClient, circulationClient, requestMediatedClient, tlrClaimItemReturnedRequestMapper);
     when(tenantService.getCurrentTenantId()).thenReturn(tenantId);
   }
 
   @Test
   void shouldUseCirculationClientWhenEcsTlrFeatureDisabled() {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
-    when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
+    when(circulationClient.declareClaimedReturnedItemAsMissing(loanId, request)).thenReturn(response);
 
-    service.claimItemReturned(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    verify(circulationClient).claimItemReturned(loanId, request);
+    verify(circulationClient).declareClaimedReturnedItemAsMissing(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
 
   @Test
   void shouldUseEcsTlrClientWhenCentralTenant() {
-    var tlrClaimItemReturnedRequest = new TlrClaimItemReturnedRequest().loanId(loanId);
+    var tlrRequest = new TlrDeclareClaimedReturnedItemAsMissingRequest().loanId(loanId);
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
-    when(tlrClaimItemReturnedRequestMapper.toTlrClaimItemReturnedRequest(loanId, request)).thenReturn(tlrClaimItemReturnedRequest);
-    when(ecsTlrClient.claimItemReturned(tlrClaimItemReturnedRequest)).thenReturn(response);
+    when(ecsTlrClient.declareClaimedReturnedItemAsMissing(tlrRequest)).thenReturn(response);
 
-    service.claimItemReturned(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    verify(ecsTlrClient).claimItemReturned(tlrClaimItemReturnedRequest);
+    verify(ecsTlrClient).declareClaimedReturnedItemAsMissing(tlrRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
 
@@ -79,11 +78,11 @@ class ClaimItemReturnedServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
     when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
-    when(requestMediatedClient.claimItemReturned(loanId, request)).thenReturn(response);
+    when(requestMediatedClient.declareClaimedReturnedItemAsMissing(loanId, request)).thenReturn(response);
 
-    service.claimItemReturned(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    verify(requestMediatedClient).claimItemReturned(loanId, request);
+    verify(requestMediatedClient).declareClaimedReturnedItemAsMissing(loanId, request);
     verifyNoMoreInteractions(circulationClient, ecsTlrClient);
   }
 
@@ -92,11 +91,22 @@ class ClaimItemReturnedServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
     when(tenantService.isCentralTenant(tenantId)).thenReturn(false);
     when(tenantService.isSecureTenant(tenantId)).thenReturn(false);
-    when(circulationClient.claimItemReturned(loanId, request)).thenReturn(response);
+    when(circulationClient.declareClaimedReturnedItemAsMissing(loanId, request)).thenReturn(response);
 
-    service.claimItemReturned(loanId, request);
+    service.declareClaimedReturnedItemAsMissing(loanId, request);
 
-    verify(circulationClient).claimItemReturned(loanId, request);
+    verify(circulationClient).declareClaimedReturnedItemAsMissing(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
+
+  @Test
+  void shouldThrowValidationExceptionWhenCirculationClientThrowsException() {
+    when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
+    doThrow(new RuntimeException("Error")).when(circulationClient)
+      .declareClaimedReturnedItemAsMissing(loanId, request);
+
+    assertThrows(ValidationException.class,
+      () -> service.declareClaimedReturnedItemAsMissing(loanId, request));
+  }
+
 }
