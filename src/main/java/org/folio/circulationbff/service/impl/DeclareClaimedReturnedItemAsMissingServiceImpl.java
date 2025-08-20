@@ -1,12 +1,16 @@
 package org.folio.circulationbff.service.impl;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRequest;
+import org.folio.circulationbff.domain.dto.Parameter;
 import org.folio.circulationbff.domain.dto.TlrDeclareClaimedReturnedItemAsMissingRequest;
+import org.folio.circulationbff.domain.type.ErrorCode;
+import org.folio.circulationbff.exception.ValidationException;
 import org.folio.circulationbff.service.DeclareClaimedReturnedItemAsMissingService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
@@ -38,7 +42,13 @@ public class DeclareClaimedReturnedItemAsMissingServiceImpl
   public void declareClaimedReturnedItemAsMissing(UUID loanId,
     DeclareClaimedReturnedItemAsMissingRequest declareClaimedReturnedItemAsMissingRequest) {
 
-    perform(loanId, declareClaimedReturnedItemAsMissingRequest);
+    try {
+      perform(loanId, declareClaimedReturnedItemAsMissingRequest);
+    } catch (Exception e) {
+      throw new ValidationException("Failed to declare claimed returned item as missing",
+        ErrorCode.FAILED_TO_DECLARE_CLAIMED_RETURNED_ITEM_AS_MISSING,
+        List.of(new Parameter().key("loanId").value(loanId.toString())));
+    }
   }
 
   @Override
