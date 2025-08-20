@@ -1,6 +1,9 @@
 package org.folio.circulationbff.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -12,12 +15,15 @@ import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRequest;
 import org.folio.circulationbff.domain.dto.TlrDeclareClaimedReturnedItemAsMissingRequest;
+import org.folio.circulationbff.exception.ValidationException;
 import org.folio.circulationbff.service.impl.DeclareClaimedReturnedItemAsMissingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.http.ResponseEntity;
 
 class DeclareClaimedReturnedItemAsMissingServiceTest {
@@ -97,5 +103,14 @@ class DeclareClaimedReturnedItemAsMissingServiceTest {
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
 
-}
+  @Test
+  void shouldThrowValidationExceptionWhenCirculationClientThrowsException() {
+    when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(true);
+    doThrow(new RuntimeException("Error")).when(circulationClient)
+      .declareClaimedReturnedItemAsMissing(loanId, request);
 
+    assertThrows(ValidationException.class,
+      () -> service.declareClaimedReturnedItemAsMissing(loanId, request));
+  }
+
+}
