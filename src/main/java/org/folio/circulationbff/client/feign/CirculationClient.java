@@ -9,6 +9,7 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
+import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRequest;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
@@ -64,4 +65,7 @@ public interface CirculationClient {
   ResponseEntity<Void> claimItemReturned(@PathVariable("loanId") UUID loanId,
     @RequestBody ClaimItemReturnedRequest request);
 
+  @PostMapping("/loans/{loanId}/declare-claimed-returned-item-as-missing")
+  ResponseEntity<Void> declareClaimedReturnedItemAsMissing(@PathVariable("loanId") UUID loanId,
+    @RequestBody DeclareClaimedReturnedItemAsMissingRequest request);
 }

@@ -1,6 +1,5 @@
 package org.folio.circulationbff.service;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -51,9 +50,8 @@ class DeclareItemLostServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled(tenantId)).thenReturn(false);
     when(circulationClient.declareItemLost(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    service.declareItemLost(loanId, request);
 
-    assertEquals(response, result);
     verify(circulationClient).declareItemLost(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }
@@ -65,9 +63,8 @@ class DeclareItemLostServiceTest {
     when(tenantService.isCentralTenant(tenantId)).thenReturn(true);
     when(ecsTlrClient.declareItemLost(tlrRequest)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    service.declareItemLost(loanId, request);
 
-    assertEquals(response, result);
     verify(ecsTlrClient).declareItemLost(tlrRequest);
     verifyNoMoreInteractions(circulationClient, requestMediatedClient);
   }
@@ -80,9 +77,8 @@ void shouldUseRequestMediatedClientWhenCurrentTenantSecure() {
   when(tenantService.isSecureTenant(tenantId)).thenReturn(true);
   when(requestMediatedClient.declareItemLost(loanId, request)).thenReturn(response);
 
-  ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+  service.declareItemLost(loanId, request);
 
-  assertEquals(response, result);
   verify(requestMediatedClient).declareItemLost(loanId, request);
   verifyNoMoreInteractions(circulationClient, ecsTlrClient);
 }
@@ -94,9 +90,8 @@ void shouldUseRequestMediatedClientWhenCurrentTenantSecure() {
     when(tenantService.isCurrentTenantSecure()).thenReturn(false);
     when(circulationClient.declareItemLost(loanId, request)).thenReturn(response);
 
-    ResponseEntity<Void> result = service.declareItemLost(loanId, request);
+    service.declareItemLost(loanId, request);
 
-    assertEquals(response, result);
     verify(circulationClient).declareItemLost(loanId, request);
     verifyNoMoreInteractions(ecsTlrClient, requestMediatedClient);
   }

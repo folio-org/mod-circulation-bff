@@ -1,5 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
+import static java.lang.String.format;
+
 import java.util.UUID;
 
 import org.folio.circulationbff.client.feign.CirculationClient;
@@ -10,53 +12,66 @@ import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.service.DeclareItemLostService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Service
-@RequiredArgsConstructor
 @Log4j2
-public class DeclareItemLostServiceImpl implements DeclareItemLostService {
+public class DeclareItemLostServiceImpl extends AbstractLoanActionService<DeclareItemLostRequest>
+  implements DeclareItemLostService {
 
-  private final SettingsService settingsService;
-  private final TenantService tenantService;
   private final EcsTlrClient ecsTlrClient;
   private final CirculationClient circulationClient;
   private final RequestMediatedClient requestMediatedClient;
 
-  @Override
-  public ResponseEntity<Void> declareItemLost(UUID loanId, DeclareItemLostRequest itemLostRequest) {
-    log.info("declareItemLost:: loanId: {}, declareItemLostRequest: {}", () -> loanId,
-      () -> itemLostRequest);
+  public DeclareItemLostServiceImpl(SettingsService settingsService, TenantService tenantService,
+    EcsTlrClient ecsTlrClient, CirculationClient circulationClient,
+    RequestMediatedClient requestMediatedClient) {
 
-    String currentTenantId = tenantService.getCurrentTenantId();
-
-    if (!settingsService.isEcsTlrFeatureEnabled(currentTenantId)) {
-      log.info("declareItemLost:: ECS TLR feature is not enabled for tenant: {}, using local service", currentTenantId);
-      return circulationClient.declareItemLost(loanId, itemLostRequest);
-    }
-
-    log.info("declareItemLost:: ECS TLR feature is enabled for tenant: {}", currentTenantId);
-
-    if (tenantService.isCentralTenant(currentTenantId)) {
-      log.info("declareItemLost:: doing declare item lost in central tenant");
-
-      return ecsTlrClient.declareItemLost(new TlrDeclareItemLostRequest()
-        .declaredLostDateTime(itemLostRequest.getDeclaredLostDateTime())
-        .comment(itemLostRequest.getComment())
-        .servicePointId(itemLostRequest.getServicePointId())
-        .loanId(loanId));
-    }
-
-    if (tenantService.isSecureTenant(currentTenantId)) {
-      log.info("declareItemLost:: doing declare item lost in secure tenant");
-      return requestMediatedClient.declareItemLost(loanId, itemLostRequest);
-    }
-
-    log.info("declareItemLost:: tenant is not central or secure, using local service");
-    return circulationClient.declareItemLost(loanId, itemLostRequest);
+    super(settingsService, tenantService);
+    this.ecsTlrClient = ecsTlrClient;
+    this.circulationClient = circulationClient;
+    this.requestMediatedClient = requestMediatedClient;
   }
+
+  @Override
+  public void declareItemLost(UUID loanId,
+    DeclareItemLostRequest declareItemLostRequest) {
+
+    perform(loanId, declareItemLostRequest);
+  }
+
+  @Override
+  public void performInCirculation(UUID loanId, DeclareItemLostRequest request) {
+    circulationClient.declareItemLost(loanId, request);
+  }
+
+  @Override
+  public void performInTlr(UUID loanId, DeclareItemLostRequest request) {
+    ecsTlrClient.declareItemLost(new TlrDeclareItemLostRequest()
+      .declaredLostDateTime(request.getDeclaredLostDateTime())
+      .comment(request.getComment())
+      .servicePointId(request.getServicePointId())
+      .loanId(loanId));
+  }
+
+  @Override
+  public void performInRequestsMediated(UUID loanId,
+    DeclareItemLostRequest request) {
+
+    requestMediatedClient.declareItemLost(loanId, request);
+  }
+
+  @Override
+  public String getActionName() {
+    return "declareItemLost";
+  }
+
+  @Override
+  public String toLogString(DeclareItemLostRequest request) {
+    return format("DeclareItemLostRequest(declaredLostDateTime=%s, servicePointId=%s)",
+      request.getDeclaredLostDateTime(), request.getServicePointId());
+  }
+
 }
