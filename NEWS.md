@@ -1,6 +1,8 @@
 ## 1.1.5 2025-08-27
 
-*
+* Implement Claim item returned API (MCBFF-115)
+* Search instances by `itemId` in batches (MCBFF-127)
+* Expand instance search to include item details (MCBFF-142)
 
 ## 1.1.4 2025-08-11
 
