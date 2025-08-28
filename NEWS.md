@@ -1,3 +1,9 @@
+## 1.1.5 2025-08-27
+
+* Implement Claim item returned API (MCBFF-115)
+* Search instances by `itemId` in batches (MCBFF-127)
+* Expand instance search to include item details (MCBFF-142)
+
 ## 1.1.4 2025-08-11
 
 * Tokens are not populated for Due date receipt for Mediated request ([MCBFF-104](https://folio-org.atlassian.net/browse/MCBFF-104))
