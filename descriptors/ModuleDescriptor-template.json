@@ -267,6 +267,7 @@
           ],
           "modulePermissions": [
             "tlr.loans.declare-claimed-returned-item-as-missing.execute",
+            "requests-mediated.loans.declare-claimed-returned-item-as-missing.execute",
             "circulation.loans.declare-claimed-returned-item-as-missing.post"
           ]
         }
