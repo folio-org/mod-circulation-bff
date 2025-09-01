@@ -273,6 +273,25 @@
       ]
     },
     {
+      "id": "circulation-bff-inventory",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/inventory/items",
+          "permissionsRequired": [
+            "circulation-bff.inventory.items.collection.get"
+          ],
+          "modulePermissions": [
+            "search.instances.collection.get",
+            "inventory.items.collection.get"
+          ]
+        }
+      ]
+    },
+    {
       "id": "_tenant",
       "version": "2.0",
       "interfaceType": "system",
@@ -378,6 +397,11 @@
       "permissionName": "circulation-bff.loans.declare-claimed-returned-item-as-missing.execute",
       "displayName": "circulation BFF - declare claimed returned item as missing",
       "description": "declare claimed returned item as missing"
+    },
+    {
+      "permissionName": "circulation-bff.inventory.items.collection.get",
+      "displayName": "circulation BFF - get inventory items",
+      "description": "get inventory items"
     }
   ],
   "requires": [

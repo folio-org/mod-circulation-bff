@@ -2,6 +2,7 @@ package org.folio.circulationbff.service;
 
 import org.folio.circulationbff.domain.dto.Campus;
 import org.folio.circulationbff.domain.dto.Institution;
+import org.folio.circulationbff.domain.dto.InventoryItems;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Library;
 import org.folio.circulationbff.domain.dto.Location;
@@ -14,4 +15,5 @@ public interface InventoryService {
   Campus fetchCampus(String id);
   Institution fetchInstitution(String id);
   Library fetchLibrary(String id);
+  InventoryItems fetchInventoryItemsByQuery(String query);
 }
