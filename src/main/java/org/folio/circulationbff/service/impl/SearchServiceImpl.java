@@ -136,17 +136,17 @@ public class SearchServiceImpl implements SearchService {
       log.info("findInstances:: no instances found");
       return emptyList();
     }
-    log.info("findInstances:: {} instances found", searchInstances::size);
+    log.info("findInstances:: {} instance(s) found", searchInstances::size);
 
     Collection<BffSearchInstance> bffSearchInstances =
       fetchEditions(buildBffSearchInstances(searchInstances));
-    log.info("findInstances:: successfully built {} instances", bffSearchInstances::size);
+    log.info("findInstances:: successfully built {} instance(s)", bffSearchInstances::size);
 
     return bffSearchInstances;
   }
 
   private Collection<ItemContext> fetchItemDetails(Collection<SearchInstance> searchInstances) {
-    log.info("fetchItemDetails:: fetching item details for {} instances", searchInstances::size);
+    log.info("fetchItemDetails:: fetching item details for {} instance(s)", searchInstances::size);
     Map<String, List<SearchItem>> itemsByTenant =  searchInstances.stream()
       .map(SearchInstance::getItems)
       .flatMap(Collection::stream)
@@ -157,7 +157,7 @@ public class SearchServiceImpl implements SearchService {
       return emptyList();
     }
 
-    log.info("fetchItemDetails:: fetching item details from {} tenants: {}", itemsByTenant::size,
+    log.info("fetchItemDetails:: fetching item details from {} tenant(s): {}", itemsByTenant::size,
       itemsByTenant::keySet);
 
     return itemsByTenant.entrySet()
@@ -168,7 +168,8 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private Collection<ItemContext> fetchItemDetails(String tenantId, Collection<SearchItem> items) {
-    log.info("fetchItemDetails:: fetching details for {} items in tenant {}", items.size(), tenantId);
+    log.info("fetchItemDetails:: fetching details for {} item(s) in tenant {}", items.size(),
+      tenantId);
     return executionService.executeSystemUserScoped(tenantId, () -> buildItemContexts(items));
   }
 
@@ -183,12 +184,15 @@ public class SearchServiceImpl implements SearchService {
 
   private Collection<BffSearchInstance> fetchEditions(String tenantId,
     Collection<BffSearchInstance> searchInstances) {
-    log.info("fetchItemDetails:: fetching details for {} items in tenant {}", searchInstances.size(), tenantId);
+    log.info("fetchItemDetails:: fetching details for {} item(s) in tenant {}",
+      searchInstances.size(), tenantId);
     return executionService.executeSystemUserScoped(tenantId,
       () -> updateSearchInstanceEditions(searchInstances));
   }
 
-  private Collection<BffSearchInstance> updateSearchInstanceEditions(Collection<BffSearchInstance> searchInstances) {
+  private Collection<BffSearchInstance> updateSearchInstanceEditions(
+    Collection<BffSearchInstance> searchInstances) {
+
     Map<String, Instance> instanceMap = fetchInstances(
       searchInstances.stream()
         .map(BffSearchInstance::getId)
@@ -208,7 +212,7 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private Collection<Instance> fetchInstances(Collection<String> ids) {
-    log.info("fetchInstances: fetching {} instances", ids::size);
+    log.info("fetchInstances: fetching {} instance(s)", ids::size);
     return fetchingService.fetchByIds(instanceStorageClient, ids, Instances::getInstances);
   }
 
@@ -239,33 +243,33 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private Collection<Item> fetchItems(Collection<String> ids) {
-    log.info("fetchItems: fetching {} items", ids::size);
+    log.info("fetchItems: fetching {} item(s)", ids::size);
     return fetchingService.fetchByIds(itemStorageClient, ids, Items::getItems);
   }
 
   private Map<String, HoldingsRecord> fetchHoldingsRecords(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getHoldingsRecordId);
-    log.info("fetchHoldingsRecords: fetching {} holdingsRecords", ids::size);
+    log.info("fetchHoldingsRecords: fetching {} holdings record(s)", ids::size);
     return fetchingService.fetchByIds(holdingsStorageClient, ids, HoldingsRecords::getHoldingsRecords,
       HoldingsRecord::getId);
   }
 
   private Map<String, Location> fetchLocations(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getEffectiveLocationId);
-    log.info("fetchLocations: fetching {} locations", ids::size);
+    log.info("fetchLocations: fetching {} location(s)", ids::size);
     return fetchingService.fetchByIds(locationClient, ids, Locations::getLocations, Location::getId);
   }
 
   private Map<String, ServicePoint> fetchServicePoints(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getInTransitDestinationServicePointId);
-    log.info("fetchServicePoints: fetching {} service points", ids::size);
+    log.info("fetchServicePoints: fetching {} service point(s)", ids::size);
     return fetchingService.fetchByIds(servicePointClient, ids, ServicePoints::getServicepoints,
       ServicePoint::getId);
   }
 
   private Map<String, MaterialType> fetchMaterialTypes(Collection<Item> items) {
     Collection<String> ids = extractUniqueValues(items, Item::getMaterialTypeId);
-    log.info("fetchMaterialTypes: fetching {} material types", ids::size);
+    log.info("fetchMaterialTypes: fetching {} material type(s)", ids::size);
     return fetchingService.fetchByIds(materialTypeClient, ids, MaterialTypes::getMtypes,
       MaterialType::getId);
   }
@@ -276,7 +280,7 @@ public class SearchServiceImpl implements SearchService {
       .filter(Objects::nonNull)
       .collect(Collectors.toSet());
 
-    log.info("fetchLoanTypes:: fetching {} loan types", ids.size());
+    log.info("fetchLoanTypes:: fetching {} loan type(s)", ids.size());
 
     return fetchingService.fetchByIds(loanTypeClient, ids, LoanTypes::getLoantypes, LoanType::getId);
   }
@@ -285,7 +289,8 @@ public class SearchServiceImpl implements SearchService {
     Collection<SearchInstance> searchInstances) {
 
     Collection<ItemContext> itemContexts = fetchItemDetails(searchInstances);
-    log.info("buildBffSearchInstances:: successfully built contexts for {} items", itemContexts::size);
+    log.info("buildBffSearchInstances:: successfully built contexts for {} item(s)",
+      itemContexts::size);
 
     return searchInstances.stream()
       .map(searchInstance -> buildBffSearchInstance(searchInstance, itemContexts))
@@ -341,8 +346,8 @@ public class SearchServiceImpl implements SearchService {
           .id(permanentLoanTypeId)
           .name(permanentLoanType.getName()));
       } else {
-        log.info("buildBffSearchItem:: permanent loan type is null for item with permanentLoanTypeId: {}",
-          permanentLoanTypeId);
+        log.info("buildBffSearchItem:: permanent loan type is null for item with " +
+            "permanentLoanTypeId: {}", permanentLoanTypeId);
       }
     }
 
