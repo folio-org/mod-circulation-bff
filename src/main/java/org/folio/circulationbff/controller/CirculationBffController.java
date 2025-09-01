@@ -261,7 +261,11 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<InventoryItems> circulationBffInventoryItemsGet(String query) {
+  public ResponseEntity<InventoryItems> circulationBffInventoryItemsGet(String query,
+    Integer offset, Integer limit) {
+
+    // Ignoring offset and limit. These parameters only exist for compatibility with the UI.
+
     return ResponseEntity.ok(inventoryService.fetchInventoryItemsByQuery(query));
   }
 }

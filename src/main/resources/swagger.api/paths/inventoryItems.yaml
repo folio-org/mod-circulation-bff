@@ -2,6 +2,8 @@ get:
   description: Find items in mod-search by query and fetch item info from inventory
   parameters:
     - $ref: '../parameters/query.yaml'
+    - $ref: '../parameters/offset.yaml'
+    - $ref: '../parameters/limit.yaml'
   tags:
     - getInventoryItemsByQuery
   responses:

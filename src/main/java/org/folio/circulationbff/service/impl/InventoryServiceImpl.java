@@ -1,5 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
+import static java.lang.String.format;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -81,7 +83,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   public InventoryItems fetchInventoryItemsByQuery(String query) {
     log.info("fetchInventoryItemByQuery:: fetching by query {}", query);
-    return searchService.findInstances(query).stream()
+    return searchService.findInstances(format("items.%s", query)).stream()
       .map(BffSearchInstance::getItems)
       .flatMap(Collection::stream)
       .findFirst()

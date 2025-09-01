@@ -183,7 +183,7 @@
       "description": "notes",
       "type": "array",
       "items": {
-        "$ref": "itemNotes.json"
+        "$ref": "inventoryItemNotes.json"
       }
     },
     "circulationNotes": {

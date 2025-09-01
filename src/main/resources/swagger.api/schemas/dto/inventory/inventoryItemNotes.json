@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Note for item record",
   "type": "object",
-  "javaType": "org.folio.rest.jaxrs.model.ItemNotes",
   "additionalProperties": false,
   "properties": {
     "itemNoteTypeId": {
