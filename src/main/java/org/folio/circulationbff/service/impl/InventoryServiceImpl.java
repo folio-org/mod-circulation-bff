@@ -1,12 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
-import static java.lang.String.format;
-
-import java.util.Collection;
 import java.util.List;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 import org.folio.circulationbff.client.feign.InventoryItemClient;
 import org.folio.circulationbff.client.feign.ItemStorageClient;
@@ -15,8 +9,6 @@ import org.folio.circulationbff.client.feign.LocationClient;
 import org.folio.circulationbff.client.feign.LocationInstitutionClient;
 import org.folio.circulationbff.client.feign.LocationLibraryClient;
 import org.folio.circulationbff.client.feign.ServicePointClient;
-import org.folio.circulationbff.domain.dto.BffSearchInstance;
-import org.folio.circulationbff.domain.dto.BffSearchItem;
 import org.folio.circulationbff.domain.dto.Campus;
 import org.folio.circulationbff.domain.dto.Institution;
 import org.folio.circulationbff.domain.dto.InventoryItem;
@@ -24,11 +16,16 @@ import org.folio.circulationbff.domain.dto.InventoryItems;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Library;
 import org.folio.circulationbff.domain.dto.Location;
+import org.folio.circulationbff.domain.dto.SearchInstance;
+import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
@@ -82,17 +79,23 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   public InventoryItems fetchInventoryItemsByQuery(String query) {
-    log.info("fetchInventoryItemByQuery:: fetching by query {}", query);
-    return searchService.findInstances(format("items.%s", query)).stream()
-      .map(BffSearchInstance::getItems)
-      .flatMap(Collection::stream)
-      .findFirst()
-      .map(this::fetchInventoryItem)
-      .map(this::singleElementInventoryItems)
+    log.info("fetchInventoryItemsByQuery:: fetching by query {}", query);
+
+    String barcode = query.replace("barcode==", "");
+    log.info("fetchInventoryItemsByQuery:: barcode = {}", barcode);
+
+    return searchService.findInstanceByItemBarcode(barcode)
+      .map(SearchInstance::getItems)
+      .map(items -> items.stream()
+        .filter(item -> barcode.equals(item.getBarcode()))
+        .findFirst()
+        .map(this::fetchInventoryItem)
+        .map(this::singleElementInventoryItems)
+        .orElse(emptyInventoryItems()))
       .orElse(emptyInventoryItems());
   }
 
-  private InventoryItem fetchInventoryItem(BffSearchItem searchItem) {
+  private InventoryItem fetchInventoryItem(SearchItem searchItem) {
     if (searchItem == null || searchItem.getId() == null || searchItem.getTenantId() == null) {
       log.warn("fetchInventoryItem:: searchItem is null or missing id/tenantId");
       return null;

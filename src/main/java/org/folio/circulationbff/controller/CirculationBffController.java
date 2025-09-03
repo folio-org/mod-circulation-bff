@@ -268,4 +268,5 @@ public class CirculationBffController implements CirculationBffApi {
 
     return ResponseEntity.ok(inventoryService.fetchInventoryItemsByQuery(query));
   }
+
 }

@@ -1,6 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -99,10 +100,11 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public Optional<SearchInstance> findInstanceByItemBarcode(String itemBarcode) {
     log.info("findInstanceByItemBarcode:: itemBarcode {}", itemBarcode);
-    return searchInstancesClient.findInstances("items.barcode==" + itemBarcode, true)
-      .getInstances()
-      .stream()
-      .findFirst();
+    return ofNullable(searchInstancesClient.findInstances("items.barcode==" + itemBarcode, true)
+      .getInstances())
+      .flatMap(instances -> instances
+        .stream()
+        .findFirst());
   }
 
   @Override
@@ -364,43 +366,43 @@ public class SearchServiceImpl implements SearchService {
       }
     }
 
-    Optional.ofNullable(searchInstance.getContributors())
+    ofNullable(searchInstance.getContributors())
       .map(contributors -> contributors.stream()
         .map(Contributor::getName)
         .map(name -> new Contributor().name(name))
         .toList())
       .ifPresent(bffSearchItem::setContributors);
 
-    Optional.ofNullable(item.getEffectiveCallNumberComponents())
+    ofNullable(item.getEffectiveCallNumberComponents())
       .map(itemCn -> new BffSearchItemCallNumberComponents()
         .callNumber(itemCn.getCallNumber())
         .prefix(itemCn.getPrefix())
         .suffix(itemCn.getSuffix()))
       .ifPresent(bffSearchItem::setCallNumberComponents);
 
-    Optional.ofNullable(item.getEffectiveCallNumberComponents())
+    ofNullable(item.getEffectiveCallNumberComponents())
       .map(ItemEffectiveCallNumberComponents::getCallNumber)
       .ifPresent(bffSearchItem::setCallNumber);
 
-    Optional.ofNullable(itemContext.servicePoint())
+    ofNullable(itemContext.servicePoint())
       .map(sp -> new BffSearchItemInTransitDestinationServicePoint()
         .id(toUUID(sp.getId()))
         .name(sp.getName()))
       .ifPresent(bffSearchItem::setInTransitDestinationServicePoint);
 
-    Optional.ofNullable(itemContext.location())
+    ofNullable(itemContext.location())
       .map(loc -> new BffSearchItemEffectiveLocation().name(loc.getName()))
       .ifPresent(bffSearchItem::setEffectiveLocation);
 
-    Optional.ofNullable(itemContext.materialType())
+    ofNullable(itemContext.materialType())
       .map(mt -> new BffSearchItemMaterialType().name(mt.getName()))
       .ifPresent(bffSearchItem::setMaterialType);
 
-    Optional.ofNullable(item.getCopyNumber())
-      .or(() -> Optional.ofNullable(itemContext.holdingsRecord().getCopyNumber()))
+    ofNullable(item.getCopyNumber())
+      .or(() -> ofNullable(itemContext.holdingsRecord().getCopyNumber()))
       .ifPresent(bffSearchItem::setCopyNumber);
 
-    Optional.ofNullable(item.getStatus())
+    ofNullable(item.getStatus())
       .map(status -> new BffSearchItemStatus()
         .name(status.getName().getValue())
         .date(status.getDate()))
@@ -410,7 +412,7 @@ public class SearchServiceImpl implements SearchService {
   }
 
   private static UUID toUUID(String uuidString) {
-    return Optional.ofNullable(uuidString)
+    return ofNullable(uuidString)
       .map(UUID::fromString)
       .orElse(null);
   }
