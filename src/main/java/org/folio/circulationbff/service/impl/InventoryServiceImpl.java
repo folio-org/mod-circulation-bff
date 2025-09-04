@@ -86,12 +86,11 @@ public class InventoryServiceImpl implements InventoryService {
 
     return searchService.findInstanceByItemBarcode(barcode)
       .map(SearchInstance::getItems)
-      .map(items -> items.stream()
+      .flatMap(items -> items.stream()
         .filter(item -> barcode.equals(item.getBarcode()))
         .findFirst()
         .map(this::fetchInventoryItem)
-        .map(this::singleElementInventoryItems)
-        .orElseGet(this::emptyInventoryItems))
+        .map(this::singleElementInventoryItems))
       .orElseGet(this::emptyInventoryItems);
   }
 
