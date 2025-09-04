@@ -1,0 +1,21 @@
+get:
+  description: Find items in mod-search by query and fetch item info from inventory
+  parameters:
+    - $ref: '../parameters/query.yaml'
+    - $ref: '../parameters/offset.yaml'
+    - $ref: '../parameters/limit.yaml'
+  tags:
+    - getInventoryItemsByQuery
+  responses:
+    '200':
+      description: Inventory items by query
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/dto/inventory/inventoryItems.json'
+    '400':
+      $ref: '../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'

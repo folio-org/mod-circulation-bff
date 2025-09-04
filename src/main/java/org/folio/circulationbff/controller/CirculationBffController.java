@@ -21,6 +21,7 @@ import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRe
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
+import org.folio.circulationbff.domain.dto.InventoryItems;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.PostEcsRequestExternal201Response;
@@ -37,6 +38,7 @@ import org.folio.circulationbff.service.ClaimItemReturnedService;
 import org.folio.circulationbff.service.DeclareClaimedReturnedItemAsMissingService;
 import org.folio.circulationbff.service.DeclareItemLostService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
+import org.folio.circulationbff.service.InventoryService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
@@ -64,6 +66,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final DeclareItemLostService declareItemLostService;
   private final ClaimItemReturnedService claimItemReturnedService;
   private final DeclareClaimedReturnedItemAsMissingService declareClaimedReturnedItemAsMissingService;
+  private final InventoryService inventoryService;
 
   @Override
   public ResponseEntity<PostEcsRequestExternal201Response> postEcsRequestExternal(
@@ -256,4 +259,14 @@ public class CirculationBffController implements CirculationBffApi {
       declareClaimedReturnedItemAsMissingRequest);
     return ResponseEntity.noContent().build();
   }
+
+  @Override
+  public ResponseEntity<InventoryItems> circulationBffInventoryItemsGet(String query,
+    Integer offset, Integer limit) {
+
+    // Ignoring offset and limit. These parameters only exist for compatibility with the UI.
+
+    return ResponseEntity.ok(inventoryService.fetchInventoryItemsByQuery(query));
+  }
+
 }
