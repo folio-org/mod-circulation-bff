@@ -2,7 +2,7 @@ package org.folio.circulationbff.service.impl;
 
 import java.util.List;
 
-import org.folio.circulationbff.client.feign.InventoryItemClient;
+import org.folio.circulationbff.client.feign.InventoryClient;
 import org.folio.circulationbff.client.feign.ItemStorageClient;
 import org.folio.circulationbff.client.feign.LocationCampusClient;
 import org.folio.circulationbff.client.feign.LocationClient;
@@ -38,7 +38,7 @@ public class InventoryServiceImpl implements InventoryService {
   private final LocationInstitutionClient institutionClient;
   private final LocationCampusClient campusClient;
   private final SearchService searchService;
-  private final InventoryItemClient inventoryItemClient;
+  private final InventoryClient inventoryItemClient;
   private final SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Override
