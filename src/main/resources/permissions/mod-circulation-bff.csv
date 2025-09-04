@@ -31,5 +31,5 @@ circulation.loans.collection.get
 mod-settings.entries.item.get
 mod-settings.entries.collection.get
 mod-settings.global.read.circulation
-search.instances.collection.get
+inventory.items.item.get
 inventory.items.collection.get

@@ -55,7 +55,6 @@ public class MockHelper {
   private static final String TLR_SETTINGS_URL = "/tlr/settings";
   private static final String USER_TENANTS_URL = "/user-tenants";
   public static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
-  private static final String SEARCH_INSTANCES_MOD_SEARCH_URL = "/search/instances";
   private static final String PERMANENT_LOAN_TYPE_ID = "22fa71d319-997b-4a60-8cfd-20fdf57efa14";
   private static final String TEMPORARY_LOAN_TYPE_ID = "2286d4aed0-c76b-4907-983f-1327dfb4b12d";
 

@@ -2,8 +2,6 @@ package org.folio.circulationbff.util;
 
 public class ApiEndpointURL {
 
-  public ApiEndpointURL() { }
-
   public static final String SEARCH_INSTANCES_URL = "/circulation-bff/requests/search-instances";
   public static final String SEARCH_INSTANCES_MOD_SEARCH_URL = "/search/instances";
   public static final String ITEM_STORAGE_URL = "/item-storage/items";
