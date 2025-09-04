@@ -91,8 +91,8 @@ public class InventoryServiceImpl implements InventoryService {
         .findFirst()
         .map(this::fetchInventoryItem)
         .map(this::singleElementInventoryItems)
-        .orElse(emptyInventoryItems()))
-      .orElse(emptyInventoryItems());
+        .orElseGet(this::emptyInventoryItems))
+      .orElseGet(this::emptyInventoryItems);
   }
 
   private InventoryItem fetchInventoryItem(SearchItem searchItem) {
