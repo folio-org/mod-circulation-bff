@@ -41,6 +41,8 @@ public class InventoryServiceImpl implements InventoryService {
   private final InventoryClient inventoryItemClient;
   private final SystemUserScopedExecutionService systemUserScopedExecutionService;
 
+  private static final String QUOTES_REGEX = "^[\"']|[\"']$";
+
   @Override
   public Item fetchItem(String id) {
     log.info("fetchItem:: fetching item {}", id);
@@ -83,7 +85,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     String barcode = query
       .replace("barcode==", "")
-      .replaceAll("^[\"']|[\"']$", "")
+      .replaceAll(QUOTES_REGEX, "")
       .trim();
     log.info("fetchInventoryItemsByQuery:: extracted barcode from query: {}", barcode);
 
