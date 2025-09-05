@@ -83,8 +83,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     String barcode = query
       .replace("barcode==", "")
-      .replaceAll("^\"|\"$", "")
-      .replaceAll("^'|'$", "")
+      .replaceAll("^[\"']|[\"']$", "")
       .trim();
     log.info("fetchInventoryItemsByQuery:: extracted barcode from query: {}", barcode);
 
