@@ -81,8 +81,12 @@ public class InventoryServiceImpl implements InventoryService {
   public InventoryItems fetchInventoryItemsByQuery(String query) {
     log.info("fetchInventoryItemsByQuery:: fetching by query {}", query);
 
-    String barcode = query.replace("barcode==", "");
-    log.info("fetchInventoryItemsByQuery:: barcode = {}", barcode);
+    String barcode = query
+      .replace("barcode==", "")
+      .replace("\"", "")
+      .replace("'", "")
+      .trim();
+    log.info("fetchInventoryItemsByQuery:: extracted barcode from query: {}", barcode);
 
     return searchService.findInstanceByItemBarcode(barcode)
       .map(SearchInstance::getItems)
