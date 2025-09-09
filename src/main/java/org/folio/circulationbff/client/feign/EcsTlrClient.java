@@ -10,6 +10,7 @@ import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.TlrClaimItemReturnedRequest;
+import org.folio.circulationbff.domain.dto.TlrDeclareClaimedReturnedItemAsMissingRequest;
 import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.spring.config.FeignClientConfiguration;
@@ -50,4 +51,8 @@ public interface EcsTlrClient {
 
   @PostMapping("/loans/claim-item-returned")
   ResponseEntity<Void> claimItemReturned(@RequestBody TlrClaimItemReturnedRequest request);
+
+  @PostMapping("/loans/declare-claimed-returned-item-as-missing")
+  ResponseEntity<Void> declareClaimedReturnedItemAsMissing(
+    @RequestBody TlrDeclareClaimedReturnedItemAsMissingRequest request);
 }

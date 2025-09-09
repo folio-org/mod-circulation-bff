@@ -8,7 +8,7 @@ properties:
   comment:
     description: Comment explaining why the item has been claimed returned
     type: string
-additionalProperties: false
+additionalProperties: true
 required:
   - itemClaimedReturnedDateTime
 

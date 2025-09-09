@@ -68,7 +68,7 @@ public class BulkFetchingServiceImpl implements BulkFetchingService {
       return new ArrayList<>();
     }
 
-    log.info("fetchByUuidIndex:: fetching by {} values for index {}", values.size(), index);
+    log.info("fetchByUuidIndex:: fetching by {} value(s) for index {}", values.size(), index);
     log.debug("fetchByUuidIndex:: values={}", values);
 
     Collection<E> result = Lists.partition(new ArrayList<>(values), MAX_IDS_PER_QUERY)
@@ -78,14 +78,14 @@ public class BulkFetchingServiceImpl implements BulkFetchingService {
       .flatMap(Collection::stream)
       .collect(toList());
 
-    log.info("fetchByUuidIndex:: fetched {} objects", result::size);
+    log.info("fetchByUuidIndex:: fetched {} object(s)", result::size);
     return result;
   }
 
   private <T> T fetchByUuidIndex(Collection<String> ids, String index,
     Map<String, String> additionalQueryParams, GetByQueryParamsClient<T> client) {
 
-    log.info("fetchByUuidIndex:: fetching by a batch of {} UUIDs", ids::size);
+    log.info("fetchByUuidIndex:: fetching by a batch of {} UUID(s)", ids::size);
     CqlQuery query = CqlQuery.exactMatchAny(index, ids);
     log.debug("fetchByUuidIndex:: generated query: {}", query);
 
