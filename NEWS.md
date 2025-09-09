@@ -1,3 +1,8 @@
+## 1.1.6 2025-09-09
+
+* Mark missing API (MCBFF-133)
+* New endpoint - fetch item by query (MCBFF-136)
+
 ## 1.1.5 2025-08-27
 
 * Implement Claim item returned API (MCBFF-115)
