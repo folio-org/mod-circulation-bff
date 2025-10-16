@@ -1,3 +1,8 @@
+## 1.1.7 2025-10-16
+
+* Remove quotes from barcode (MCBFF-136)
+* Fix module compilation on Windows (MCBFF-146)
+
 ## 1.1.6 2025-09-09
 
 * Mark missing API (MCBFF-133)

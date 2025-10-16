@@ -26,6 +26,8 @@ import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -50,8 +52,9 @@ class InventoryItemsApiTest extends BaseIT {
       .andExpect(jsonPath("$.totalRecords", is(0)));
   }
 
-  @Test
-  void getInventoryItemsReturnsItems() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {"", "\"", "'"})
+  void getInventoryItemsReturnsItems(String quoteCharacter) throws Exception {
     SearchHolding searchHoldingInConsortium = buildSearchHolding(TENANT_ID_CONSORTIUM);
     SearchHolding searchHoldingInCollege = buildSearchHolding(TENANT_ID_COLLEGE);
 
@@ -73,6 +76,9 @@ class InventoryItemsApiTest extends BaseIT {
     var expectedItem = searchItemsInCollege.get(3);
     var expectedItemId = expectedItem.getId();
     var expectedItemBarcode = expectedItem.getBarcode();
+
+    String quotedBarcode = quoteCharacter + expectedItemBarcode + quoteCharacter;
+
     wireMockServer.stubFor(WireMock.get(urlPathMatching(SEARCH_INSTANCES_MOD_SEARCH_URL))
       .withQueryParam("query", equalTo("items.barcode==" + expectedItemBarcode))
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
@@ -86,7 +92,7 @@ class InventoryItemsApiTest extends BaseIT {
     mockMvc.perform(get(CIRCULATION_BFF_INVENTORY_ITEMS_URL)
         .queryParam("limit", "100")
         .queryParam("offset", "30")
-        .queryParam("query", "barcode==" + expectedItemBarcode)
+        .queryParam("query", "barcode==" + quotedBarcode)
         .headers(defaultHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
@@ -99,4 +105,3 @@ class InventoryItemsApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
   }
 }
-

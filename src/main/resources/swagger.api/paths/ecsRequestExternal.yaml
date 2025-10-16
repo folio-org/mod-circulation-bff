@@ -17,7 +17,7 @@ post:
           schema:
             oneOf:
               - $ref: '../schemas/dto/mediatedRequest/mediatedRequest.yaml'
-              - $ref: '../circulationBff.yaml#/components/schemas/request'
+              - $ref: '../schemas/dto/request/request.yaml'
     '400':
       $ref: '../responses/badRequestResponse.yaml'
     '500':
