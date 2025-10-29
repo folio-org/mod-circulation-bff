@@ -1,3 +1,7 @@
+## 1.1.8 2025-10-29
+
+* Return discovery display name for allowed Service points (MCBFF-93)
+
 ## 1.1.7 2025-10-16
 
 * Remove quotes from barcode (MCBFF-136)
