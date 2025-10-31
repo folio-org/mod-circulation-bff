@@ -223,7 +223,7 @@ public class CirculationBffController implements CirculationBffApi {
   @Override
   public ResponseEntity<CheckOutResponse> checkOutByBarcode(CheckOutRequest checkOutRequest) {
     log.info("checkOutByBarcode:: itemBarcode: {}", checkOutRequest::getItemBarcode);
-    return ResponseEntity.ok(checkOutService.checkOut(checkOutRequest));
+    return ResponseEntity.status(CREATED).body(checkOutService.checkOut(checkOutRequest));
   }
 
   @ExceptionHandler(HttpFailureFeignException.class)

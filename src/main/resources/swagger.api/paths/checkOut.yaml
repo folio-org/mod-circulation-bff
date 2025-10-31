@@ -8,7 +8,7 @@ post:
           $ref: "../schemas/dto/circulation/checkOutRequest.yaml"
     required: true
   responses:
-    '200':
+    '201':
       description: Item successfully checked out
       content:
         application/json:
