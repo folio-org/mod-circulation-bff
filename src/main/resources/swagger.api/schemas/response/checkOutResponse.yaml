@@ -125,5 +125,8 @@ properties:
   metadata:
     description: Metadata about creation and changes to loan, provided by the server (client should not provide)
     type: object
+  checkoutServicePointId:
+    description: ID of the Service Point where the last checkout occured"
+    type: string
 
 additionalProperties: true
