@@ -52,7 +52,7 @@ class CheckOutApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
     checkOut(request, TENANT_ID_CONSORTIUM)
-      .andExpect(status().isOk())
+      .andExpect(status().isCreated())
       .andExpect(content().json(asJsonString(mockResponse)));
   }
 
@@ -76,7 +76,7 @@ class CheckOutApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
     checkOut(request, TENANT_ID_CONSORTIUM)
-      .andExpect(status().isOk())
+      .andExpect(status().isCreated())
       .andExpect(content().json(asJsonString(mockResponse)));
   }
 
@@ -96,7 +96,7 @@ class CheckOutApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(mockResponse), SC_OK)));
 
     checkOut(request, TENANT_ID_COLLEGE)
-       .andExpect(status().isOk())
+       .andExpect(status().isCreated())
        .andExpect(content().json(asJsonString(mockResponse)));
   }
 
@@ -116,7 +116,7 @@ class CheckOutApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(mockTlrCheckOutResponse), SC_OK)));
 
     checkOut(buildCheckOutRequest(), tenantId)
-      .andExpect(status().isOk())
+      .andExpect(status().isCreated())
       .andExpect(content().json(asJsonString(mockTlrCheckOutResponse)));
   }
 

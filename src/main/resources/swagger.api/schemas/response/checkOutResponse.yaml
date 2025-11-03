@@ -30,6 +30,14 @@ properties:
         description: Current patron group of the borrower (read-only, defined by the server)
         type: string
     additionalProperties: true
+    required: [
+        'firstName',
+        'lastName',
+        'middleName',
+        'barcode',
+        'preferredFirstName',
+        'patronGroup'
+    ]
   proxyUserId:
     description: ID of the user representing a proxy for the patron
     type: string
