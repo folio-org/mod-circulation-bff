@@ -212,7 +212,7 @@
                 <version>${openapi-generator.version}</version>
                 <executions>
                     <execution>
-                        <id>request-mediator</id>
+                        <id>mod-circulation-bff-openapi</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>

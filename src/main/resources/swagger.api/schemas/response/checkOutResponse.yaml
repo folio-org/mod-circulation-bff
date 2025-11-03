@@ -14,30 +14,28 @@ properties:
       firstName:
         description: First name of the borrower (read-only, defined by the server)
         type: string
+        x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)"
       lastName:
         description: Last name of the borrower (read-only, defined by the server)
         type: string
+        x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)"
       middleName:
         description: Middle name of the borrower (read-only, defined by the server)
         type: string
+        x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)"
       barcode:
         description: Barcode used to identify the borrower (read-only, defined by the server)
         type: string
+        x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)"
       preferredFirstName:
         description: Preferred first name of the borrower (read-only, defined by the server)
         type: string
+        x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)"
       patronGroup:
         description: Current patron group of the borrower (read-only, defined by the server)
         type: string
+        x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)"
     additionalProperties: true
-    required: [
-        'firstName',
-        'lastName',
-        'middleName',
-        'barcode',
-        'preferredFirstName',
-        'patronGroup'
-    ]
   proxyUserId:
     description: ID of the user representing a proxy for the patron
     type: string
