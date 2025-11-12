@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.Collections;
@@ -232,6 +233,20 @@ class CirculationBffControllerTest {
   }
 
   @Test
+  void createBatchRequestReturnsNotFoundResponse() {
+    var batchRequest = new BatchRequest();
+    var batchResponse = new BatchRequestResponse();
+    var serviceResponse = new ResponseEntity<>(batchResponse, NOT_FOUND);
+
+    when(mediatedBatchRequestService.createMediatedBatchRequest(batchRequest)).thenReturn(serviceResponse);
+
+    var response = controller.createBatchRequest(batchRequest);
+
+    assertThat(response.getStatusCode(), is(NOT_FOUND));
+    assertThat(response.getBody(), is(batchResponse));
+  }
+
+  @Test
   void getBatchRequestByIdReturnsOkResponse() {
     var batchId = UUID.randomUUID();
     var batchResponse = new BatchRequestResponse();
@@ -242,6 +257,20 @@ class CirculationBffControllerTest {
     var response = controller.getBatchRequestById(batchId);
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    assertThat(response.getBody(), is(batchResponse));
+  }
+
+  @Test
+  void getBatchRequestByIdReturnsNotFoundResponse() {
+    var batchId = UUID.randomUUID();
+    var batchResponse = new BatchRequestResponse();
+    var serviceResponse = new ResponseEntity<>(batchResponse, NOT_FOUND);
+
+    when(mediatedBatchRequestService.retrieveMediatedBatchRequestById(batchId)).thenReturn(serviceResponse);
+
+    var response = controller.getBatchRequestById(batchId);
+
+    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     assertThat(response.getBody(), is(batchResponse));
   }
 
