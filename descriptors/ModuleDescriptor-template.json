@@ -138,6 +138,52 @@
       ]
     },
     {
+      "id": "circulation-bff-requests-batch",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/circulation-bff/batch-requests",
+          "permissionsRequired": ["circulation-bff.batch-requests.item.post"],
+          "modulePermissions": [
+            "requests-mediated.batch-mediated-requests.item.post"
+          ]
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/batch-requests",
+          "permissionsRequired": ["circulation-bff.batch-request.collection.get"],
+          "modulePermissions": [
+            "requests-mediated.batch-mediated-requests.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/batch-requests/{batchRequestId}",
+          "permissionsRequired": ["circulation-bff.batch-request.item.get"],
+          "modulePermissions": [
+            "requests-mediated.batch-mediated-requests.item.get"
+          ]
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/batch-requests/{batchRequestId}/details",
+          "permissionsRequired": ["circulation-bff.batch-request.details.collection.get"],
+          "modulePermissions": [
+            "requests-mediated.batch-mediated-requests.details.collection.get"
+          ]
+        }
+      ]
+    },
+    {
       "id": "circulation-bff-loans",
       "version": "1.6",
       "handlers": [
@@ -366,6 +412,26 @@
       "description": "create ECS LTR or Circulation request"
     },
     {
+      "permissionName": "circulation-bff.batch-requests.item.post",
+      "displayName": "circulation BFF - post multi-item batch requests",
+      "description": "create multi-item batch requests"
+    },
+    {
+      "permissionName": "circulation-bff.batch-request.collection.get",
+      "displayName": "circulation BFF - get collection of multi-item batch request records",
+      "description": "get collection of multi-item batch request records"
+    },
+    {
+      "permissionName": "circulation-bff.batch-request.item.get",
+      "displayName": "circulation BFF - get multi-item batch request status",
+      "description": "get multi-item batch request status"
+    },
+    {
+      "permissionName": "circulation-bff.batch-request.details.collection.get",
+      "displayName": "circulation BFF - get multi-item batch request details",
+      "description": "get multi-item batch request details"
+    },
+    {
       "permissionName": "circulation-bff.loans.check-in-by-barcode.execute",
       "displayName": "circulation BFF - check-in item",
       "description": "check-in item"
@@ -528,6 +594,10 @@
     {
       "id": "ecs-loans",
       "version": "1.3"
+    },
+    {
+      "id": "requests-mediated-batch",
+      "version": "1.0"
     }
   ],
   "metadata": {
