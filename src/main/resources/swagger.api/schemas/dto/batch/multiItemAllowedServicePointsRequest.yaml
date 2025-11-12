@@ -1,0 +1,12 @@
+description: Request for allowed service points for multiple items
+type: object
+properties:
+  itemIds:
+    description: List of item IDs to check and retrieve allowed service points for
+    type: array
+    minItems: 0
+    items:
+      type: string
+      format: uuid
+required:
+  - itemIds

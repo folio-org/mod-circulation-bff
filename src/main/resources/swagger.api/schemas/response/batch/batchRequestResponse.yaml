@@ -1,0 +1,35 @@
+type: object
+description: DTO for Multi-Item Batch Request
+properties:
+  batchId:
+    description: UUID of the batch request
+    $ref: '../../dto/common/uuid.yaml'
+  requesterId:
+    description: UUID of the requesting patron (user)
+    $ref: '../../dto/common/uuid.yaml'
+  mediatedRequestStatus:
+    description: Status of the batch request
+    type: string
+    enum: [ 'Pending', 'In progress', 'Completed', 'Failed' ]
+  requestDate:
+    description: Date when the batch request was placed
+    type: string
+    format: date-time
+  patronComments:
+    description: Comments made by the patron
+    type: string
+  mediatedWorkflow:
+    description: Mediated workflow that mediated batch request follows
+    type: string
+    enum: [ 'Multi-Item request' ]
+  metadata:
+    description: Batch request metadata
+    type: object
+    $ref: '../../dto/common/metadata.yaml'
+additionalProperties: false
+required:
+  - batchId
+  - requesterId
+  - requestDate
+  - mediatedRequestStatus
+  - mediatedWorkflow

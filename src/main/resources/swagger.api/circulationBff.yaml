@@ -11,6 +11,12 @@ paths:
     $ref: 'paths/confirmMediatedRequests.yaml'
   /circulation-bff/requests:
     $ref: 'paths/requests.yaml'
+  /circulation-bff/batch-requests:
+    $ref: 'paths/multiItemBatchRequest.yaml'
+  /circulation-bff/batch-requests/{batchId}:
+    $ref: 'paths/getMultiItemBatchRequest.yaml'
+  /circulation-bff/batch-requests/{batchId}/details:
+    $ref: 'paths/getMultiItemBatchRequestDetails.yaml'
   /circulation-bff/loans:
     $ref: 'paths/loans.yaml'
   /circulation-bff/loans/{loanId}:

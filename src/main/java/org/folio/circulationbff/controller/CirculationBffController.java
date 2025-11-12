@@ -8,6 +8,10 @@ import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.BatchRequest;
+import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
@@ -39,6 +43,7 @@ import org.folio.circulationbff.service.DeclareClaimedReturnedItemAsMissingServi
 import org.folio.circulationbff.service.DeclareItemLostService;
 import org.folio.circulationbff.service.EcsRequestExternalService;
 import org.folio.circulationbff.service.InventoryService;
+import org.folio.circulationbff.service.MediatedBatchRequestService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
@@ -67,6 +72,7 @@ public class CirculationBffController implements CirculationBffApi {
   private final ClaimItemReturnedService claimItemReturnedService;
   private final DeclareClaimedReturnedItemAsMissingService declareClaimedReturnedItemAsMissingService;
   private final InventoryService inventoryService;
+  private final MediatedBatchRequestService mediatedBatchRequestService;
 
   @Override
   public ResponseEntity<PostEcsRequestExternal201Response> postEcsRequestExternal(
@@ -269,4 +275,39 @@ public class CirculationBffController implements CirculationBffApi {
     return ResponseEntity.ok(inventoryService.fetchInventoryItemsByQuery(query));
   }
 
+  @Override
+  public ResponseEntity<BatchRequestResponse> createBatchRequest(BatchRequest batchRequest) {
+    var response = mediatedBatchRequestService.createMediatedBatchRequest(batchRequest);
+
+    if (!response.getStatusCode().equals(CREATED) || response.getBody() == null) {
+      log.warn("createBatchRequest:: failed to create new mediated batch request, status: {}, " +
+        "message: {}", response.getStatusCode(), response.getBody());
+    }
+
+    log.info("createBatchRequest:: mediated batch request has been created");
+    return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+  }
+
+  @Override
+  public ResponseEntity<BatchRequestResponse> getBatchRequestById(UUID batchId) {
+    var response = mediatedBatchRequestService.retrieveMediatedBatchRequestById(batchId);
+    if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
+      log.warn("getBatchRequestById:: failed to retrieve mediated batch request by id {}, status: {}, " +
+        "message: {}", batchId, response.getStatusCode(), response.getBody());
+    }
+
+    return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+  }
+
+  @Override
+  public ResponseEntity<BatchRequestCollectionResponse> getBatchRequestCollection(String query, Integer offset, Integer limit) {
+    var batchRequests = mediatedBatchRequestService.retrieveMediatedBatchRequestsByQuery(query, offset, limit);
+    return ResponseEntity.ok(batchRequests);
+  }
+
+  @Override
+  public ResponseEntity<BatchRequestDetailsResponse> getMultiItemBatchRequestDetailsByBatchId(UUID batchId, Integer offset, Integer limit) {
+    var batchRequestDetails = mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+    return ResponseEntity.ok(batchRequestDetails);
+  }
 }

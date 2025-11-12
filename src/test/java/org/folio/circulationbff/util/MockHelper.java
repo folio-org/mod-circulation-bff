@@ -3,9 +3,11 @@ package org.folio.circulationbff.util;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.Collections.emptyList;
+import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.circulationbff.api.BaseIT.HEADER_TENANT;
 import static org.folio.circulationbff.api.BaseIT.TENANT_ID_CONSORTIUM;
@@ -16,11 +18,17 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import org.apache.http.HttpStatus;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints1Inner;
+import org.folio.circulationbff.domain.dto.BatchRequest;
+import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestDetail;
+import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.CirculationSettings;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.CirculationSettingsValue;
@@ -55,6 +63,7 @@ public class MockHelper {
   private static final String TLR_SETTINGS_URL = "/tlr/settings";
   private static final String USER_TENANTS_URL = "/user-tenants";
   public static final String TLR_ALLOWED_SERVICE_POINT_URL = "/tlr/allowed-service-points";
+  public static final String MEDIATED_BATCH_REQUEST_URL = "/requests-mediated/batch-mediated-requests";
   private static final String PERMANENT_LOAN_TYPE_ID = "22fa71d319-997b-4a60-8cfd-20fdf57efa14";
   private static final String TEMPORARY_LOAN_TYPE_ID = "2286d4aed0-c76b-4907-983f-1327dfb4b12d";
 
@@ -304,5 +313,63 @@ public class MockHelper {
       .id(id)
       .barcode(barcode);
   }
+
+  public static BatchRequest buildBatchRequest() {
+    var request = new BatchRequest();
+    request.setRequesterId(UUID.randomUUID().toString());
+    request.setMediatedWorkflow(BatchRequest.MediatedWorkflowEnum.MULTI_ITEM_REQUEST);
+    request.setBatchId(UUID.randomUUID().toString());
+    request.setPatronComments("patron comments");
+    return request;
+  }
+
+  public static BatchRequestResponse buildBatchRequestResponse() {
+    var batch = new BatchRequestResponse();
+    batch.setBatchId(UUID.randomUUID().toString());
+    batch.setMediatedRequestStatus(BatchRequestResponse.MediatedRequestStatusEnum.COMPLETED);
+    return batch;
+  }
+
+  public static BatchRequestCollectionResponse buildBatchRequestCollectionResponse() {
+    var response = new BatchRequestCollectionResponse();
+    response.setTotalRecords(1);
+    response.addBatchRequestsItem(buildBatchRequestResponse());
+    return response;
+  }
+
+  public static BatchRequestDetailsResponse buildBatchRequestDetailsResponse() {
+    var details = new BatchRequestDetailsResponse();
+    var detail = new BatchRequestDetail()
+      .itemId(UUID.randomUUID().toString())
+      .mediatedRequestStatus(BatchRequestDetail.MediatedRequestStatusEnum.IN_PROGRESS);
+    details.addBatchRequestDetailsItem(detail);
+    return details;
+  }
+
+  public void mockCreateBatchRequest(BatchRequestResponse response) {
+    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL))
+      .willReturn(jsonResponse(asJsonString(response), SC_CREATED)));
+  }
+
+  public void mockGetBatchRequestById(String batchId, BatchRequestResponse response) {
+    wireMockServer.stubFor(WireMock.get(urlEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId))
+      .willReturn(jsonResponse(asJsonString(response), SC_OK)));
+  }
+
+  public void mockGetBatchRequestCollection(String query, String offset, String limit, BatchRequestCollectionResponse response) {
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL))
+      .withQueryParam("query", equalTo(query))
+      .withQueryParam("offset", equalTo(offset))
+      .withQueryParam("limit", equalTo(limit))
+      .willReturn(jsonResponse(asJsonString(response), SC_OK)));
+  }
+
+  public void mockGetMultiItemBatchRequestDetails(String batchId, String offset, String limit, BatchRequestDetailsResponse response) {
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
+      .withQueryParam("offset", equalTo(offset))
+      .withQueryParam("limit", equalTo(limit))
+      .willReturn(jsonResponse(asJsonString(response), SC_OK)));
+  }
+
 
 }

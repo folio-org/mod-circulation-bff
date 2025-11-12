@@ -18,6 +18,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.folio.circulationbff.domain.dto.BatchRequest;
+import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
@@ -26,6 +30,7 @@ import org.folio.circulationbff.domain.dto.StaffSlip;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.service.CirculationBffService;
+import org.folio.circulationbff.service.MediatedBatchRequestService;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.UserService;
@@ -53,6 +58,9 @@ class CirculationBffControllerTest {
 
   @Mock
   private CirculationBffService circulationBffService;
+
+  @Mock
+  private MediatedBatchRequestService mediatedBatchRequestService;
 
   @InjectMocks
   private CirculationBffController controller;
@@ -208,4 +216,63 @@ class CirculationBffControllerTest {
     assertThat(response.getStatusCode(), is(BAD_REQUEST));
     assertThat(response.getBody(), is(nullValue()));
   }
+
+  @Test
+  void createBatchRequestReturnsCreatedResponse() {
+    var batchRequest = new BatchRequest();
+    var batchResponse = new BatchRequestResponse();
+    var serviceResponse = new ResponseEntity<>(batchResponse, CREATED);
+
+    when(mediatedBatchRequestService.createMediatedBatchRequest(batchRequest)).thenReturn(serviceResponse);
+
+    var response = controller.createBatchRequest(batchRequest);
+
+    assertThat(response.getStatusCode(), is(CREATED));
+    assertThat(response.getBody(), is(batchResponse));
+  }
+
+  @Test
+  void getBatchRequestByIdReturnsOkResponse() {
+    var batchId = UUID.randomUUID();
+    var batchResponse = new BatchRequestResponse();
+    var serviceResponse = new ResponseEntity<>(batchResponse, HttpStatus.OK);
+
+    when(mediatedBatchRequestService.retrieveMediatedBatchRequestById(batchId)).thenReturn(serviceResponse);
+
+    var response = controller.getBatchRequestById(batchId);
+
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    assertThat(response.getBody(), is(batchResponse));
+  }
+
+  @Test
+  void getBatchRequestCollectionReturnsOkResponse() {
+    var query = "status==OPEN";
+    var offset = 0;
+    var limit = 10;
+    var batchCollection = new BatchRequestCollectionResponse();
+
+    when(mediatedBatchRequestService.retrieveMediatedBatchRequestsByQuery(query, offset, limit)).thenReturn(batchCollection);
+
+    var response = controller.getBatchRequestCollection(query, offset, limit);
+
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    assertThat(response.getBody(), is(batchCollection));
+  }
+
+  @Test
+  void getMultiItemBatchRequestDetailsByBatchIdReturnsOkResponse() {
+    var batchId = UUID.randomUUID();
+    var offset = 0;
+    var limit = 5;
+    var detailsResponse = new BatchRequestDetailsResponse();
+
+    when(mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(batchId, offset, limit)).thenReturn(detailsResponse);
+
+    var response = controller.getMultiItemBatchRequestDetailsByBatchId(batchId, offset, limit);
+
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    assertThat(response.getBody(), is(detailsResponse));
+  }
+
 }
