@@ -91,7 +91,8 @@ class CirculationBffBatchRequestsApiTest extends BaseIT {
         .queryParam("limit", limit)
         .headers(defaultHeaders()))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.batchRequestDetails[0].itemId", is(detailsResponse.getBatchRequestDetails().getFirst().getItemId())));
+      .andExpect(jsonPath("$.mediatedBatchRequestDetails[0].itemId",
+        is(detailsResponse.getMediatedBatchRequestDetails().getFirst().getItemId())));
 
     wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
       .withQueryParam("offset", equalTo(offset))

@@ -342,7 +342,7 @@ public class MockHelper {
     var detail = new BatchRequestDetail()
       .itemId(UUID.randomUUID().toString())
       .mediatedRequestStatus(BatchRequestDetail.MediatedRequestStatusEnum.IN_PROGRESS);
-    details.addBatchRequestDetailsItem(detail);
+    details.addMediatedBatchRequestDetailsItem(detail);
     return details;
   }
 
