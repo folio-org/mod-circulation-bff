@@ -333,7 +333,7 @@ public class MockHelper {
   public static BatchRequestCollectionResponse buildBatchRequestCollectionResponse() {
     var response = new BatchRequestCollectionResponse();
     response.setTotalRecords(1);
-    response.addBatchRequestsItem(buildBatchRequestResponse());
+    response.addMediatedBatchRequestsItem(buildBatchRequestResponse());
     return response;
   }
 

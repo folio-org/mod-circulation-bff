@@ -28,7 +28,10 @@ get:
   tags:
     - multiItemBatchRequests
   parameters:
-    - $ref: '../parameters/query.yaml'
+    - name: query
+      in: query
+      schema:
+        type: string
     - $ref: '../parameters/offset.yaml'
     - $ref: '../parameters/limit.yaml'
   responses:
