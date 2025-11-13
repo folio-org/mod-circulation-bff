@@ -1,7 +1,7 @@
 description: Collection of multi-item batch request details
 type: object
 properties:
-  batchRequestDetails:
+  mediatedBatchRequestDetails:
     description: A list of batch request details
     type: array
     items:
@@ -11,5 +11,5 @@ properties:
     type: integer
 additionalProperties: false
 required:
-  - batchRequestDetails
+  - mediatedBatchRequestDetails
   - totalRecords
