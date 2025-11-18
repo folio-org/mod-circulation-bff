@@ -1,7 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.util.stream.Collectors.joining;
-import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CHECKED_OUT;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +20,7 @@ import org.folio.circulationbff.domain.dto.CirculationItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.Item;
+import org.folio.circulationbff.domain.dto.Loan;
 import org.folio.circulationbff.domain.dto.Location;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -64,8 +64,22 @@ public class CheckInServiceImpl implements CheckInService {
         String secureTenantId = tenantService.getSecureTenantId().orElse(null);
         if (circItem == null) {
           response = checkInRemotely(request, item.getTenantId());
-        } else if (shouldCloseLoanInSecureTenant(circItem, secureTenantId)) {
-          response = checkInRemotely(request, secureTenantId);
+        } else if (secureTenantId != null && circulationItemIsInStatus(circItem, CirculationItemStatus.NameEnum.CHECKED_OUT)) {
+          log.info("checkIn:: checking if there is a loan in secure tenant");
+          Optional<Loan> loanInSecureTenant = findOpenLoan(circItem.getId().toString(), secureTenantId);
+          if (loanInSecureTenant.isPresent()) {
+            log.info("checkIn:: there is a loan in secure tenant");
+            Optional<Loan> optionalLoanInCentralTenant = findOpenLoan(circItem.getId().toString(),
+              tenantService.getCentralTenantId().orElseThrow());
+            response = checkInRemotely(request, secureTenantId);
+            if (optionalLoanInCentralTenant.isPresent()) {
+              log.info("checkIn:: updating check-in response with loan data from central tenant");
+              Loan loanInCentralTenant = optionalLoanInCentralTenant.get();
+              response.getLoan()
+                .id(loanInCentralTenant.getId())
+                .userId(loanInCentralTenant.getUserId());
+            }
+          }
         }
       }
     }
@@ -78,15 +92,9 @@ public class CheckInServiceImpl implements CheckInService {
     return response;
   }
 
-  private boolean shouldCloseLoanInSecureTenant(CirculationItem circItem, String secureTenantId) {
-    return secureTenantId != null && circulationItemIsInStatus(circItem, CHECKED_OUT) &&
-        openLoanExists(circItem.getId().toString(), secureTenantId);
-  }
-
-  private boolean openLoanExists(String itemId, String tenantId) {
+  private Optional<Loan> findOpenLoan(String itemId, String tenantId) {
     return executionService.executeSystemUserScoped(tenantId,
-        () -> circulationStorageService.findOpenLoan(itemId))
-      .isPresent();
+        () -> circulationStorageService.findOpenLoan(itemId));
   }
 
   private SearchItem findItem(CheckInRequest request) {

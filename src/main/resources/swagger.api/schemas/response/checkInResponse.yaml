@@ -158,6 +158,9 @@ properties:
       id:
         description: Unique ID of the loan
         type: string
+      userId:
+        description: Unique ID of the user
+        type: string
       item:
         description: Item data
         type: object
