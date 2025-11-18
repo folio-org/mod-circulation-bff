@@ -417,9 +417,8 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private ServicePoint fetchServicePoint(String servicePointId) {
-    log.info("fetchServicePoint:: libraryId={}", servicePointId);
     var servicePoint = inventoryService.fetchServicePoint(servicePointId);
-    log.info("fetchServicePoint:: result: {}", servicePoint);
+    log.debug("fetchServicePoint:: result: {}", servicePoint);
 
     return servicePoint;
   }
