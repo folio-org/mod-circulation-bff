@@ -1,6 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.util.stream.Collectors.joining;
+import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CHECKED_OUT;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,25 +61,21 @@ public class CheckInServiceImpl implements CheckInService {
     if (settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral()) {
       SearchItem item = findItem(request);
       if (item != null) {
-        CirculationItem circItem = findCirculationItem(item.getId());
-        String secureTenantId = tenantService.getSecureTenantId().orElse(null);
-        if (circItem == null) {
+        Optional<CirculationItem> optionalCirculationItem = findCirculationItem(item.getId());
+        if (optionalCirculationItem.isEmpty()) {
           response = checkInRemotely(request, item.getTenantId());
-        } else if (secureTenantId != null && circulationItemIsInStatus(circItem, CirculationItemStatus.NameEnum.CHECKED_OUT)) {
-          log.info("checkIn:: checking if there is a loan in secure tenant");
-          Optional<Loan> loanInSecureTenant = findOpenLoan(circItem.getId().toString(), secureTenantId);
-          if (loanInSecureTenant.isPresent()) {
-            log.info("checkIn:: there is a loan in secure tenant");
-            Optional<Loan> optionalLoanInCentralTenant = findOpenLoan(circItem.getId().toString(),
-              tenantService.getCentralTenantId().orElseThrow());
+        } else {
+          CirculationItem circulationItem = optionalCirculationItem.get();
+          String secureTenantId = tenantService.getSecureTenantId().orElse(null);
+          if (secureTenantId != null && openLoanExists(circulationItem, secureTenantId)) {
+            log.info("checkIn:: found an open loan in secure tenant");
+            String centralTenantId = tenantService.getCentralTenantId().orElseThrow();
+            Loan loanInCentralTenant = findOpenLoan(circulationItem, centralTenantId).orElseThrow();
             response = checkInRemotely(request, secureTenantId);
-            if (optionalLoanInCentralTenant.isPresent()) {
-              log.info("checkIn:: updating check-in response with loan data from central tenant");
-              Loan loanInCentralTenant = optionalLoanInCentralTenant.get();
-              response.getLoan()
-                .id(loanInCentralTenant.getId())
-                .userId(loanInCentralTenant.getUserId());
-            }
+            log.info("checkIn:: updating check-in response with loan data from central tenant");
+            response.getLoan()
+              .id(loanInCentralTenant.getId())
+              .userId(loanInCentralTenant.getUserId());
           }
         }
       }
@@ -92,9 +89,15 @@ public class CheckInServiceImpl implements CheckInService {
     return response;
   }
 
-  private Optional<Loan> findOpenLoan(String itemId, String tenantId) {
+  private boolean openLoanExists(CirculationItem circulationItem, String tenantId) {
+    return circulationItemIsInStatus(circulationItem, CHECKED_OUT)
+      && findOpenLoan(circulationItem, tenantId).isPresent();
+  }
+
+  private Optional<Loan> findOpenLoan(CirculationItem item, String tenantId) {
+    log.info("searching for open loan for item {} in tenant {}", item::getId, () -> tenantId);
     return executionService.executeSystemUserScoped(tenantId,
-        () -> circulationStorageService.findOpenLoan(itemId));
+        () -> circulationStorageService.findOpenLoan(item.getId().toString()));
   }
 
   private SearchItem findItem(CheckInRequest request) {
@@ -134,12 +137,12 @@ public class CheckInServiceImpl implements CheckInService {
     return searchItem;
   }
 
-  private CirculationItem findCirculationItem(String itemId) {
+  private Optional<CirculationItem> findCirculationItem(String itemId) {
     log.info("findCirculationItem:: fetching circulation item {}", itemId);
     Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
     log.info("findCirculationItem:: circulation item {} found: {}", itemId, circulationItem.isPresent());
 
-    return circulationItem.orElse(null);
+    return circulationItem;
   }
 
   private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {
