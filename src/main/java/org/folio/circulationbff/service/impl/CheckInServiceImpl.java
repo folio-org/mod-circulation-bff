@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.feign.CheckInClient;
 import org.folio.circulationbff.client.feign.CirculationItemClient;
 import org.folio.circulationbff.client.feign.HoldingsStorageClient;
+import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
@@ -45,6 +46,8 @@ public class CheckInServiceImpl implements CheckInService {
   private final CheckInClient checkInClient;
   private final CirculationItemClient circulationItemClient;
   private final HoldingsStorageClient holdingsStorageClient;
+  private final RequestMediatedClient requestMediatedClient;
+
   private final SettingsService settingsService;
   private final TenantService tenantService;
   private final SearchService searchService;
@@ -65,7 +68,8 @@ public class CheckInServiceImpl implements CheckInService {
         if (circItem == null) {
           response = checkInRemotely(request, item.getTenantId());
         } else if (shouldCloseLoanInSecureTenant(circItem, secureTenantId)) {
-          response = checkInRemotely(request, secureTenantId);
+          response = executionService.executeSystemUserScoped(secureTenantId,
+            () -> requestMediatedClient.checkInByBarcode(request));
         }
       }
     }

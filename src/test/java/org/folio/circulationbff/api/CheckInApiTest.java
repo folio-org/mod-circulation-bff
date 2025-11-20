@@ -53,6 +53,7 @@ class CheckInApiTest extends BaseIT {
 
   private static final String CHECK_IN_URL = "/circulation-bff/loans/check-in-by-barcode";
   private static final String CIRCULATION_CHECK_IN_URL = "/circulation/check-in-by-barcode";
+  private static final String REQUESTS_MEDIATED_CHECK_IN_URL = "/requests-mediated/loans/check-in-by-barcode";
   private static final String CIRCULATION_ITEM_URL = "/circulation-item/%s";
   private static final String HOLDING_STORAGE_URL = "/holdings-storage/holdings/%s";
   private static final String LOAN_STORAGE_URL = "/loan-storage/loans";
@@ -419,6 +420,18 @@ class CheckInApiTest extends BaseIT {
   private void givenCirculationCheckInSucceeded(CheckInRequest request, String itemId,
     String instanceId, String tenantId) {
 
+    givenCheckInSucceeded(request, itemId, instanceId, tenantId, CIRCULATION_CHECK_IN_URL);
+  }
+
+  private void givenRequestsMediatedCheckInSucceeded(CheckInRequest request, String itemId,
+    String instanceId, String tenantId) {
+
+    givenCheckInSucceeded(request, itemId, instanceId, tenantId, REQUESTS_MEDIATED_CHECK_IN_URL);
+  }
+
+  private void givenCheckInSucceeded(CheckInRequest request, String itemId,
+    String instanceId, String tenantId, String url) {
+
     var checkinResponse = format("""
         {
           "item": {
@@ -434,7 +447,7 @@ class CheckInApiTest extends BaseIT {
         }
         """, itemId, instanceId);
 
-    wireMockServer.stubFor(WireMock.post(urlMatching(CIRCULATION_CHECK_IN_URL))
+    wireMockServer.stubFor(WireMock.post(urlMatching(url))
       .withHeader(HEADER_TENANT, WireMock.equalTo(tenantId))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(checkinResponse, SC_OK)));
@@ -670,7 +683,7 @@ class CheckInApiTest extends BaseIT {
         .id(randomId())
         .status(new LoanStatus().name("Open")));
 
-    givenCirculationCheckInSucceeded(checkInRequest, itemId, INSTANCE_ID, TENANT_ID_SECURE);
+    givenRequestsMediatedCheckInSucceeded(checkInRequest, itemId, INSTANCE_ID, TENANT_ID_SECURE);
 
     wireMockServer.stubFor(get(urlPathEqualTo(LOAN_STORAGE_URL))
       .withQueryParam("query", WireMock.equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
@@ -688,7 +701,7 @@ class CheckInApiTest extends BaseIT {
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
 
     // One check-in in secure tenant
-    wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
+    wireMockServer.verify(1, postRequestedFor(urlPathMatching(REQUESTS_MEDIATED_CHECK_IN_URL))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
   }
