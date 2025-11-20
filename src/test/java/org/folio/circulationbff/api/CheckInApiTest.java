@@ -700,8 +700,13 @@ class CheckInApiTest extends BaseIT {
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
 
-    // One check-in in secure tenant
+    // One check-in in secure tenant's mod-requests-mediated
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(REQUESTS_MEDIATED_CHECK_IN_URL))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE))
+      .withRequestBody(equalToJson(asJsonString(checkInRequest))));
+
+    // No check-ins in secure tenant's mod-circulation
+    wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
   }
