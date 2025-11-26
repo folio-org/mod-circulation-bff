@@ -125,6 +125,17 @@
         },
         {
           "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/requests",
+          "permissionsRequired": ["circulation-bff.requests.collection.get"],
+          "modulePermissions": [
+            "circulation.requests.collection.get",
+            "requests-mediated.batch-mediated-requests.details.collection.get"
+          ]
+        },
+        {
+          "methods": [
             "POST"
           ],
           "pathPattern": "/circulation-bff/mediated-requests/confirm",
@@ -410,6 +421,11 @@
       "permissionName": "circulation-bff.requests.post",
       "displayName": "circulation BFF - post request",
       "description": "create ECS LTR or Circulation request"
+    },
+    {
+      "permissionName": "circulation-bff.requests.collection.get",
+      "displayName": "circulation BFF - get requests by query",
+      "description": "get enriched batch request info ECS LTR or Circulation requests by query"
     },
     {
       "permissionName": "circulation-bff.batch-requests.item.post",
