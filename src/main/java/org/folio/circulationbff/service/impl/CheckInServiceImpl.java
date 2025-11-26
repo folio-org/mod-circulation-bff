@@ -16,6 +16,7 @@ import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
 import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinationServicePoint;
+import org.folio.circulationbff.domain.dto.CheckInResponseLoan;
 import org.folio.circulationbff.domain.dto.CirculationItem;
 import org.folio.circulationbff.domain.dto.CirculationItemStatus;
 import org.folio.circulationbff.domain.dto.Contributor;
@@ -66,6 +67,12 @@ public class CheckInServiceImpl implements CheckInService {
           response = checkInRemotely(request, item.getTenantId());
         } else if (shouldCloseLoanInSecureTenant(circItem, secureTenantId)) {
           response = checkInRemotely(request, secureTenantId);
+          log.info("checkIn:: secure check-in response: {}", response);
+          CheckInResponseLoan loan = response.getLoan();
+          loan.id(null)
+            .userId(null)
+            .getAdditionalProperties().remove("borrower");
+          log.info("checkIn:: obfuscated check-in response: {}", response);
         }
       }
     }
