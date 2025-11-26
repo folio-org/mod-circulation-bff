@@ -69,9 +69,9 @@ public class CheckInServiceImpl implements CheckInService {
           response = checkInRemotely(request, secureTenantId);
           log.info("checkIn:: secure check-in response: {}", response);
           CheckInResponseLoan loan = response.getLoan();
-          loan.id(null)
-            .userId(null)
-            .getAdditionalProperties().remove("borrower");
+          loan.setId(null);
+          loan.getAdditionalProperties().remove("userId");
+          loan.getAdditionalProperties().remove("borrower");
           log.info("checkIn:: obfuscated check-in response: {}", response);
         }
       }
