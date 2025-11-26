@@ -34,6 +34,8 @@ folio:
     password: ${SYSTEM_USER_PASSWORD:mod-circulation-bff}
     lastname: System
     permissionsFilePath: permissions/mod-circulation-bff.csv
+  batch-requests:
+    query-chunk-ids-count: ${BATCH_REQUEST_DETAILS_QUERY_IDS_COUNT:20}
 management:
   endpoints:
     web:

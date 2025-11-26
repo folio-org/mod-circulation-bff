@@ -30,6 +30,7 @@ import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.PostEcsRequestExternal201Response;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.exception.HttpFailureFeignException;
@@ -309,5 +310,11 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<BatchRequestDetailsResponse> getMultiItemBatchRequestDetailsByBatchId(UUID batchId, Integer offset, Integer limit) {
     var batchRequestDetails = mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
     return ResponseEntity.ok(batchRequestDetails);
+  }
+
+  @Override
+  public ResponseEntity<Requests> getRequests(String query, Integer limit, Integer offset, String totalRecords) {
+    var requests = circulationBffService.getBatchRequestInfoEnrichedRequests(query, offset, limit, totalRecords);
+    return ResponseEntity.ok(requests);
   }
 }

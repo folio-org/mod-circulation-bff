@@ -27,3 +27,40 @@ post:
       $ref: '../responses/unprocessableEntityResponse.yaml'
     '500':
       $ref: '../responses/internalServerErrorResponse.yaml'
+get:
+  operationId: getRequests
+  description: Get ECS TLR or Circulation requests
+  parameters:
+    - name: query
+      in: query
+      required: false
+      description: A query expressed as a CQL string
+        (see [dev.folio.org/reference/glossary#cql](https://dev.folio.org/reference/glossary#cql))
+        using valid searchable fields.
+        The first example below shows the general form of a full CQL query,
+        but those fields might not be relevant in this context.
+      example: (username=="ab*" or personal.firstName=="ab*" or personal.lastName=="ab*") and active=="true" sortby personal.lastName personal.firstName barcode
+      schema:
+        type: string
+        default: cql.allRecords=1
+    - $ref: '../parameters/limit.yaml'
+    - $ref: '../parameters/offset.yaml'
+    - $ref: '../parameters/totalRecords.yaml'
+  tags:
+    - getCirculationRequests
+  responses:
+    '200':
+      description: 'List of ECS TLR or Circulation requests with extended information'
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/dto/request/requests.yaml"
+          examples:
+            objectExample:
+              externalValue: '../examples/response/requests.json'
+    '400':
+      $ref: '../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'
