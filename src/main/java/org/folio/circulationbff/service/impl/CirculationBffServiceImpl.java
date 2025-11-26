@@ -48,7 +48,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final SystemUserScopedExecutionService executionService;
   private final RequestMediatedClient requestMediatedClient;
 
-  @Value("${BATCH_REQUEST_DETAILS_QUERY_IDS_COUNT:20}")
+  @Value("${folio.batch-requests.query-request-ids-count}")
   private Integer batchRequestDetailsQueryIdsSize;
 
   @Override
@@ -78,7 +78,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     var batchRequestDetails = Lists.partition(new ArrayList<>(idsToRequest.keySet()), batchRequestDetailsQueryIdsSize).stream()
-      .map(partition -> partition.stream().collect(Collectors.joining(" or id=", "id=", EMPTY)))
+      .map(partition -> partition.stream().collect(Collectors.joining(" or confirmedRequestId=", "confirmedRequestId=", EMPTY)))
       .map(idsQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(idsQuery).getMediatedBatchRequestDetails())
       .flatMap(List::stream)
       .toList();
