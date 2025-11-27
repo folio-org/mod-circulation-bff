@@ -259,7 +259,11 @@
             "inventory-storage.location-units.campuses.collection.get",
             "inventory-storage.location-units.institutions.item.get",
             "inventory-storage.location-units.institutions.collection.get",
-            "requests-mediated.loans.check-in-by-barcode.execute"
+            "requests-mediated.loans.check-in-by-barcode.execute",
+            "users.item.get",
+            "users.collection.get",
+            "circulation-storage.loans.item.get",
+            "circulation-storage.loans.collection.get"
           ]
         },
         {
