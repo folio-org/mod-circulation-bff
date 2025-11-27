@@ -643,7 +643,8 @@
         "mod-settings.entries.collection.get",
         "mod-settings.global.read.circulation",
         "inventory.items.item.get",
-        "inventory.items.collection.get"
+        "inventory.items.collection.get",
+        "requests-mediated.loans.check-in-by-barcode.execute"
       ]
     }
   },
