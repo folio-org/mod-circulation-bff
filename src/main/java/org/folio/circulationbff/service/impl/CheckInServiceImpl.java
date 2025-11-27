@@ -102,7 +102,7 @@ public class CheckInServiceImpl implements CheckInService {
       return;
     }
 
-    log.info("populateLoanData:: populating loan and borrower data");
+    log.info("populateLoanData:: populating loan and borrower data from loan {}", loan::getId);
     User user = userService.find(loan.getUserId());
     CheckInResponseLoanBorrower loanBorrower = new CheckInResponseLoanBorrower()
       .barcode(user.getBarcode())
