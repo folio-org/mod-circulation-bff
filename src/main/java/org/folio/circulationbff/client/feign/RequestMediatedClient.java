@@ -74,4 +74,7 @@ public interface RequestMediatedClient {
     @PathVariable("batchRequestId") UUID batchRequestId,
     @RequestParam("limit") Integer limit,
     @RequestParam("offset") Integer offset);
+
+  @GetMapping("/batch-mediated-requests/details")
+  BatchRequestDetailsResponse queryMediatedBatchRequestDetails(@RequestParam("query") String query);
 }

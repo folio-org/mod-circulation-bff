@@ -26,6 +26,7 @@ import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
+import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.StaffSlip;
 import org.folio.circulationbff.domain.dto.User;
@@ -302,6 +303,23 @@ class CirculationBffControllerTest {
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), is(detailsResponse));
+  }
+
+  @Test
+  void getRequestsEnrichedWithBatchInfoReturnsOkResponse() {
+    var totalRecords = "auto";
+    var offset = 0;
+    var limit = 5;
+    var query = "some query";
+    var enrichedRequests = new Requests();
+
+    when(circulationBffService.getBatchRequestInfoEnrichedRequests(query, offset, limit, totalRecords))
+      .thenReturn(enrichedRequests);
+
+    var response = controller.getRequests(query, limit, offset, totalRecords);
+
+    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    assertThat(response.getBody(), is(enrichedRequests));
   }
 
 }

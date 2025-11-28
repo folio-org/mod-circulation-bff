@@ -77,6 +77,8 @@ components:
       $ref: 'schemas/dto/request/patronGroup.yaml'
     request:
       $ref: 'schemas/dto/request/request.yaml'
+    requests:
+      $ref: 'schemas/dto/request/requests.yaml'
     bffRequest:
       $ref: 'schemas/dto/request/bffRequest.yaml'
     ecsTlr:

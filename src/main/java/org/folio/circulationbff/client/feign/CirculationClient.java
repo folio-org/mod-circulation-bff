@@ -13,6 +13,7 @@ import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRe
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.spring.config.FeignClientConfiguration;
@@ -37,6 +38,13 @@ public interface CirculationClient {
 
   @PostMapping("/requests")
   Request createRequest(@RequestBody BffRequest request);
+
+  @GetMapping("/requests")
+  Requests getRequests(
+    @RequestParam("query") String query,
+    @RequestParam("limit") Integer limit,
+    @RequestParam("offset") Integer offset,
+    @RequestParam("totalRecords") String totalRecords);
 
   @GetMapping("/requests/{requestId}")
   Request getRequestById(@PathVariable("requestId") String requestId);
