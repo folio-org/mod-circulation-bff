@@ -6,6 +6,8 @@ import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestResponse;
+import org.folio.circulationbff.domain.dto.CheckInRequest;
+import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
@@ -39,6 +41,9 @@ public interface RequestMediatedClient {
 
   @PostMapping("/loans/check-out-by-barcode")
   CheckOutResponse checkOutByBarcode(@RequestBody CheckOutRequest request);
+
+  @PostMapping("/loans/check-in-by-barcode")
+  CheckInResponse checkInByBarcode(@RequestBody CheckInRequest request);
 
   @PostMapping("/loans/{loanId}/declare-item-lost")
   ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,

@@ -55,4 +55,7 @@ public class TestUtils {
         .toString())));
   }
 
+  public static String randomId() {
+    return UUID.randomUUID().toString();
+  }
 }
