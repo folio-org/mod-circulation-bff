@@ -11,11 +11,15 @@ import static org.folio.circulationbff.api.BaseIT.HEADER_TENANT;
 import static org.folio.circulationbff.api.BaseIT.TENANT_ID_CONSORTIUM;
 import static org.folio.circulationbff.api.BaseIT.asJsonString;
 import static org.folio.circulationbff.api.BaseIT.randomId;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.IntStream;
 
 import org.apache.http.HttpStatus;
@@ -45,6 +49,7 @@ import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.dto.TlrSettings;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -303,6 +308,11 @@ public class MockHelper {
     return new InventoryItem()
       .id(id)
       .barcode(barcode);
+  }
+
+  public static void mockSystemUserService(SystemUserScopedExecutionService systemUserService) {
+    doAnswer(invocation -> ((Callable<?>) invocation.getArguments()[1]).call())
+      .when(systemUserService).executeSystemUserScoped(anyString(), any(Callable.class));
   }
 
 }
