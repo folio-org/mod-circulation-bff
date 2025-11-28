@@ -135,7 +135,7 @@ public class CheckInServiceImpl implements CheckInService {
         openLoanExists(circItem.getId().toString(), secureTenantId))
       .orElse(false);
 
-    log.info("shouldCloseLoanInSecureTenant:: result: {}", result);
+    log.info("loanExistsInSecureTenant:: result: {}", result);
     return result;
   }
 
