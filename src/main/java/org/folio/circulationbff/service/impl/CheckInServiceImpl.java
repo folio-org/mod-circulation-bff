@@ -147,7 +147,7 @@ public class CheckInServiceImpl implements CheckInService {
 
   private Optional<Loan> findOpenLoan(String itemId, String tenantId) {
     return executionService.executeSystemUserScoped(tenantId,
-        () -> circulationStorageService.findOpenLoan(itemId));
+      () -> circulationStorageService.findOpenLoan(itemId));
   }
 
   private SearchItem findItem(CheckInRequest request) {
