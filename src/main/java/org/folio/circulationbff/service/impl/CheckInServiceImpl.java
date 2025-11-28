@@ -77,7 +77,7 @@ public class CheckInServiceImpl implements CheckInService {
           response = tenantService.isSecureTenant(itemTenantId)
             ? secureTenantCheckIn(request) // oLoan case
             : checkInRemotely(request, itemTenantId);
-        } else if (shouldCloseLoanInSecureTenant(circulationItem)) {
+        } else if (loanExistsInSecureTenant(circulationItem)) {
           Optional<Loan> loanInCentralTenant = circulationStorageService.findOpenLoan(itemId);
           response = secureTenantCheckIn(request); // mediated request case
           if (loanInCentralTenant.isPresent()) {
@@ -102,7 +102,7 @@ public class CheckInServiceImpl implements CheckInService {
       return;
     }
 
-    log.info("populateLoanData:: populating loan and borrower data from loan {}", loan::getId);
+    log.info("populateLoanData:: loanId={}", loan::getId);
     User user = userService.find(loan.getUserId());
     CheckInResponseLoanBorrower loanBorrower = new CheckInResponseLoanBorrower()
       .barcode(user.getBarcode())
@@ -129,7 +129,7 @@ public class CheckInServiceImpl implements CheckInService {
       () -> requestMediatedClient.checkInByBarcode(request));
   }
 
-  private boolean shouldCloseLoanInSecureTenant(CirculationItem circItem) {
+  private boolean loanExistsInSecureTenant(CirculationItem circItem) {
     boolean result = tenantService.getSecureTenantId()
       .map(secureTenantId -> circulationItemIsInStatus(circItem, CHECKED_OUT) &&
         openLoanExists(circItem.getId().toString(), secureTenantId))
@@ -185,7 +185,7 @@ public class CheckInServiceImpl implements CheckInService {
     return searchItem;
   }
 
-  private CirculationItem findCirculationItem(String itemId) {
+  private CirculationItem   findCirculationItem(String itemId) {
     log.info("findCirculationItem:: fetching circulation item {}", itemId);
     Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
     log.info("findCirculationItem:: circulation item {} found: {}", itemId, circulationItem.isPresent());
@@ -468,9 +468,9 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private ServicePoint fetchServicePoint(String servicePointId) {
-    log.info("fetchServicePoint:: libraryId={}", servicePointId);
+    log.info("fetchServicePoint:: {}", servicePointId);
     var servicePoint = inventoryService.fetchServicePoint(servicePointId);
-    log.info("fetchServicePoint:: result: {}", servicePoint);
+    log.debug("fetchServicePoint:: result: {}", servicePoint);
 
     return servicePoint;
   }
