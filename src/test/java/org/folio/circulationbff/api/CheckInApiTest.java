@@ -13,6 +13,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -130,8 +131,8 @@ class CheckInApiTest extends BaseIT {
     var updatedServicePoint = "updated service point";
     checkIn(request)
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", Matchers.equalTo(updatedServicePoint)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", Matchers.equalTo(updatedServicePoint)));
+      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(updatedServicePoint)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(updatedServicePoint)));
   }
 
   @Test
@@ -196,19 +197,19 @@ class CheckInApiTest extends BaseIT {
 
     checkIn(request)
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", Matchers.equalTo(primaryServicePointName)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", Matchers.equalTo(primaryServicePointName)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", Matchers.equalTo(institution.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", Matchers.equalTo(campus.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", Matchers.equalTo(library.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", Matchers.equalTo(location.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.callNumber", Matchers.equalTo(callNumber)))
-      .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", Matchers.equalTo(primaryServicePointId.toString())))
-      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", Matchers.equalTo(primaryServicePointId.toString())))
-      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.name", Matchers.equalTo(primaryServicePointName)))
-      .andExpect(jsonPath("$.item.location.name", Matchers.equalTo(location.getName())))
-      .andExpect(jsonPath("$.item.holdingsRecordId", Matchers.equalTo(checkinItem.getHoldingsRecordId())))
-      .andExpect(jsonPath("$.item.instanceId", Matchers.equalTo((INSTANCE_ID))));
+      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", equalTo(institution.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.callNumber", equalTo(callNumber)))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.name", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.item.location.name", equalTo(location.getName())))
+      .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
+      .andExpect(jsonPath("$.item.instanceId", equalTo((INSTANCE_ID))));
   }
 
   @Test
@@ -285,11 +286,11 @@ class CheckInApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(holdingRecordResponse), SC_OK)));
 
     checkIn(request).andExpect(status().isOk())
-      .andExpect(jsonPath("$.item.holdingsRecordId", Matchers.equalTo(checkinItem.getHoldingsRecordId())))
-      .andExpect(jsonPath("$.item.id", Matchers.equalTo((itemId))))
-      .andExpect(jsonPath("$.staffSlipContext.item.callNumber", Matchers.equalTo((cn))))
-      .andExpect(jsonPath("$.staffSlipContext.item.callNumberPrefix", Matchers.equalTo((cnPrefix))))
-      .andExpect(jsonPath("$.staffSlipContext.item.callNumberSuffix", Matchers.equalTo((cnSuffix))));
+      .andExpect(jsonPath("$.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
+      .andExpect(jsonPath("$.item.id", equalTo((itemId))))
+      .andExpect(jsonPath("$.staffSlipContext.item.callNumber", equalTo((cn))))
+      .andExpect(jsonPath("$.staffSlipContext.item.callNumberPrefix", equalTo((cnPrefix))))
+      .andExpect(jsonPath("$.staffSlipContext.item.callNumberSuffix", equalTo((cnSuffix))));
   }
 
   @ParameterizedTest
@@ -356,18 +357,18 @@ class CheckInApiTest extends BaseIT {
 
     checkIn(request)
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", Matchers.equalTo(primaryServicePointName)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", Matchers.equalTo(primaryServicePointName)))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", Matchers.equalTo(institution.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", Matchers.equalTo(campus.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", Matchers.equalTo(library.getName())))
-      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", Matchers.equalTo(location.getName())))
-      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePointId", Matchers.equalTo(primaryServicePointId.toString())))
-      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePoint.id", Matchers.equalTo(primaryServicePointId.toString())))
-      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePoint.name", Matchers.equalTo(primaryServicePointName)))
-      .andExpect(jsonPath("$.loan.item.location.name", Matchers.equalTo(location.getName())))
-      .andExpect(jsonPath("$.loan.item.holdingsRecordId", Matchers.equalTo(checkinItem.getHoldingsRecordId())))
-      .andExpect(jsonPath("$.loan.item.instanceId", Matchers.equalTo((INSTANCE_ID))));
+      .andExpect(jsonPath("$.staffSlipContext.item.toServicePoint", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationPrimaryServicePointName", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationInstitution", equalTo(institution.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
+      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePointId", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePoint.id", equalTo(primaryServicePointId.toString())))
+      .andExpect(jsonPath("$.loan.item.inTransitDestinationServicePoint.name", equalTo(primaryServicePointName)))
+      .andExpect(jsonPath("$.loan.item.location.name", equalTo(location.getName())))
+      .andExpect(jsonPath("$.loan.item.holdingsRecordId", equalTo(checkinItem.getHoldingsRecordId())))
+      .andExpect(jsonPath("$.loan.item.instanceId", equalTo((INSTANCE_ID))));
   }
 
   @Test
