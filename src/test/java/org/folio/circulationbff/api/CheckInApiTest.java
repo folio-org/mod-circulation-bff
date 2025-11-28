@@ -1,7 +1,6 @@
 package org.folio.circulationbff.api;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -14,7 +13,6 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -92,7 +90,7 @@ class CheckInApiTest extends BaseIT {
     givenSearchInstanceReturnsItem(TENANT_ID_CONSORTIUM, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var primaryServicePoint = randomUUID();
@@ -105,7 +103,7 @@ class CheckInApiTest extends BaseIT {
       .campusId(campusId)
       .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = """
       {
@@ -117,16 +115,16 @@ class CheckInApiTest extends BaseIT {
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePoint))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(institution, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(campus, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(library, SC_OK)));
 
     var updatedServicePoint = "updated service point";
@@ -158,7 +156,7 @@ class CheckInApiTest extends BaseIT {
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var institutionId = randomId();
@@ -171,7 +169,7 @@ class CheckInApiTest extends BaseIT {
       .campusId(campusId)
       .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = format("""
       {
@@ -184,16 +182,16 @@ class CheckInApiTest extends BaseIT {
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePointId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(institution, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(campus, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(library, SC_OK)));
 
     checkIn(request)
@@ -232,7 +230,7 @@ class CheckInApiTest extends BaseIT {
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var institutionId = randomId();
@@ -245,7 +243,7 @@ class CheckInApiTest extends BaseIT {
       .campusId(campusId)
       .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(location, SC_OK)));
 
     var servicePointResponse = format("""
@@ -260,16 +258,16 @@ class CheckInApiTest extends BaseIT {
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePointId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(institution, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(campus, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(library, SC_OK)));
 
     var cn = "CN-TST-HOLDING";
@@ -283,7 +281,7 @@ class CheckInApiTest extends BaseIT {
       .callNumberSuffix(cnSuffix);
 
     wireMockServer.stubFor(WireMock.get(urlMatching(format(HOLDING_STORAGE_URL, holdingRecordId)))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(asJsonString(holdingRecordResponse), SC_OK)));
 
     checkIn(request).andExpect(status().isOk())
@@ -318,7 +316,7 @@ class CheckInApiTest extends BaseIT {
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(checkinItem, SC_OK)));
 
     var institutionId = randomId();
@@ -331,7 +329,7 @@ class CheckInApiTest extends BaseIT {
       .campusId(campusId)
       .libraryId(libraryId);
     wireMockServer.stubFor(WireMock.get(urlMatching("/locations/" + effectiveLocationId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(location, SC_OK)));
     var servicePointResponse = format("""
       {
@@ -344,16 +342,16 @@ class CheckInApiTest extends BaseIT {
     var campus = new Campus().id(campusId).name("campus");
     var library = new Library().id(libraryId).name("library");
     wireMockServer.stubFor(WireMock.get(urlMatching("/service-points/" + primaryServicePointId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(servicePointResponse, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/institutions/" + institutionId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(institution, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/campuses/" + campusId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(campus, SC_OK)));
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(library, SC_OK)));
 
     checkIn(request)
@@ -402,7 +400,7 @@ class CheckInApiTest extends BaseIT {
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
     wireMockServer.stubFor(WireMock.get(urlMatching("/item-storage/items/" + itemId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(null, SC_OK)));
 
     checkIn(request).andExpect(status().isOk());
@@ -458,7 +456,7 @@ class CheckInApiTest extends BaseIT {
           .effectiveLocationPrimaryServicePointName("random service point")));
 
     wireMockServer.stubFor(WireMock.post(urlMatching(url))
-      .withHeader(HEADER_TENANT, equalTo(tenantId))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(tenantId))
       .withRequestBody(equalToJson(asJsonString(request)))
       .willReturn(jsonResponse(asJsonString(response), SC_OK)));
   }
@@ -632,11 +630,11 @@ class CheckInApiTest extends BaseIT {
 
     // Zero remote check ins
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE)));
 
     // One local check in (Central tenant)
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
   }
 
@@ -662,11 +660,11 @@ class CheckInApiTest extends BaseIT {
 
     // Zero remote check ins
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE)));
 
     // One local check in (Central tenant)
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
   }
 
@@ -695,9 +693,9 @@ class CheckInApiTest extends BaseIT {
         .status(new LoanStatus().name("Open")));
 
     wireMockServer.stubFor(get(urlPathEqualTo(LOAN_STORAGE_URL))
-      .withQueryParam("query", equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
-      .withQueryParam("limit", equalTo("1"))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE))
+      .withQueryParam("query", WireMock.equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
+      .withQueryParam("limit", WireMock.equalTo("1"))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE))
       .willReturn(jsonResponse(asJsonString(mockGetLoansFromSecureTenantResponse), SC_OK)));
 
     String fakeUserId = randomId();
@@ -709,9 +707,9 @@ class CheckInApiTest extends BaseIT {
         .status(new LoanStatus().name("Open")));
 
     wireMockServer.stubFor(get(urlPathEqualTo(LOAN_STORAGE_URL))
-      .withQueryParam("query", equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
-      .withQueryParam("limit", equalTo("1"))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withQueryParam("query", WireMock.equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
+      .withQueryParam("limit", WireMock.equalTo("1"))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(mockGetLoansFromCentralTenantResponse), SC_OK)));
 
     User fakeUser = new User()
@@ -725,7 +723,7 @@ class CheckInApiTest extends BaseIT {
         .preferredFirstName("fake_preferred_first_name"));
 
     wireMockServer.stubFor(get(urlPathEqualTo(USERS_URL + "/" + fakeUserId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .willReturn(jsonResponse(asJsonString(fakeUser), SC_OK)));
 
     givenRequestsMediatedCheckInSucceeded(checkInRequest, itemId, INSTANCE_ID, TENANT_ID_SECURE);
@@ -734,29 +732,29 @@ class CheckInApiTest extends BaseIT {
 
     // No check-ins in lending tenant
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE)));
 
     // No local check-ins in central tenant
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
 
     // One check-in in secure tenant's mod-requests-mediated
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(REQUESTS_MEDIATED_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
 
     // No check-ins in secure tenant's mod-circulation
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(LOAN_STORAGE_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(LOAN_STORAGE_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
 
     wireMockServer.verify(1, getRequestedFor(urlPathMatching(USERS_URL + "/" + fakeUserId))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
   }
 
   @Test
@@ -779,24 +777,24 @@ class CheckInApiTest extends BaseIT {
 
     Loans emptyGetLoansResponse = new Loans().loans(emptyList());
     wireMockServer.stubFor(get(urlPathEqualTo(LOAN_STORAGE_URL))
-      .withQueryParam("query", equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
-      .withQueryParam("limit", equalTo("1"))
+      .withQueryParam("query", WireMock.equalTo(FIND_OPEN_LOAN_QUERY_TEMPLATE.formatted(itemId)))
+      .withQueryParam("limit", WireMock.equalTo("1"))
       .willReturn(jsonResponse(asJsonString(emptyGetLoansResponse), SC_OK)));
 
     checkIn(checkInRequest).andExpect(status().isOk());
 
     // No check-ins in lending tenant
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE)));
 
     // One local check-in in central tenant
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
 
     // No check-ins in secure tenant
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_SECURE)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_SECURE)));
   }
 
   @Test
@@ -814,11 +812,11 @@ class CheckInApiTest extends BaseIT {
 
     // Zero local check ins
     wireMockServer.verify(0, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM)));
 
     // One remote check in
     wireMockServer.verify(1, postRequestedFor(urlPathMatching(CIRCULATION_CHECK_IN_URL))
-      .withHeader(HEADER_TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
   }
 

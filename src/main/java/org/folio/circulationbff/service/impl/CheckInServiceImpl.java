@@ -185,7 +185,7 @@ public class CheckInServiceImpl implements CheckInService {
     return searchItem;
   }
 
-  private CirculationItem   findCirculationItem(String itemId) {
+  private CirculationItem findCirculationItem(String itemId) {
     log.info("findCirculationItem:: fetching circulation item {}", itemId);
     Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
     log.info("findCirculationItem:: circulation item {} found: {}", itemId, circulationItem.isPresent());
