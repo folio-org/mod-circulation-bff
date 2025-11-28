@@ -130,6 +130,8 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private boolean loanExistsInSecureTenant(CirculationItem circItem) {
+    log.info("loanExistsInSecureTenant:: checking if open loan for item {} exists in secure tenant",
+      circItem::getId);
     boolean result = tenantService.getSecureTenantId()
       .map(secureTenantId -> circulationItemIsInStatus(circItem, CHECKED_OUT) &&
         openLoanExists(circItem.getId().toString(), secureTenantId))
