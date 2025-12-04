@@ -1,3 +1,6 @@
+## 1.1.9 2025-12-04
+* Forward check-in requests to mod-requests-mediated (MCBFF-167)
+
 ## 1.1.8 2025-10-29
 
 * Return discovery display name for allowed Service points (MCBFF-93)
