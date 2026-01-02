@@ -9,10 +9,13 @@ import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
+import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRequest;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
+import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
@@ -35,6 +38,13 @@ public interface CirculationClient {
 
   @PostMapping("/requests")
   Request createRequest(@RequestBody BffRequest request);
+
+  @GetMapping("/requests")
+  Requests getRequests(
+    @RequestParam("query") String query,
+    @RequestParam("limit") Integer limit,
+    @RequestParam("offset") Integer offset,
+    @RequestParam("totalRecords") String totalRecords);
 
   @GetMapping("/requests/{requestId}")
   Request getRequestById(@PathVariable("requestId") String requestId);
@@ -59,4 +69,11 @@ public interface CirculationClient {
   ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,
     @RequestBody DeclareItemLostRequest request);
 
+  @PostMapping("/loans/{loanId}/claim-item-returned")
+  ResponseEntity<Void> claimItemReturned(@PathVariable("loanId") UUID loanId,
+    @RequestBody ClaimItemReturnedRequest request);
+
+  @PostMapping("/loans/{loanId}/declare-claimed-returned-item-as-missing")
+  ResponseEntity<Void> declareClaimedReturnedItemAsMissing(@PathVariable("loanId") UUID loanId,
+    @RequestBody DeclareClaimedReturnedItemAsMissingRequest request);
 }

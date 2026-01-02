@@ -1,0 +1,17 @@
+allOf:
+  - $ref: '../../dto/circulation/claimItemReturnedRequest.yaml'
+  - type: object
+    properties:
+      loanId:
+        description: ID of the loan for the claimed returned item
+        type: string
+        format: uuid
+      itemId:
+        description: ID of the claimed returned item
+        type: string
+        format: uuid
+      userId:
+        description: ID of the user who had the claimed returned item on loan
+        type: string
+        format: uuid
+

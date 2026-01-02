@@ -1,0 +1,15 @@
+description: Collection of Item Requests
+type: object
+properties:
+  requests:
+    description: Paged collection of item requests
+    type: array
+    items:
+      type: object
+      $ref: "request.yaml"
+  totalRecords:
+    description: Total number of item requests
+    type: integer
+required:
+  - requests
+  - totalRecords

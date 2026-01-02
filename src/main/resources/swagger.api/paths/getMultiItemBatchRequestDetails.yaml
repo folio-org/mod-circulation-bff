@@ -1,0 +1,28 @@
+get:
+  description: Retrieve multi-item batch request details by batch id
+  operationId: getMultiItemBatchRequestDetailsByBatchId
+  tags:
+    - multiItemBatchRequests
+  parameters:
+    - name: batchId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The UUID of the batch request
+    - $ref: '../parameters/offset.yaml'
+    - $ref: '../parameters/limit.yaml'
+  responses:
+    '200':
+      description: Multi-Item Batch Requests Collection
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/response/batch/batchRequestDetailsResponse.yaml"
+    '400':
+      $ref: '../responses/badRequestResponse.yaml'
+    '404':
+      $ref: '../responses/notFoundResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'

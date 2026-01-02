@@ -1,0 +1,48 @@
+post:
+  operationId: createBatchRequest
+  description: Create Multi-Item Batch Request
+  tags:
+    - multiItemBatchRequests
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: "../schemas/dto/batch/batchRequest.yaml"
+    required: true
+  responses:
+    '201':
+      description: Multi-Item Batch Request created
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/response/batch/batchRequestResponse.yaml"
+    '400':
+      $ref: '../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'
+get:
+  description: Get Multi-Item Batch Request Collection
+  operationId: getBatchRequestCollection
+  tags:
+    - multiItemBatchRequests
+  parameters:
+    - name: query
+      in: query
+      schema:
+        type: string
+    - $ref: '../parameters/offset.yaml'
+    - $ref: '../parameters/limit.yaml'
+  responses:
+    '200':
+      description: Multi-Item Batch Requests Collection
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/response/batch/batchRequestCollectionResponse.yaml"
+    '400':
+      $ref: '../responses/badRequestResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'
+

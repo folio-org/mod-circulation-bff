@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "item-storage", url = "item-storage/items",
   configuration = FeignClientConfiguration.class)
-public interface ItemStorageClient extends GetByQueryClient<Items> {
+public interface ItemStorageClient extends GetByQueryParamsClient<Items> {
 
   @GetMapping("/{id}")
   Item findItem(@PathVariable String id);
