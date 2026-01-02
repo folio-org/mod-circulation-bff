@@ -1,0 +1,22 @@
+post:
+  operationId: checkInByBarcode
+  description: Checks item in by barcode
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: "../schemas/dto/circulation/checkInRequest.yaml"
+    required: true
+  responses:
+    '200':
+      description: Item successfully checked in
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/response/checkInResponse.yaml"
+    '400':
+      $ref: '../responses/badRequestResponse.yaml'
+    '422':
+      $ref: '../responses/unprocessableEntityResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'

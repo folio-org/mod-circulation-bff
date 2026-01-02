@@ -1,3 +1,8 @@
+## 1.2.0-SNAPSHOT 202X-XX-XX
+
+* Add APIs to create and retrieve mediated multi-item batch requests ([MCBFF-139](https://folio-org.atlassian.net/browse/MCBFF-139))
+* Add endpoint to fetch circulation requests enriched with batch request info ([MCBFF-163](https://folio-org.atlassian.net/browse/MCBFF-163))
+
 ## 1.1.0 2025-03-13
 
 * Proxy check out based on condition (MCBFF-69)

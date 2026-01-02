@@ -4,31 +4,43 @@ info:
   version: v1
 paths:
   /circulation-bff/requests/allowed-service-points:
-    $ref: 'paths/allowedServicePoints/allowedServicePoints.yaml'
+    $ref: 'paths/allowedServicePoints.yaml'
   /circulation-bff/requests/search-instances:
-    $ref: 'paths/searchInstances/searchInstances.yaml'
+    $ref: 'paths/searchInstances.yaml'
   /circulation-bff/mediated-requests/confirm:
-    $ref: 'paths/mediatedRequests/confirmMediatedRequests.yaml'
+    $ref: 'paths/confirmMediatedRequests.yaml'
   /circulation-bff/requests:
-    $ref: 'paths/requests/requests.yaml'
+    $ref: 'paths/requests.yaml'
+  /circulation-bff/batch-requests:
+    $ref: 'paths/multiItemBatchRequest.yaml'
+  /circulation-bff/batch-requests/{batchId}:
+    $ref: 'paths/getMultiItemBatchRequest.yaml'
+  /circulation-bff/batch-requests/{batchId}/details:
+    $ref: 'paths/getMultiItemBatchRequestDetails.yaml'
   /circulation-bff/loans:
-    $ref: 'paths/loans/loans.yaml'
+    $ref: 'paths/loans.yaml'
   /circulation-bff/loans/{loanId}:
-    $ref: 'paths/loans/loanById.yaml'
+    $ref: 'paths/loanById.yaml'
   /circulation-bff/external-users/{externalUserId}/tenant/{tenantId}:
-    $ref: 'paths/externalUser/externalUser.yaml'
+    $ref: 'paths/externalUser.yaml'
   /circulation-bff/pick-slips/{servicePointId}:
-    $ref: 'paths/staffSlips/pickSlips.yaml'
+    $ref: 'paths/pickSlips.yaml'
   /circulation-bff/search-slips/{servicePointId}:
-    $ref: 'paths/staffSlips/searchSlips.yaml'
+    $ref: 'paths/searchSlips.yaml'
   /circulation-bff/create-ecs-request-external:
-    $ref: 'paths/ecsRequestExternal/ecsRequestExternal.yaml'
+    $ref: 'paths/ecsRequestExternal.yaml'
   /circulation-bff/loans/check-in-by-barcode:
-    $ref: 'paths/checkIn/checkIn.yaml'
+    $ref: 'paths/checkIn.yaml'
   /circulation-bff/loans/check-out-by-barcode:
-    $ref: 'paths/checkOut/checkOut.yaml'
+    $ref: 'paths/checkOut.yaml'
   /circulation-bff/loans/{loanId}/declare-item-lost:
-    $ref: 'paths/declareItemLost/declareItemLost.yaml'
+    $ref: 'paths/declareItemLost.yaml'
+  /circulation-bff/loans/{loanId}/claim-item-returned:
+    $ref: 'paths/claimItemReturned.yaml'
+  /circulation-bff/loans/{loanId}/declare-claimed-returned-item-as-missing:
+    $ref: 'paths/declareClaimedReturnedItemAsMissing.yaml'
+  /circulation-bff/inventory/items:
+    $ref: 'paths/inventoryItems.yaml'
 components:
   schemas:
     tlrSettings:
@@ -37,32 +49,36 @@ components:
       $ref: 'schemas/dto/circulationSettingsResponse.yaml'
     userTenantCollection:
       $ref: 'schemas/dto/userTenantCollection.yaml'
+    item:
+      $ref: 'schemas/dto/inventoryStorage/item.json'
     items:
-      $ref: 'schemas/dto/inventory/items.json'
+      $ref: 'schemas/dto/inventoryStorage/items.json'
     holdingsRecords:
-      $ref: 'schemas/dto/inventory/holdingsRecords.json'
+      $ref: 'schemas/dto/inventoryStorage/holdingsRecords.json'
     instances:
-      $ref: 'schemas/dto/inventory/instances.json'
+      $ref: 'schemas/dto/inventoryStorage/instances.json'
     locations:
-      $ref: 'schemas/dto/inventory/locations.json'
+      $ref: 'schemas/dto/inventoryStorage/locations.json'
     libraries:
-      $ref: 'schemas/dto/inventory/libraries.json'
+      $ref: 'schemas/dto/inventoryStorage/libraries.json'
     campuses:
-      $ref: 'schemas/dto/inventory/campuses.json'
+      $ref: 'schemas/dto/inventoryStorage/campuses.json'
     institutions:
-      $ref: 'schemas/dto/inventory/institutions.json'
+      $ref: 'schemas/dto/inventoryStorage/institutions.json'
     servicePoints:
-      $ref: 'schemas/dto/inventory/servicePoints.json'
+      $ref: 'schemas/dto/inventoryStorage/servicePoints.json'
     loanTypes:
-      $ref: 'schemas/dto/inventory/loanTypes.json'
+      $ref: 'schemas/dto/inventoryStorage/loanTypes.json'
     materialTypes:
-      $ref: 'schemas/dto/inventory/materialTypes.json'
+      $ref: 'schemas/dto/inventoryStorage/materialTypes.json'
     searchInstances:
       $ref: 'schemas/dto/search/searchInstances.yaml'
     patronGroup:
       $ref: 'schemas/dto/request/patronGroup.yaml'
     request:
       $ref: 'schemas/dto/request/request.yaml'
+    requests:
+      $ref: 'schemas/dto/request/requests.yaml'
     bffRequest:
       $ref: 'schemas/dto/request/bffRequest.yaml'
     ecsTlr:
@@ -77,3 +93,13 @@ components:
       $ref: 'schemas/dto/circulation/declareItemLostRequest.yaml'
     tlrDeclareItemLostRequest:
       $ref: 'schemas/dto/ecsTlr/tlrDeclareItemLostRequest.yaml'
+    claimItemReturnedRequest:
+      $ref: 'schemas/dto/circulation/claimItemReturnedRequest.yaml'
+    tlrClaimItemReturnedRequest:
+      $ref: 'schemas/dto/ecsTlr/tlrClaimItemReturnedRequest.yaml'
+    tlrDeclareClaimedReturnedItemAsMissing:
+      $ref: 'schemas/dto/ecsTlr/tlrDeclareClaimedReturnedItemAsMissingRequest.yaml'
+    inventoryItem:
+      $ref: 'schemas/dto/inventory/inventoryItem.json'
+    inventoryItems:
+      $ref: 'schemas/dto/inventory/inventoryItems.json'

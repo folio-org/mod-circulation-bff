@@ -1,0 +1,28 @@
+post:
+  operationId: declareClaimedReturnedItemAsMissing
+  description: Declare claimed returned item as missing
+  tags:
+    - declareClaimedReturnedItemAsMissing
+  parameters:
+    - name: loanId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the loan
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/dto/circulation/declareClaimedReturnedItemAsMissingRequest.yaml'
+    required: true
+  responses:
+    '204':
+      description: An item has been successfully declared missing
+    '422':
+      $ref: '../responses/unprocessableEntityResponse.yaml'
+    '404':
+      $ref: '../responses/notFoundResponse.yaml'
+    '500':
+      $ref: '../responses/internalServerErrorResponse.yaml'

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "service-points", url = "service-points",
   configuration = FeignClientConfiguration.class)
-public interface ServicePointClient extends GetByQueryClient<ServicePoints> {
+public interface ServicePointClient extends GetByQueryParamsClient<ServicePoints> {
 
   @GetMapping("/{id}")
   ServicePoint findServicePoint(@PathVariable String id);

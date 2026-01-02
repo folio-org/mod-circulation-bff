@@ -1,0 +1,38 @@
+type: object
+description: Mediated Multi-Item Batch Request
+properties:
+  batchId:
+    description: UUID of the batch request
+    $ref: '../common/uuid.yaml'
+  requesterId:
+    description: UUID of the requesting user (patron)
+    $ref: '../common/uuid.yaml'
+  patronComments:
+    description: Comments made by the patron
+    type: string
+  mediatedWorkflow:
+    description: Mediated workflow that mediated batch request follows
+    type: string
+    enum: [ 'Multi-Item request' ]
+  itemRequests:
+    description: Multi Item batch request details that represents info for the array of item requests
+    type: array
+    items:
+      type: object
+      properties:
+        itemId:
+          description: UUID of the item being requested
+          $ref: '../common/uuid.yaml'
+        pickupServicePointId:
+          description: UUID of the pickup service point
+          $ref: '../common/uuid.yaml'
+      additionalProperties: false
+      required:
+        - itemId
+        - pickupServicePointId
+additionalProperties: false
+required:
+  - requesterId
+  - itemRequests
+  - mediatedWorkflow
+

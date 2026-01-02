@@ -158,6 +158,32 @@ properties:
       id:
         description: Unique ID of the loan
         type: string
+      userId:
+        description: Unique ID of the user who has borrowed the item
+        type: string
+      borrower:
+        description: Additional information about the borrower of the item, taken from the user referred to by the userId
+        type: object
+        properties:
+          firstName:
+            description: First name of the borrower
+            type: string
+          lastName:
+            description: Last name of the borrower
+            type: string
+          middleName:
+            description: Middle name of the borrower
+            type: string
+          barcode:
+            description: Barcode used to identify the borrower
+            type: string
+          preferredFirstName:
+            description: Preferred first name of the borrower
+            type: string
+          patronGroup:
+            description: Current patron group of the borrower
+            type: string
+        additionalProperties: true
       item:
         description: Item data
         type: object

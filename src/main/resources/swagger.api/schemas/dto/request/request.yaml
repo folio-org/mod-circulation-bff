@@ -294,6 +294,22 @@ properties:
     description: "Request fields used for search"
     type: "object"
     $ref: "requestSearchIndex.json"
+  batchRequestInfo:
+    description: "Information about the batch request this request is part of"
+    type: "object"
+    properties:
+      batchRequestId:
+        description: "ID of the batch request"
+        type: "string"
+        $ref: "../common/uuid.yaml"
+      batchRequestSubmittedAt:
+        description: "Date and time when the batch request was submitted"
+        type: "string"
+        format: "date-time"
+    additionalProperties: false
+    required:
+      - "batchRequestId"
+      - "batchRequestSubmittedAt"
 required:
   - "requesterId"
   - "requestType"

@@ -1,21 +1,35 @@
 package org.folio.circulationbff.service.impl;
 
-import java.util.UUID;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import com.google.common.collect.Lists;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
+import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
+import org.folio.circulationbff.domain.dto.RequestBatchRequestInfo;
+import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.circulationbff.service.UserService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +46,10 @@ public class CirculationBffServiceImpl implements CirculationBffService {
   private final SettingsService settingsService;
   private final TenantService tenantService;
   private final SystemUserScopedExecutionService executionService;
+  private final RequestMediatedClient requestMediatedClient;
+
+  @Value("${folio.batch-requests.query-request-ids-count}")
+  private Integer batchRequestDetailsQueryIdsSize;
 
   @Override
   public PickSlipCollection fetchPickSlipsByServicePointId(String servicePointId) {
@@ -47,6 +65,47 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     return shouldFetchStaffSlipsFromTlr()
       ? ecsTlrClient.getSearchSlips(servicePointId)
       : circulationClient.getSearchSlips(servicePointId);
+  }
+
+  @Override
+  public Requests getBatchRequestInfoEnrichedRequests(String query, Integer offset, Integer limit, String totalRecords) {
+    log.info("getBatchRequestInfoEnrichedRequests:: query: {}, offset: {}, limit: {}, totalRecords: {}",
+      query, offset, limit, totalRecords);
+    var requests = circulationClient.getRequests(query, limit, offset, totalRecords);
+    var idsToRequest = requests.getRequests().stream()
+      .filter(request -> Objects.nonNull(request.getId()))
+      .map(request -> Map.entry(request.getId(), request))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    var batchRequestDetails = Lists.partition(new ArrayList<>(idsToRequest.keySet()), batchRequestDetailsQueryIdsSize).stream()
+      .map(partition -> partition.stream().collect(Collectors.joining(" or confirmedRequestId=", "confirmedRequestId=", EMPTY)))
+      .map(idsQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(idsQuery).getMediatedBatchRequestDetails())
+      .flatMap(List::stream)
+      .toList();
+
+    Map<String, Date> batchIdsToSubmittedAtDates = new HashMap<>();
+    for (var batchDetail : batchRequestDetails) {
+      var request = idsToRequest.get(batchDetail.getConfirmedRequestId());
+      if (request != null) {
+        var batchId = batchDetail.getBatchId();
+        var submittedAt = batchIdsToSubmittedAtDates.computeIfAbsent(batchId, this::getBatchSubmittedAtDate);
+        request.setBatchRequestInfo(new RequestBatchRequestInfo(batchId, submittedAt));
+      }
+    }
+
+    return requests;
+  }
+
+  private Date getBatchSubmittedAtDate(String batchId) {
+    var batchRequestResponse = requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId));
+
+    if (!batchRequestResponse.getStatusCode().equals(HttpStatus.OK) || batchRequestResponse.getBody() == null) {
+      log.warn("getBatchSubmittedAtDate:: Unable to fetch batch request with id: {}, status: {}, body: {}",
+        batchId, batchRequestResponse.getStatusCode(), batchRequestResponse.getBody());
+      return null;
+    }
+
+    return batchRequestResponse.getBody().getRequestDate();
   }
 
   @Override

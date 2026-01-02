@@ -1,0 +1,15 @@
+description: Collection of multi-item batch request details
+type: object
+properties:
+  mediatedBatchRequestDetails:
+    description: A list of batch request details
+    type: array
+    items:
+      $ref: 'batchRequestDetail.yaml'
+  totalRecords:
+    description: Total number of requests
+    type: integer
+additionalProperties: false
+required:
+  - mediatedBatchRequestDetails
+  - totalRecords
