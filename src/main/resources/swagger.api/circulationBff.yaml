@@ -79,6 +79,8 @@ components:
       $ref: 'schemas/dto/request/request.yaml'
     requests:
       $ref: 'schemas/dto/request/requests.yaml'
+    mediatedRequests:
+      $ref: 'schemas/dto/mediatedRequest/mediatedRequests.yaml'
     bffRequest:
       $ref: 'schemas/dto/request/bffRequest.yaml'
     ecsTlr:

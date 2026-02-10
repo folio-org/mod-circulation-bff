@@ -19,12 +19,13 @@ import org.springframework.http.ResponseEntity;
 
 class MediatedBatchRequestServiceTest {
   private RequestMediatedClient requestMediatedClient;
+  private TenantService tenantService;
   private MediatedBatchRequestServiceImpl service;
 
   @BeforeEach
   void setUp() {
     requestMediatedClient = mock(RequestMediatedClient.class);
-    service = new MediatedBatchRequestServiceImpl(requestMediatedClient);
+    service = new MediatedBatchRequestServiceImpl(requestMediatedClient, tenantService);
   }
 
   @Test
