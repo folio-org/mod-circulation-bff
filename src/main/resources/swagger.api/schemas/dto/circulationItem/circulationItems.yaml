@@ -1,0 +1,13 @@
+title: "Collection of circulation items"
+description: "Collection of circulation items"
+type: "object"
+properties:
+  items:
+    description: "Collection of circulation items"
+    id: "items"
+    type: "array"
+    items:
+      $ref: "circulationItem.yaml"
+  totalRecords:
+    description: "Total number of records"
+    type: "integer"

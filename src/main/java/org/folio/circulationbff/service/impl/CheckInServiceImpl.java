@@ -20,6 +20,7 @@ import org.folio.circulationbff.domain.dto.CheckInResponseItemInTransitDestinati
 import org.folio.circulationbff.domain.dto.CheckInResponseLoanBorrower;
 import org.folio.circulationbff.domain.dto.CirculationItem;
 import org.folio.circulationbff.domain.dto.CirculationItemStatus;
+import org.folio.circulationbff.domain.dto.CirculationItems;
 import org.folio.circulationbff.domain.dto.Contributor;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.Item;
@@ -40,6 +41,7 @@ import org.folio.circulationbff.service.UserService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.stereotype.Service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -72,7 +74,7 @@ public class CheckInServiceImpl implements CheckInService {
       if (item != null) {
         String itemId = item.getId();
         String itemTenantId = item.getTenantId();
-        CirculationItem circulationItem = findCirculationItem(itemId);
+        CirculationItem circulationItem = findCirculationItem(item);
         if (circulationItem == null) {
           response = tenantService.isSecureTenant(itemTenantId)
             ? secureTenantCheckIn(request) // oLoan case
@@ -187,12 +189,29 @@ public class CheckInServiceImpl implements CheckInService {
     return searchItem;
   }
 
-  private CirculationItem findCirculationItem(String itemId) {
-    log.info("findCirculationItem:: fetching circulation item {}", itemId);
-    Optional<CirculationItem> circulationItem = circulationItemClient.getCirculationItem(itemId);
-    log.info("findCirculationItem:: circulation item {} found: {}", itemId, circulationItem.isPresent());
+  private CirculationItem findCirculationItem(SearchItem searchItem) {
+    String itemId = searchItem.getId();
+    log.info("findCirculationItem:: fetching circulation item by ID: {}", searchItem::getId);
+    return circulationItemClient.getCirculationItem(itemId)
+      .orElseGet(() -> {
+        String barcode = searchItem.getBarcode();
+        log.info("findCirculationItem:: circulation item not found by ID, searching by barcode: {}", barcode);
+        List<CirculationItem> items = circulationItemClient.getByQuery("barcode==" + barcode).getItems();
+        log.info("findCirculationItem:: found {} circulation items by barcode {}", items::size, () -> barcode);
+        if (items.isEmpty()) {
+          log.info("findCirculationItem:: circulation item not found by barcode");
+          return null;
+        }
 
-    return circulationItem.orElse(null);
+        if (items.size() > 1) {
+          log.warn("findCirculationItem:: found {} circulation items by barcode {}, returning the first one",
+            items::size, () -> barcode);
+        }
+
+        CirculationItem item = items.getFirst();
+        log.info("findCirculationItem:: circulation item found by barcode: {}", item::getBarcode);
+        return item;
+      });
   }
 
   private CheckInResponse checkInRemotely(CheckInRequest request, String tenantId) {

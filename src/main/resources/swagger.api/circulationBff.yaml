@@ -85,6 +85,8 @@ components:
       $ref: 'schemas/dto/ecsTlr/ecsTlr.yaml'
     circulationItem:
       $ref: 'schemas/dto/circulationItem/circulationItem.yaml'
+    circulationItems:
+      $ref: 'schemas/dto/circulationItem/circulationItems.yaml'
     consortiumItem:
       $ref: 'schemas/dto/search/consortiumItem.yaml'
     loans:
