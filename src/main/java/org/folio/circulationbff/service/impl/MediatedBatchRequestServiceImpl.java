@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,8 +17,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestDetail;
 import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestResponse;
+import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.service.MediatedBatchRequestService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.circulationbff.support.CqlQuery;
@@ -60,43 +63,47 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
       // batch requests created with secure tenant will not have circulation request id in confirmedRequestId field, but it would be
       // mediated request id in that field, thus we need to fetch mediated requests and only if they are CONFIRMED -
       // we can populate circulation request id in the response
-      updateWithCirculationRequestIdForConfirmedMediatedRequests(batchDetails);
+      updateConfirmedRequestId(batchDetails);
     }
 
     return batchDetails;
   }
 
-  private void updateWithCirculationRequestIdForConfirmedMediatedRequests(BatchRequestDetailsResponse batchDetails) {
+  private void updateConfirmedRequestId(BatchRequestDetailsResponse batchDetails) {
     var idsToRequestDetail = batchDetails.getMediatedBatchRequestDetails().stream()
-      .filter(request -> Objects.nonNull(request.getBatchId()))
       .filter(request -> Objects.nonNull(request.getConfirmedRequestId()))
       .map(request -> Map.entry(request.getConfirmedRequestId(), request))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     var statusQuery = CqlQuery.exactMatchAny("mediatedRequestStatusText", List.of("Open", "Closed"))
       .and(new CqlQuery("requestLevelText=Item"));
-    var idsToMediatedRequests = Lists.partition(new ArrayList<>(idsToRequestDetail.keySet()), batchRequestDetailsQueryIdsSize).stream()
-      .map(CqlQuery::exactMatchAnyId)
-      .map(idsQuery -> idsQuery.and(statusQuery))
+    var mediatedRequestsById = Lists.partition(new ArrayList<>(idsToRequestDetail.keySet()), batchRequestDetailsQueryIdsSize).stream()
+      .map(ids -> CqlQuery.exactMatchAnyId(ids).and(statusQuery))
       .map(cqlQuery -> requestMediatedClient.getMediatedRequestsByQuery(cqlQuery.query()).getMediatedRequests())
       .flatMap(List::stream)
       .filter(mediatedRequest -> isNotBlank(mediatedRequest.getConfirmedRequestId()))
-      .map(mediatedRequest -> Map.entry(mediatedRequest.getId(), mediatedRequest))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .collect(Collectors.toMap(MediatedRequest::getId, Function.identity()));
 
-    CollectionUtils.transform(batchDetails.getMediatedBatchRequestDetails(), detail -> {
-      var mediatedRequestId = detail.getConfirmedRequestId();
-      if (detail.getBatchId() == null || mediatedRequestId == null) {
-        return detail;
-      }
+    CollectionUtils.transform(batchDetails.getMediatedBatchRequestDetails(), detail ->
+      updateConfirmedRequestIdForBatchRequestDetail(detail, mediatedRequestsById));
+  }
 
-      if (idsToRequestDetail.containsKey(mediatedRequestId) && idsToMediatedRequests.containsKey(mediatedRequestId)) {
-        var mediatedRequest = idsToMediatedRequests.get(mediatedRequestId);
-        detail.setConfirmedRequestId(mediatedRequest.getConfirmedRequestId());
-        return detail;
-      }
-
+  private BatchRequestDetail updateConfirmedRequestIdForBatchRequestDetail(BatchRequestDetail detail,
+                                                                           Map<String, MediatedRequest> mediatedRequestsById) {
+    var mediatedRequestId = detail.getConfirmedRequestId();
+    if (mediatedRequestId == null) {
       return detail;
-    });
+    }
+
+    if (mediatedRequestsById.containsKey(mediatedRequestId)) {
+      var mediatedRequest = mediatedRequestsById.get(mediatedRequestId);
+      detail.setConfirmedRequestId(mediatedRequest.getConfirmedRequestId());
+    } else {
+      // if mediated request is not confirmed yet (means it's status is NEW or no circulation request is created for it yet)
+      // then we show nothing in confirmedRequestId field for batch request detail
+      detail.setConfirmedRequestId(null);
+    }
+
+    return detail;
   }
 }
