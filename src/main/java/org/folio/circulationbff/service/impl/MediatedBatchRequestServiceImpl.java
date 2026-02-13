@@ -84,8 +84,10 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
       .filter(mediatedRequest -> isNotBlank(mediatedRequest.getConfirmedRequestId()))
       .collect(Collectors.toMap(MediatedRequest::getId, Function.identity()));
 
-    CollectionUtils.transform(batchDetails.getMediatedBatchRequestDetails(), detail ->
+    var updatedDetails = new ArrayList<>(batchDetails.getMediatedBatchRequestDetails());
+    CollectionUtils.transform(updatedDetails, detail ->
       updateConfirmedRequestIdForBatchRequestDetail(detail, mediatedRequestsById));
+    batchDetails.setMediatedBatchRequestDetails(updatedDetails);
   }
 
   private BatchRequestDetail updateConfirmedRequestIdForBatchRequestDetail(BatchRequestDetail detail,
