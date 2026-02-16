@@ -1,0 +1,15 @@
+description: Collection of mediated requests
+type: object
+properties:
+  mediatedRequests:
+    description: A list of mediated requests
+    type: array
+    items:
+      $ref: 'mediatedRequest.yaml'
+  totalRecords:
+    description: Total number of requests
+    type: integer
+additionalProperties: false
+required:
+  - mediatedRequests
+  - totalRecords

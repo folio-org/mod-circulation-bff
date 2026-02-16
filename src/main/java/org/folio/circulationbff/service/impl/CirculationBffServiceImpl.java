@@ -1,6 +1,9 @@
 package org.folio.circulationbff.service.impl;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static com.google.common.collect.Lists.partition;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.folio.circulationbff.support.CqlQuery.exactMatchAny;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,16 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.google.common.collect.Lists;
 import org.folio.circulationbff.client.feign.CirculationClient;
 import org.folio.circulationbff.client.feign.EcsTlrClient;
 import org.folio.circulationbff.client.feign.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
+import org.folio.circulationbff.domain.dto.BatchRequestDetail;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.RequestBatchRequestInfo;
@@ -27,6 +33,7 @@ import org.folio.circulationbff.service.CirculationBffService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.circulationbff.service.UserService;
+import org.folio.circulationbff.support.CqlQuery;
 import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -39,6 +46,8 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class CirculationBffServiceImpl implements CirculationBffService {
+
+  private static final String CONFIRMED_REQUEST_ID_FIELD = "confirmedRequestId";
 
   private final CirculationClient circulationClient;
   private final EcsTlrClient ecsTlrClient;
@@ -74,26 +83,50 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     var requests = circulationClient.getRequests(query, limit, offset, totalRecords);
     var idsToRequest = requests.getRequests().stream()
       .filter(request -> Objects.nonNull(request.getId()))
-      .map(request -> Map.entry(request.getId(), request))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .collect(Collectors.toMap(Request::getId, Function.identity()));
 
-    var batchRequestDetails = Lists.partition(new ArrayList<>(idsToRequest.keySet()), batchRequestDetailsQueryIdsSize).stream()
-      .map(partition -> partition.stream().collect(Collectors.joining(" or confirmedRequestId=", "confirmedRequestId=", EMPTY)))
-      .map(idsQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(idsQuery).getMediatedBatchRequestDetails())
-      .flatMap(List::stream)
-      .toList();
+    var batchRequestDetailsByRequestIds = getBatchRequestDetailsByRequestIds(idsToRequest.keySet());
 
     Map<String, Date> batchIdsToSubmittedAtDates = new HashMap<>();
-    for (var batchDetail : batchRequestDetails) {
-      var request = idsToRequest.get(batchDetail.getConfirmedRequestId());
+    for (var entry : batchRequestDetailsByRequestIds.entrySet()) {
+      var request = idsToRequest.get(entry.getKey());
       if (request != null) {
-        var batchId = batchDetail.getBatchId();
+        var batchId = entry.getValue().getBatchId();
         var submittedAt = batchIdsToSubmittedAtDates.computeIfAbsent(batchId, this::getBatchSubmittedAtDate);
         request.setBatchRequestInfo(new RequestBatchRequestInfo(batchId, submittedAt));
       }
     }
 
     return requests;
+  }
+
+  private Map<String, BatchRequestDetail> getBatchRequestDetailsByRequestIds(Set<String> circulationRequestIds) {
+    if (isNotEmpty(circulationRequestIds) && tenantService.isCurrentTenantSecure()) {
+      // finding the batch requests created by secure tenant differs from the one created by non-secure tenant,
+      // as for secure tenant, confirmedRequestId field of batch request detail will have mediated request id instead of circulation request id,
+      // and only confirmed mediated requests will have circulation request id in their same name confirmedRequestId field,
+      // thus first we need to search for the confirmed mediated requests, and then we can query batch request details by those mediated request ids
+      var statusQuery = exactMatchAny("mediatedRequestStatusText", List.of("Open", "Closed"))
+        .and(new CqlQuery("requestLevelText==\"Item\""));
+      var mediatedToCirculationIds = partition(new ArrayList<>(circulationRequestIds), batchRequestDetailsQueryIdsSize).stream()
+        .map(ids -> exactMatchAny(CONFIRMED_REQUEST_ID_FIELD, ids).and(statusQuery))
+        .map(cqlQuery -> requestMediatedClient.getMediatedRequestsByQuery(cqlQuery.query()).getMediatedRequests())
+        .flatMap(List::stream)
+        .filter(mediatedRequest -> isNotBlank(mediatedRequest.getConfirmedRequestId()))
+        .collect(Collectors.toMap(MediatedRequest::getId, MediatedRequest::getConfirmedRequestId));
+
+      return partition(new ArrayList<>(mediatedToCirculationIds.keySet()), batchRequestDetailsQueryIdsSize).stream()
+        .map(partition -> exactMatchAny(CONFIRMED_REQUEST_ID_FIELD, partition))
+        .map(cqlQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(cqlQuery.query()).getMediatedBatchRequestDetails())
+        .flatMap(List::stream)
+        .collect(Collectors.toMap(detail -> mediatedToCirculationIds.get(detail.getConfirmedRequestId()), Function.identity()));
+    }
+
+    return partition(new ArrayList<>(circulationRequestIds), batchRequestDetailsQueryIdsSize).stream()
+      .map(partition -> exactMatchAny(CONFIRMED_REQUEST_ID_FIELD, partition))
+      .map(cqlQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(cqlQuery.query()).getMediatedBatchRequestDetails())
+      .flatMap(List::stream)
+      .collect(Collectors.toMap(BatchRequestDetail::getConfirmedRequestId, Function.identity()));
   }
 
   private Date getBatchSubmittedAtDate(String batchId) {

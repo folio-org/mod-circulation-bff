@@ -14,6 +14,7 @@ import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.circulationbff.domain.dto.DeclareClaimedReturnedItemAsMissingRequest;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.MediatedRequests;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,9 @@ public interface RequestMediatedClient {
   @PostMapping("/mediated-requests/{requestId}/confirm")
   ResponseEntity<Void> confirmRequestMediated(@PathVariable String requestId,
     @RequestBody MediatedRequest mediatedRequest);
+
+  @GetMapping("/mediated-requests")
+  MediatedRequests getMediatedRequestsByQuery(@RequestParam("query") String query);
 
   @PostMapping("/loans/check-out-by-barcode")
   CheckOutResponse checkOutByBarcode(@RequestBody CheckOutRequest request);

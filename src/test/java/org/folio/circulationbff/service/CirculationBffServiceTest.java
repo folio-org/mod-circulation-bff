@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -30,6 +31,8 @@ import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.BffRequest;
 import org.folio.circulationbff.domain.dto.EcsTlr;
+import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.MediatedRequests;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.Requests;
@@ -51,15 +54,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Test class for CirculationBffServiceImpl using Java 21 features.
- * Demonstrates the use of:
- * - Record patterns
- * - Enhanced switch expressions
- * - Text blocks
- * - Pattern matching for instanceof
- * - Virtual threads (in nested tests)
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CirculationBffService Tests")
 class CirculationBffServiceTest {
@@ -216,6 +210,7 @@ class CirculationBffServiceTest {
 
       when(circulationClient.getRequests(anyString(), any(), any(), anyString()))
         .thenReturn(requests);
+      when(tenantService.isCurrentTenantSecure()).thenReturn(false);
       when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString()))
         .thenReturn(batchDetailsResponse);
       when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId1)))
@@ -238,6 +233,73 @@ class CirculationBffServiceTest {
 
       verify(circulationClient).getRequests("status==Open", 10, 0, "exact");
       verify(requestMediatedClient).queryMediatedBatchRequestDetails(anyString());
+    }
+
+    @Test
+    @DisplayName("Should enrich requests with batch request info")
+    void shouldEnrichRequestsWithBatchInfoCreatedForSecureTenant() {
+      // Given
+      var requestId1 = UUID.randomUUID().toString();
+      var requestId2 = UUID.randomUUID().toString();
+      var batchId1 = UUID.randomUUID().toString();
+      var batchId2 = UUID.randomUUID().toString();
+      var mediatedRequestId1 = UUID.randomUUID().toString();
+      var mediatedRequestId2 = UUID.randomUUID().toString();
+      var requestDate = new Date();
+
+      var request1 = new Request().id(requestId1);
+      var request2 = new Request().id(requestId2);
+      var requests = new Requests().requests(List.of(request1, request2));
+
+      var mediatedRequest1 = new MediatedRequest().id(mediatedRequestId1).confirmedRequestId(requestId1);
+      var mediatedRequest2 = new MediatedRequest().id(mediatedRequestId2).confirmedRequestId(requestId2);
+
+      var batchDetail1 = new BatchRequestDetail()
+        .confirmedRequestId(mediatedRequestId1)
+        .batchId(batchId1);
+      var batchDetail2 = new BatchRequestDetail()
+        .confirmedRequestId(mediatedRequestId2)
+        .batchId(batchId2);
+
+      var batchDetailsResponse = new BatchRequestDetailsResponse()
+        .mediatedBatchRequestDetails(List.of(batchDetail1, batchDetail2));
+
+      var batchResponse1 = new BatchRequestResponse().requestDate(requestDate);
+      var batchResponse2 = new BatchRequestResponse().requestDate(requestDate);
+
+      when(circulationClient.getRequests(anyString(), any(), any(), anyString()))
+        .thenReturn(requests);
+      when(tenantService.isCurrentTenantSecure()).thenReturn(true);
+      when(requestMediatedClient.getMediatedRequestsByQuery(anyString()))
+        .thenReturn(new MediatedRequests().mediatedRequests(List.of(mediatedRequest1, mediatedRequest2)));
+      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString()))
+        .thenReturn(batchDetailsResponse);
+      when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId1)))
+        .thenReturn(ResponseEntity.ok(batchResponse1));
+      when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId2)))
+        .thenReturn(ResponseEntity.ok(batchResponse2));
+
+      // When
+      var result = circulationBffService.getBatchRequestInfoEnrichedRequests(
+        "status==Open", 0, 10, "exact");
+
+      // Then
+      assertNotNull(result);
+      assertEquals(2, result.getRequests().size());
+
+      var enrichedRequest1 = result.getRequests().getFirst();
+      assertNotNull(enrichedRequest1.getBatchRequestInfo());
+      assertEquals(batchId1, enrichedRequest1.getBatchRequestInfo().getBatchRequestId());
+      assertEquals(requestDate, enrichedRequest1.getBatchRequestInfo().getBatchRequestSubmittedAt());
+
+      verify(circulationClient).getRequests("status==Open", 10, 0, "exact");
+      verify(requestMediatedClient).queryMediatedBatchRequestDetails(anyString());
+      verify(requestMediatedClient).getMediatedRequestsByQuery(argThat(query ->
+        (query.contains("confirmedRequestId==(\"" + requestId1 + "\" or \"" + requestId2 + "\")")
+          || query.contains("confirmedRequestId==(\"" + requestId2 + "\" or \"" + requestId1 + "\")"))
+          && query.contains("mediatedRequestStatusText==(\"Open\" or \"Closed\")")
+          && query.contains("requestLevelText==\"Item\"")
+        ));
     }
 
     @Test
