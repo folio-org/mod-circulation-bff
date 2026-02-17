@@ -1,0 +1,19 @@
+{
+  "mediatedBatchRequests": [
+    {
+      "batchId": "69abbd7d-b4a6-4376-8453-bf349c579a91",
+      "requestDate": "2024-01-01T00:12:00Z",
+      "requesterId": "73b17dee-d278-4128-b0fd-5d9f801b0400",
+      "patronComments": "patron comments",
+      "mediatedWorkflow": "Multi-Item request",
+      "mediatedRequestStatus": "In Progress",
+      "metadata": {
+        "createdDate": "2025-05-16T09:15:50.691+00:00",
+        "createdByUserId": "b7e131c6-f6d5-424b-935b-089d3704cc55",
+        "updatedDate": "2025-05-16T09:15:50.691+00:00",
+        "updatedByUserId": "b7e131c6-f6d5-424b-935b-089d3704cc55"
+      }
+    }
+  ],
+  "totalRecords": 1
+}
