@@ -23,6 +23,7 @@ import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestResponseItemRequestsStats;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
@@ -250,7 +251,10 @@ class CirculationBffControllerTest {
   @Test
   void getBatchRequestByIdReturnsOkResponse() {
     var batchId = UUID.randomUUID();
-    var batchResponse = new BatchRequestResponse();
+    var batchResponse = new BatchRequestResponse()
+      .mediatedRequestStatus(BatchRequestResponse.MediatedRequestStatusEnum.COMPLETED)
+      .requesterId(UUID.randomUUID().toString())
+      .itemRequestsStats(new BatchRequestResponseItemRequestsStats().total(2).completed(1).failed(1));
     var serviceResponse = new ResponseEntity<>(batchResponse, HttpStatus.OK);
 
     when(mediatedBatchRequestService.retrieveMediatedBatchRequestById(batchId)).thenReturn(serviceResponse);

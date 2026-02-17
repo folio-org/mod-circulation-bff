@@ -16,6 +16,9 @@ post:
         application/json:
           schema:
             $ref: "../schemas/response/batch/batchRequestResponse.yaml"
+          examples:
+            objectExample:
+              externalValue: '../examples/response/mediatedBatchRequest.json'
     '400':
       $ref: '../responses/badRequestResponse.yaml'
     '422':
@@ -41,6 +44,9 @@ get:
         application/json:
           schema:
             $ref: "../schemas/response/batch/batchRequestCollectionResponse.yaml"
+          examples:
+            objectExample:
+              externalValue: '../examples/response/mediatedBatchRequests.json'
     '400':
       $ref: '../responses/badRequestResponse.yaml'
     '500':

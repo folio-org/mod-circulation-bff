@@ -20,6 +20,9 @@ get:
         application/json:
           schema:
             $ref: "../schemas/response/batch/batchRequestDetailsResponse.yaml"
+          examples:
+            objectExample:
+              externalValue: '../examples/response/mediatedBatchRequestDetails.json'
     '400':
       $ref: '../responses/badRequestResponse.yaml'
     '404':

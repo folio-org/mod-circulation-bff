@@ -1,0 +1,21 @@
+{
+  "mediatedBatchRequestDetails": [
+    {
+      "batchId": "69abbd7d-b4a6-4376-8453-bf349c579a91",
+      "requesterId": "73b17dee-d278-4128-b0fd-5d9f801b0400",
+      "itemId": "53a91b3e-f95f-4121-8ae0-1d281d846993",
+      "pickupServicePointId": "0761b1bc-57a1-4551-9dfa-0b186f508357",
+      "patronComments": "patron comments",
+      "confirmedRequestId": "aa5549b2-26b9-4f33-9466-b22a41baff78",
+      "mediatedRequestStatus": "Completed",
+      "requestStatus": "Open - Not yet filled",
+      "metadata": {
+        "createdDate": "2025-05-16T09:15:50.691+00:00",
+        "createdByUserId": "b7e131c6-f6d5-424b-935b-089d3704cc55",
+        "updatedDate": "2025-05-16T09:15:50.691+00:00",
+        "updatedByUserId": "b7e131c6-f6d5-424b-935b-089d3704cc55"
+      }
+    }
+  ],
+  "totalRecords": 1
+}

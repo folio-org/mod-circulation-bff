@@ -11,6 +11,25 @@ properties:
     description: Status of the batch request
     type: string
     enum: [ 'Pending', 'In progress', 'Completed', 'Failed' ]
+  itemRequestsStats:
+    description: Statistics of item requests in the mediated batch request
+    type: object
+    properties:
+      total:
+        description: Total number of item requests
+        type: integer
+      pending:
+        description: Number of pending item requests
+        type: integer
+      inProgress:
+        description: Number of item requests in progress
+        type: integer
+      completed:
+        description: Number of completed item requests
+        type: integer
+      failed:
+        description: Number of failed item requests
+        type: integer
   requestDate:
     description: Date when the batch request was placed
     type: string
