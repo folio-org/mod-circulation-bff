@@ -1,10 +1,12 @@
 package org.folio.circulationbff.service.impl;
 
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.PrepareSystemUserService;
 import org.folio.spring.service.TenantService;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
@@ -16,10 +18,12 @@ public class CustomTenantService extends TenantService {
 
   private final PrepareSystemUserService prepareSystemUserService;
 
-  public CustomTenantService(FolioExecutionContext context,
-    PrepareSystemUserService prepareSystemUserService) {
+  public CustomTenantService(JdbcTemplate jdbcTemplate,
+                             FolioExecutionContext context,
+                             FolioSpringLiquibase folioSpringLiquibase,
+                             PrepareSystemUserService prepareSystemUserService) {
 
-    super(null, context, null);
+    super(jdbcTemplate, context, folioSpringLiquibase);
     this.prepareSystemUserService = prepareSystemUserService;
   }
 
