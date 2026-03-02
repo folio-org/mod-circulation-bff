@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.folio.circulationbff.config.TestConfig;
 import org.folio.circulationbff.service.impl.TenantServiceImpl;
 import org.folio.circulationbff.util.MockHelper;
 import org.folio.circulationbff.util.TestUtils;
@@ -43,12 +42,9 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import jakarta.servlet.http.Cookie;
 import lombok.SneakyThrows;
 
-import org.springframework.context.annotation.Import;
-
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@Import(TestConfig.class)
 public class BaseIT {
   public static final String HEADER_TENANT = "x-okapi-tenant";
   protected static final String TOKEN = "test_token";
