@@ -24,6 +24,11 @@ public class CustomTenantService extends TenantService {
   }
 
   @Override
+  public void deleteTenant(TenantAttributes tenantAttributes) {
+    log.info("deleteTenant:: no database schema to delete for this module");
+  }
+
+  @Override
   protected void afterTenantUpdate(TenantAttributes tenantAttributes) {
     log.info("afterTenantUpdate:: creating system user");
     prepareSystemUserService.setupSystemUser();
