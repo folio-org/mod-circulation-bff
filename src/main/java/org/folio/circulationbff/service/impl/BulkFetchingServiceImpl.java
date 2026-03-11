@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.folio.circulationbff.client.feign.GetByQueryParamsClient;
+import org.folio.circulationbff.client.GetByQueryParamsClient;
 import org.folio.circulationbff.service.BulkFetchingService;
 import org.folio.circulationbff.support.CqlQuery;
 import org.springframework.stereotype.Service;

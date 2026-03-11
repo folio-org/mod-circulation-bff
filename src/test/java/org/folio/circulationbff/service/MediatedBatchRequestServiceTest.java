@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestDetail;

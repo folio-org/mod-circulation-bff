@@ -2,8 +2,8 @@ package org.folio.circulationbff.service.impl;
 
 import static org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum.ITEM;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
-import org.folio.circulationbff.client.feign.EcsTlrClient;
+import org.folio.circulationbff.client.CirculationClient;
+import org.folio.circulationbff.client.EcsTlrClient;
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EcsRequestExternal.RequestLevelEnum;

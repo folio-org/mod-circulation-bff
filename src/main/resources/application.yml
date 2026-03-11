@@ -17,15 +17,19 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
       accept-single-value-as-array: true
-  cloud:
-    openfeign:
-      okhttp:
-        enabled: true
 folio:
   tenant:
     secure-tenant-id: ${SECURE_TENANT_ID}
     validation:
       enabled: true
+  exchange:
+    enabled: true
+  logging:
+    request:
+      enabled: false
+    exchange:
+      enabled: true
+      level: BASIC
   environment: ${ENV:folio}
   okapi-url: ${OKAPI_URL:http://okapi:9130}
   system-user:
@@ -54,4 +58,8 @@ management:
       enabled: false
     readinessstate:
       enabled: true
+logging:
+  level:
+    org.folio.spring.filter.LoggingRequestFilter: DEBUG
+    org.folio.spring.client.ExchangeLoggingInterceptor: DEBUG
 debug: false

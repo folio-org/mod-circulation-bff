@@ -1,9 +1,12 @@
 package org.folio.circulationbff.controller;
 
+import static java.lang.String.format;
+import static org.folio.circulationbff.controller.ApiErrorHandler.buildError;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
@@ -27,12 +30,14 @@ import org.folio.circulationbff.domain.dto.EcsRequestExternal;
 import org.folio.circulationbff.domain.dto.EmptyBffSearchInstance;
 import org.folio.circulationbff.domain.dto.InventoryItems;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.Parameter;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.PostEcsRequestExternal201Response;
 import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
+import org.folio.circulationbff.domain.type.ErrorCode;
 import org.folio.circulationbff.exception.HttpFailureFeignException;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CheckInService;
@@ -52,7 +57,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpStatusCodeException;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -233,12 +240,24 @@ public class CirculationBffController implements CirculationBffApi {
     return ResponseEntity.ok(checkOutService.checkOut(checkOutRequest));
   }
 
-  @ExceptionHandler(HttpFailureFeignException.class)
-  public ResponseEntity<String> handleFeignException(HttpFailureFeignException e) {
-    log.warn("handleFeignException:: forwarding error response with status {} from {}",
-      e::getStatusCode, e::getUrl);
-    return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBody());
+  @ExceptionHandler(HttpStatusCodeException.class)
+  public Error handleHttpStatusException(HttpStatusCodeException e, HttpServletResponse response) {
+    var status = e.getStatusCode().value();
+    var message = e.getResponseBodyAsString();
+
+    if (message.isEmpty()) {
+      message = e.getMessage();
+    }
+
+    response.setStatus(status);
+
+    return new Error(message);
   }
+//  public ResponseEntity<String> handleFeignException(HttpFailureFeignException e) {
+//    log.warn("handleFeignException:: forwarding error response with status {} from {}",
+//      e::getStatusCode, e::getUrl);
+//    return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBody());
+//  }
 
   @Override
   public ResponseEntity<Void> declareItemLost(UUID loanId, DeclareItemLostRequest declareLostRequest) {

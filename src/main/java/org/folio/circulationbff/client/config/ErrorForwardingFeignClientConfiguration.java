@@ -1,4 +1,4 @@
-package org.folio.circulationbff.client.feign.config;
+package org.folio.circulationbff.client.config;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;

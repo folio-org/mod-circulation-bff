@@ -4,9 +4,9 @@ import static java.lang.String.format;
 
 import java.util.UUID;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
-import org.folio.circulationbff.client.feign.EcsTlrClient;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.CirculationClient;
+import org.folio.circulationbff.client.EcsTlrClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
 import org.folio.circulationbff.domain.mapping.TlrClaimItemReturnedRequestMapper;
 import org.folio.circulationbff.service.ClaimItemReturnedService;
