@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.folio.circulationbff.service.impl.TenantServiceImpl;
@@ -33,7 +32,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.tomakehurst.wiremock.WireMockServer;
