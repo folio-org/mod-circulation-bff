@@ -1,16 +1,28 @@
 package org.folio.circulationbff.client.feign;
 
+import java.util.Map;
+
 import org.folio.circulationbff.domain.dto.LoanType;
 import org.folio.circulationbff.domain.dto.LoanTypes;
-import org.folio.spring.config.FeignClientConfiguration;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.folio.circulationbff.support.CqlQuery;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
 
-@FeignClient(name = "loan-types", url = "loan-types",
-  configuration = FeignClientConfiguration.class)
+@HttpExchange(url = "loan-types", contentType = MediaType.APPLICATION_JSON_VALUE,
+  accept = MediaType.APPLICATION_JSON_VALUE)
 public interface LoanTypeClient extends GetByQueryParamsClient<LoanTypes> {
 
-  @GetMapping("/{id}")
+  @Override
+  @GetExchange
+  LoanTypes getByQuery(@RequestParam CqlQuery query, @RequestParam int limit);
+
+  @Override
+  @GetExchange
+  LoanTypes getByQueryParams(@RequestParam Map<String, String> queryParams);
+
+  @GetExchange("/{id}")
   LoanType findLoanType(@PathVariable String id);
 }

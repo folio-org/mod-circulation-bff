@@ -1,17 +1,16 @@
 package org.folio.circulationbff.client.feign;
 
-import org.folio.circulationbff.client.feign.config.ErrorForwardingFeignClientConfiguration;
 import org.folio.circulationbff.domain.dto.InventoryItem;
-import org.folio.spring.config.FeignClientConfiguration;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
 
-@FeignClient(name = "inventory", url = "inventory",
-  configuration = { FeignClientConfiguration.class, ErrorForwardingFeignClientConfiguration.class })
+@HttpExchange(url = "inventory", contentType = MediaType.APPLICATION_JSON_VALUE,
+  accept = MediaType.APPLICATION_JSON_VALUE)
 public interface InventoryClient {
 
-  @GetMapping("items/{id}")
+  @GetExchange("/items/{id}")
   InventoryItem getById(@PathVariable String id);
 
 }

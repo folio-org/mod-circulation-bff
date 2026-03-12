@@ -1,6 +1,5 @@
 package org.folio.circulationbff.api;
 
-import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.util.TestSocketUtils.findAvailableTcpPort;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,8 +21,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -32,11 +31,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 import jakarta.servlet.http.Cookie;
@@ -53,11 +52,11 @@ public class BaseIT {
   public static final String TENANT_ID_SECURE = "secure";
   protected static final String USER_ID = randomId();
   static MockHelper mockHelper;
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().rebuild()
+    .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    .build();
 
   private FolioExecutionContextSetter contextSetter;
 
@@ -139,9 +138,8 @@ public class BaseIT {
   }
 
   protected FolioExecutionContextSetter initFolioContext() {
-    HashMap<String, Collection<String>> headers = new HashMap<>(defaultHeaders().entrySet()
-      .stream()
-      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    HashMap<String, Collection<String>> headers = new HashMap<>();
+    defaultHeaders().forEach((key, value) -> headers.put(key, value));
 
     return new FolioExecutionContextSetter(moduleMetadata, headers);
   }

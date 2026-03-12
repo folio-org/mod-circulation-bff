@@ -33,7 +33,6 @@ import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.UserCollection;
-import org.folio.circulationbff.exception.HttpFailureFeignException;
 import org.folio.circulationbff.rest.resource.CirculationBffApi;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.CheckOutService;
@@ -51,6 +50,7 @@ import org.folio.circulationbff.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -233,11 +233,11 @@ public class CirculationBffController implements CirculationBffApi {
     return ResponseEntity.ok(checkOutService.checkOut(checkOutRequest));
   }
 
-  @ExceptionHandler(HttpFailureFeignException.class)
-  public ResponseEntity<String> handleFeignException(HttpFailureFeignException e) {
-    log.warn("handleFeignException:: forwarding error response with status {} from {}",
-      e::getStatusCode, e::getUrl);
-    return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBody());
+  @ExceptionHandler(HttpStatusCodeException.class)
+  public ResponseEntity<String> handleHttpStatusException(HttpStatusCodeException e) {
+    log.warn("handleHttpStatusException:: forwarding error response with status {}",
+      () -> e.getStatusCode().value());
+    return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
   }
 
   @Override

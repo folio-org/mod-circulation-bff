@@ -5,9 +5,9 @@ spring:
     name: mod-circulation-bff
   autoconfigure:
     exclude: |-
-      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,
-      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,
-      org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,
+      org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration,
+      org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
   liquibase:
     enabled: false
   mustache:
@@ -17,11 +17,9 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
       accept-single-value-as-array: true
-  cloud:
-    openfeign:
-      okhttp:
-        enabled: true
 folio:
+  exchange:
+    enabled: true
   tenant:
     secure-tenant-id: ${SECURE_TENANT_ID}
     validation:
@@ -36,6 +34,12 @@ folio:
     permissionsFilePath: permissions/mod-circulation-bff.csv
   batch-requests:
     query-request-ids-count: ${BATCH_REQUEST_DETAILS_QUERY_IDS_COUNT:20}
+  logging:
+    request:
+      enabled: false
+    exchange:
+      enabled: false
+      level: BASIC
 management:
   endpoints:
     web:
@@ -55,3 +59,7 @@ management:
     readinessstate:
       enabled: true
 debug: false
+logging:
+  level:
+    org.folio.spring.client.ExchangeLoggingInterceptor: DEBUG
+    org.folio.spring.filter.LoggingRequestFilter: DEBUG

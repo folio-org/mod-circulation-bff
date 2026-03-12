@@ -38,6 +38,8 @@ import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.circulationbff.service.UserService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
