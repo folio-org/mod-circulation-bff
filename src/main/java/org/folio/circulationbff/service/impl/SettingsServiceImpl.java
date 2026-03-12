@@ -1,7 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
-import org.folio.circulationbff.client.feign.EcsTlrClient;
+import org.folio.circulationbff.client.CirculationClient;
+import org.folio.circulationbff.client.EcsTlrClient;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.springframework.stereotype.Service;

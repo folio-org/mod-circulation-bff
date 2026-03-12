@@ -3,7 +3,7 @@ package org.folio.circulationbff.service.impl;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.folio.circulationbff.client.feign.LoanStorageClient;
+import org.folio.circulationbff.client.LoanStorageClient;
 import org.folio.circulationbff.domain.dto.Loan;
 import org.folio.circulationbff.service.CirculationStorageService;
 import org.folio.circulationbff.support.CqlQuery;

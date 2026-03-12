@@ -1,7 +1,7 @@
 package org.folio.circulationbff.service.impl;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.folio.circulationbff.client.feign.UserTenantsClient;
+import org.folio.circulationbff.client.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.service.UserTenantsService;

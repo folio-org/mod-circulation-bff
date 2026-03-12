@@ -1,4 +1,4 @@
-package org.folio.circulationbff.client.feign;
+package org.folio.circulationbff.client;
 
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;

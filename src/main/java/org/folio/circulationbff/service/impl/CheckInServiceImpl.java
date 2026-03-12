@@ -9,10 +9,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.circulationbff.client.feign.CheckInClient;
-import org.folio.circulationbff.client.feign.CirculationItemClient;
-import org.folio.circulationbff.client.feign.HoldingsStorageClient;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.CheckInClient;
+import org.folio.circulationbff.client.CirculationItemClient;
+import org.folio.circulationbff.client.HoldingsStorageClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;
@@ -38,8 +38,6 @@ import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.circulationbff.service.UserService;
 import org.folio.spring.service.SystemUserScopedExecutionService;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;

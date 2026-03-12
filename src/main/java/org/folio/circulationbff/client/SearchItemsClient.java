@@ -1,4 +1,4 @@
-package org.folio.circulationbff.client.feign;
+package org.folio.circulationbff.client;
 
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.springframework.http.MediaType;

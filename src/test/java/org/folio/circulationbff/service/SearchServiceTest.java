@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import org.folio.circulationbff.client.feign.SearchInstancesClient;
+import org.folio.circulationbff.client.SearchInstancesClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.SearchInstance;

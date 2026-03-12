@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.folio.circulationbff.client.feign.CirculationClient;
+import org.folio.circulationbff.client.CirculationClient;
 import org.folio.circulationbff.domain.dto.BffSearchInstance;
 import org.folio.circulationbff.domain.dto.BffSearchItem;
 import org.folio.circulationbff.domain.dto.CirculationLoan;

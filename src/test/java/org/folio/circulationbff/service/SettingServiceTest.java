@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.stream.Stream;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
-import org.folio.circulationbff.client.feign.EcsTlrClient;
+import org.folio.circulationbff.client.CirculationClient;
+import org.folio.circulationbff.client.EcsTlrClient;
 import org.folio.circulationbff.domain.dto.CirculationSettings;
 import org.folio.circulationbff.domain.dto.CirculationSettingsResponse;
 import org.folio.circulationbff.domain.dto.CirculationSettingsValue;

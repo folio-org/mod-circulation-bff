@@ -1,4 +1,4 @@
-package org.folio.circulationbff.client.feign;
+package org.folio.circulationbff.client;
 
 import java.util.UUID;
 

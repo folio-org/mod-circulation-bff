@@ -1,8 +1,8 @@
 package org.folio.circulationbff.service.impl;
 
-import org.folio.circulationbff.client.feign.CheckOutClient;
-import org.folio.circulationbff.client.feign.EcsTlrClient;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.CheckOutClient;
+import org.folio.circulationbff.client.EcsTlrClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckOutRequest;
 import org.folio.circulationbff.domain.dto.CheckOutResponse;
 import org.folio.circulationbff.service.CheckOutService;

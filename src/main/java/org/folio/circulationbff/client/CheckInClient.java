@@ -1,4 +1,4 @@
-package org.folio.circulationbff.client.feign;
+package org.folio.circulationbff.client;
 
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
