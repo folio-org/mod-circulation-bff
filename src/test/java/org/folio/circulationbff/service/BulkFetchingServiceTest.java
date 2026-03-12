@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import org.folio.circulationbff.client.feign.GetByQueryParamsClient;
+import org.folio.circulationbff.client.GetByQueryParamsClient;
 import org.folio.circulationbff.service.impl.BulkFetchingServiceImpl;
 import org.folio.circulationbff.support.CqlQuery;
 import org.junit.jupiter.api.Test;

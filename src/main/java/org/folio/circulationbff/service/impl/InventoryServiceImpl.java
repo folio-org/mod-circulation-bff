@@ -2,13 +2,13 @@ package org.folio.circulationbff.service.impl;
 
 import java.util.List;
 
-import org.folio.circulationbff.client.feign.InventoryClient;
-import org.folio.circulationbff.client.feign.ItemStorageClient;
-import org.folio.circulationbff.client.feign.LocationCampusClient;
-import org.folio.circulationbff.client.feign.LocationClient;
-import org.folio.circulationbff.client.feign.LocationInstitutionClient;
-import org.folio.circulationbff.client.feign.LocationLibraryClient;
-import org.folio.circulationbff.client.feign.ServicePointClient;
+import org.folio.circulationbff.client.InventoryClient;
+import org.folio.circulationbff.client.ItemStorageClient;
+import org.folio.circulationbff.client.LocationCampusClient;
+import org.folio.circulationbff.client.LocationClient;
+import org.folio.circulationbff.client.LocationInstitutionClient;
+import org.folio.circulationbff.client.LocationLibraryClient;
+import org.folio.circulationbff.client.ServicePointClient;
 import org.folio.circulationbff.domain.dto.Campus;
 import org.folio.circulationbff.domain.dto.Institution;
 import org.folio.circulationbff.domain.dto.InventoryItem;

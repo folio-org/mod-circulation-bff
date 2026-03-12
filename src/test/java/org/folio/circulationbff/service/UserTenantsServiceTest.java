@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.folio.circulationbff.client.feign.UserTenantsClient;
+import org.folio.circulationbff.client.UserTenantsClient;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.service.impl.UserTenantsServiceImpl;

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.UUID;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
+import org.folio.circulationbff.client.CirculationClient;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapper;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapperImpl;
