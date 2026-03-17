@@ -36,9 +36,9 @@ folio:
     query-request-ids-count: ${BATCH_REQUEST_DETAILS_QUERY_IDS_COUNT:20}
   logging:
     request:
-      enabled: true
+      enabled: false
     exchange:
-      enabled: true
+      enabled: false
       level: BASIC
 management:
   endpoints:
