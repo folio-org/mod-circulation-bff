@@ -137,7 +137,7 @@ public class BaseIT {
 
   protected FolioExecutionContextSetter initFolioContext() {
     HashMap<String, Collection<String>> headers = new HashMap<>();
-    defaultHeaders().forEach((key, value) -> headers.put(key, value));
+    defaultHeaders().forEach(headers::put);
 
     return new FolioExecutionContextSetter(moduleMetadata, headers);
   }
