@@ -1,5 +1,7 @@
 package org.folio.circulationbff.client;
 
+import java.util.UUID;
+
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
@@ -33,11 +35,11 @@ public interface EcsTlrClient {
 
   @GetExchange("/allowed-service-points")
   AllowedServicePoints getAllowedServicePoints(@RequestParam("operation") String operation,
-    @RequestParam(value = "patronGroupId", required = false) java.util.UUID patronGroupId,
-    @RequestParam(value = "instanceId", required = false) java.util.UUID instanceId,
-    @RequestParam(value = "requestId", required = false) java.util.UUID requestId,
-    @RequestParam(value = "requesterId", required = false) java.util.UUID requesterId,
-    @RequestParam(value = "itemId", required = false) java.util.UUID itemId);
+    @RequestParam(value = "patronGroupId", required = false) UUID patronGroupId,
+    @RequestParam(value = "instanceId", required = false) UUID instanceId,
+    @RequestParam(value = "requestId", required = false) UUID requestId,
+    @RequestParam(value = "requesterId", required = false) UUID requesterId,
+    @RequestParam(value = "itemId", required = false) UUID itemId);
 
   @GetExchange("/settings")
   TlrSettings getTlrSettings();
