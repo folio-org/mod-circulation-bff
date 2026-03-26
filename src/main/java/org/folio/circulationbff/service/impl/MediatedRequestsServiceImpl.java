@@ -1,6 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.service.MediatedRequestsService;
 import org.springframework.http.ResponseEntity;

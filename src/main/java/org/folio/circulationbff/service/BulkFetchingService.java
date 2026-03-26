@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.folio.circulationbff.client.feign.GetByQueryParamsClient;
+import org.folio.circulationbff.client.GetByQueryParamsClient;
 
 public interface BulkFetchingService {
 

@@ -28,8 +28,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,9 +52,7 @@ import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.domain.dto.ServicePoints;
-import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.http.MediaType;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -67,7 +63,6 @@ class SearchInstancesApiTest extends BaseIT {
 
   private static final String PERMANENT_LOAN_TYPE_ID = "22fa71d319-997b-4a60-8cfd-20fdf57efa14";
   private static final String TEMPORARY_LOAN_TYPE_ID = "2286d4aed0-c76b-4907-983f-1327dfb4b12d";
-  @Mock private SystemUserScopedExecutionService systemUserScopedExecutionService;
 
   @Test
   @SneakyThrows
@@ -115,9 +110,6 @@ class SearchInstancesApiTest extends BaseIT {
     Instance instance = new Instance().id(instanceId).editions(Set.of("1st", "2st"));
     Instances instances = new Instances().instances(List.of(instance));
     createStubForGetByIds(INSTANCE_STORAGE_URL, TENANT_ID_CONSORTIUM, instances);
-
-    when(systemUserScopedExecutionService.executeSystemUserScoped(any(String.class), any()))
-      .thenReturn(emptyList());
 
     mockMvc.perform(
         get(SEARCH_INSTANCES_URL)

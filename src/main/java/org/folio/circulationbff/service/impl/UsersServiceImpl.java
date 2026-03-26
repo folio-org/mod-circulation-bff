@@ -1,6 +1,6 @@
 package org.folio.circulationbff.service.impl;
 
-import org.folio.circulationbff.client.feign.UserClient;
+import org.folio.circulationbff.client.UserClient;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserCollection;
 import org.folio.circulationbff.service.UserService;

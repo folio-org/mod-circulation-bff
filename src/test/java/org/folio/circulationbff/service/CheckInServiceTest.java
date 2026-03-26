@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.folio.circulationbff.client.feign.CheckInClient;
-import org.folio.circulationbff.client.feign.CirculationItemClient;
-import org.folio.circulationbff.client.feign.HoldingsStorageClient;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.CheckInClient;
+import org.folio.circulationbff.client.CirculationItemClient;
+import org.folio.circulationbff.client.HoldingsStorageClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
 import org.folio.circulationbff.domain.dto.CheckInResponseItem;

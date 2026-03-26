@@ -1,8 +1,7 @@
-package org.folio.circulationbff.client.feign;
+package org.folio.circulationbff.client;
 
 import java.util.UUID;
 
-import org.folio.circulationbff.client.feign.config.ErrorForwardingFeignClientConfiguration;
 import org.folio.circulationbff.domain.dto.AllowedServicePointParams;
 import org.folio.circulationbff.domain.dto.AllowedServicePoints;
 import org.folio.circulationbff.domain.dto.BffRequest;
@@ -16,64 +15,73 @@ import org.folio.circulationbff.domain.dto.Request;
 import org.folio.circulationbff.domain.dto.Requests;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.ClaimItemReturnedRequest;
-import org.folio.spring.config.FeignClientConfiguration;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
 
-@FeignClient(name = "circulation", url = "circulation",
-  configuration = { FeignClientConfiguration.class, ErrorForwardingFeignClientConfiguration.class })
+@HttpExchange(url = "circulation", contentType = MediaType.APPLICATION_JSON_VALUE,
+  accept = MediaType.APPLICATION_JSON_VALUE)
 public interface CirculationClient {
 
-  @GetMapping("/requests/allowed-service-points")
-  AllowedServicePoints allowedServicePoints (@SpringQueryMap AllowedServicePointParams params);
+  default AllowedServicePoints allowedServicePoints(AllowedServicePointParams params) {
+    return allowedServicePoints(params.getOperation(), params.getPatronGroupId(), params.getInstanceId(),
+      params.getRequestId(), params.getRequesterId(), params.getItemId());
+  }
 
-  @GetMapping(value = "/settings")
+  @GetExchange("/requests/allowed-service-points")
+  AllowedServicePoints allowedServicePoints(@RequestParam("operation") String operation,
+    @RequestParam(value = "patronGroupId", required = false) UUID patronGroupId,
+    @RequestParam(value = "instanceId", required = false) UUID instanceId,
+    @RequestParam(value = "requestId", required = false) UUID requestId,
+    @RequestParam(value = "requesterId", required = false) UUID requesterId,
+    @RequestParam(value = "itemId", required = false) UUID itemId);
+
+  @GetExchange("/settings")
   CirculationSettingsResponse getCirculationSettingsByQuery(@RequestParam("query") String query);
 
-  @PostMapping("/requests")
+  @PostExchange("/requests")
   Request createRequest(@RequestBody BffRequest request);
 
-  @GetMapping("/requests")
+  @GetExchange("/requests")
   Requests getRequests(
     @RequestParam("query") String query,
     @RequestParam("limit") Integer limit,
     @RequestParam("offset") Integer offset,
     @RequestParam("totalRecords") String totalRecords);
 
-  @GetMapping("/requests/{requestId}")
+  @GetExchange("/requests/{requestId}")
   Request getRequestById(@PathVariable("requestId") String requestId);
 
-  @GetMapping("/pick-slips/{servicePointId}")
+  @GetExchange("/pick-slips/{servicePointId}")
   PickSlipCollection getPickSlips(@PathVariable ("servicePointId") String servicePointId);
 
-  @GetMapping("/search-slips/{servicePointId}")
+  @GetExchange("/search-slips/{servicePointId}")
   SearchSlipCollection getSearchSlips(@PathVariable ("servicePointId") String servicePointId);
 
-  @GetMapping("/loans/{id}")
+  @GetExchange("/loans/{id}")
   CirculationLoan findLoanById(@PathVariable("id") UUID id);
 
-  @GetMapping("/loans")
+  @GetExchange("/loans")
   CirculationLoans findLoansByQuery(
     @RequestParam("query") String query,
     @RequestParam("limit") Integer limit,
     @RequestParam("offset") Integer offset,
     @RequestParam("totalRecords") String totalRecords);
 
-  @PostMapping("/loans/{loanId}/declare-item-lost")
+  @PostExchange("/loans/{loanId}/declare-item-lost")
   ResponseEntity<Void> declareItemLost(@PathVariable("loanId") UUID loanId,
     @RequestBody DeclareItemLostRequest request);
 
-  @PostMapping("/loans/{loanId}/claim-item-returned")
+  @PostExchange("/loans/{loanId}/claim-item-returned")
   ResponseEntity<Void> claimItemReturned(@PathVariable("loanId") UUID loanId,
     @RequestBody ClaimItemReturnedRequest request);
 
-  @PostMapping("/loans/{loanId}/declare-claimed-returned-item-as-missing")
+  @PostExchange("/loans/{loanId}/declare-claimed-returned-item-as-missing")
   ResponseEntity<Void> declareClaimedReturnedItemAsMissing(@PathVariable("loanId") UUID loanId,
     @RequestBody DeclareClaimedReturnedItemAsMissingRequest request);
 }
