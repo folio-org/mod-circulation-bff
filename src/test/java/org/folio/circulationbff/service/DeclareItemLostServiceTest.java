@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
-import org.folio.circulationbff.client.feign.CirculationClient;
-import org.folio.circulationbff.client.feign.EcsTlrClient;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.CirculationClient;
+import org.folio.circulationbff.client.EcsTlrClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.DeclareItemLostRequest;
 import org.folio.circulationbff.domain.dto.TlrDeclareItemLostRequest;
 import org.folio.circulationbff.service.impl.DeclareItemLostServiceImpl;

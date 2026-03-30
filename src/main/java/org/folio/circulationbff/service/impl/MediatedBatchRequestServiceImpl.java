@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
-import org.folio.circulationbff.client.feign.RequestMediatedClient;
+import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestDetail;
