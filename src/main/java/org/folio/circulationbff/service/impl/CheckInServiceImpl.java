@@ -2,6 +2,7 @@ package org.folio.circulationbff.service.impl;
 
 import static java.util.stream.Collectors.joining;
 import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CHECKED_OUT;
+import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CLAIMED_RETURNED;
 
 import java.util.List;
 import java.util.Optional;
@@ -133,7 +134,7 @@ public class CheckInServiceImpl implements CheckInService {
     log.info("loanExistsInSecureTenant:: checking if open loan for item {} exists in secure tenant",
       circItem::getId);
     boolean result = tenantService.getSecureTenantId()
-      .map(secureTenantId -> circulationItemIsInStatus(circItem, CHECKED_OUT) &&
+      .map(secureTenantId -> circulationItemIsInStatus(circItem, CHECKED_OUT, CLAIMED_RETURNED) &&
         openLoanExists(circItem.getId().toString(), secureTenantId))
       .orElse(false);
 
@@ -514,15 +515,21 @@ public class CheckInServiceImpl implements CheckInService {
   }
 
   private static boolean circulationItemIsInStatus(CirculationItem circulationItem,
-    CirculationItemStatus.NameEnum expectedStatus) {
+    CirculationItemStatus.NameEnum... expectedStatuses) {
 
-    log.info("circulationItemIsInStatus:: checking if circulation item {} is in status {}",
-      circulationItem::getId, expectedStatus::getValue);
+    log.info("circulationItemIsInStatus:: checking if circulation item {} is in one of statuses {}",
+      circulationItem != null ? circulationItem::getId : () -> null,
+      () -> expectedStatuses == null ? null : List.of(expectedStatuses));
 
-    boolean result = Optional.of(circulationItem)
+    if (expectedStatuses == null || expectedStatuses.length == 0) {
+      log.info("circulationItemIsInStatus:: no expected statuses provided");
+      return false;
+    }
+
+    boolean result = Optional.ofNullable(circulationItem)
       .map(CirculationItem::getStatus)
       .map(CirculationItemStatus::getName)
-      .map(actualStatus -> expectedStatus == actualStatus)
+      .map(actualStatus -> List.of(expectedStatuses).contains(actualStatus))
       .orElse(false);
 
     log.info("circulationItemIsInStatus:: result: {}", result);
