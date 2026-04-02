@@ -5,6 +5,9 @@ import static org.folio.circulationbff.util.MockHelper.mockSystemUserService;
 import static org.folio.circulationbff.util.TestUtils.randomId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +41,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class CheckInServiceTest {
@@ -60,7 +64,7 @@ class CheckInServiceTest {
   private InventoryService inventoryService;
   @Mock
   private CirculationStorageService circulationStorageService;
-  @Mock
+  @Mock(strictness = Mock.Strictness.LENIENT)
   private SystemUserScopedExecutionService systemUserService;
   @Mock
   private UserService userService;
@@ -231,6 +235,21 @@ class CheckInServiceTest {
         .instanceId(instanceId));
 
     assertThat(checkInResponse, equalTo(expectedCheckInResponse));
+  }
+
+  @Test
+  void circulationItemIsInStatusHandlesNullParameters() {
+    Boolean resultWhenItemAndStatusesAreNull = ReflectionTestUtils.invokeMethod(
+      checkInService, "circulationItemIsInStatus", null, null);
+    Boolean resultWhenStatusesAreNull = ReflectionTestUtils.invokeMethod(
+      checkInService, "circulationItemIsInStatus", new CirculationItem(), null);
+    Boolean resultWhenStatusesAreEmpty = ReflectionTestUtils.invokeMethod(
+      checkInService, "circulationItemIsInStatus", new CirculationItem(),
+      new CirculationItemStatus.NameEnum[] {});
+
+    assertEquals(Boolean.FALSE, resultWhenItemAndStatusesAreNull);
+    assertEquals(Boolean.FALSE, resultWhenStatusesAreNull);
+    assertEquals(Boolean.FALSE, resultWhenStatusesAreEmpty);
   }
 
 }
