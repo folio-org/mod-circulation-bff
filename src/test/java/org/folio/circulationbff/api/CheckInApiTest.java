@@ -51,6 +51,7 @@ import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -668,9 +669,13 @@ class CheckInApiTest extends BaseIT {
       .withRequestBody(equalToJson(asJsonString(checkInRequest))));
   }
 
-  @Test
+  @ParameterizedTest
   @SneakyThrows
-  void centralTenantCheckInClosesOpenLoanInSecureTenant() {
+  @EnumSource(value = CirculationItemStatus.NameEnum.class,
+    names = {"CHECKED_OUT", "CLAIMED_RETURNED"})
+  void centralTenantCheckInClosesOpenLoanInSecureTenant(
+    CirculationItemStatus.NameEnum circulationItemStatus) {
+
     mockHelper.mockEcsTlrSettings(true);
     givenCurrentTenantIsConsortium();
     var itemId = randomId();
@@ -681,7 +686,7 @@ class CheckInApiTest extends BaseIT {
 
     CirculationItem circulationItem = new CirculationItem()
       .id(UUID.fromString(itemId))
-      .status(new CirculationItemStatus().name(CirculationItemStatus.NameEnum.CHECKED_OUT));
+      .status(new CirculationItemStatus().name(circulationItemStatus));
 
     wireMockServer.stubFor(WireMock.get(urlMatching(format(CIRCULATION_ITEM_URL, itemId)))
       .willReturn(jsonResponse(asJsonString(circulationItem), SC_OK)));
