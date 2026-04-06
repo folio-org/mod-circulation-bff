@@ -22,7 +22,7 @@ public class CirculationStorageServiceImpl implements CirculationStorageService 
 
   @Override
   public Collection<Loan> findLoans(CqlQuery query, int limit) {
-    log.info("findLoans:: fetching loans by query: {}", query);
+    log.info("findLoans:: fetching loans by query");
     Collection<Loan> loans = loanStorageClient.getByQuery(query, limit)
       .getLoans();
     log.info("findLoans:: found {} loans", loans.size());

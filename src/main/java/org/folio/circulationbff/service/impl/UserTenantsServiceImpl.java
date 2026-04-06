@@ -21,7 +21,7 @@ public class UserTenantsServiceImpl implements UserTenantsService {
   public UserTenant getFirstUserTenant() {
     log.info("getFirstUserTenant:: finding first userTenant");
     UserTenantCollection userTenants = userTenantsClient.getUserTenants(1);
-    log.debug("getFirstUserTenant:: userTenants: {}", userTenants);
+    log.debug("getFirstUserTenant:: fetched user tenants");
     if (userTenants == null || CollectionUtils.isEmpty(userTenants.getUserTenants())) {
       log.warn("getFirstUserTenant: failed to fetch user tenants");
       return null;
