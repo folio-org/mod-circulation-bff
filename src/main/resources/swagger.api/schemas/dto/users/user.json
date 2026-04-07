@@ -149,10 +149,7 @@
           "format": "uri"
         }
       },
-      "additionalProperties": true,
-      "required": [
-        "lastName"
-      ]
+      "additionalProperties": true
     },
     "enrollmentDate": {
       "description": "The date in which the user joined the organization",
