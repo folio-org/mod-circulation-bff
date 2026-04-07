@@ -78,8 +78,8 @@ public class CirculationBffServiceImpl implements CirculationBffService {
 
   @Override
   public Requests getBatchRequestInfoEnrichedRequests(String query, Integer offset, Integer limit, String totalRecords) {
-    log.info("getBatchRequestInfoEnrichedRequests:: query: {}, offset: {}, limit: {}, totalRecords: {}",
-      query, offset, limit, totalRecords);
+    log.info("getBatchRequestInfoEnrichedRequests:: offset: {}, limit: {}, totalRecords: {}",
+      offset, limit, totalRecords);
     var requests = circulationClient.getRequests(query, limit, offset, totalRecords);
     var idsToRequest = requests.getRequests().stream()
       .filter(request -> Objects.nonNull(request.getId()))
@@ -133,8 +133,8 @@ public class CirculationBffServiceImpl implements CirculationBffService {
     var batchRequestResponse = requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId));
 
     if (!batchRequestResponse.getStatusCode().equals(HttpStatus.OK) || batchRequestResponse.getBody() == null) {
-      log.warn("getBatchSubmittedAtDate:: Unable to fetch batch request with id: {}, status: {}, body: {}",
-        batchId, batchRequestResponse.getStatusCode(), batchRequestResponse.getBody());
+      log.warn("getBatchSubmittedAtDate:: Unable to fetch batch request with id: {}, status: {}",
+        batchId, batchRequestResponse.getStatusCode());
       return null;
     }
 
@@ -143,7 +143,7 @@ public class CirculationBffServiceImpl implements CirculationBffService {
 
   @Override
   public AllowedServicePoints getAllowedServicePoints(AllowedServicePointParams params, String tenantId) {
-    log.info("getAllowedServicePoints:: params: {}", params);
+    log.info("getAllowedServicePoints:: tenantId={}", tenantId);
 
     if (!settingsService.isEcsTlrFeatureEnabled()) {
       log.info("getAllowedServicePoints:: Ecs TLR Feature is disabled. " +

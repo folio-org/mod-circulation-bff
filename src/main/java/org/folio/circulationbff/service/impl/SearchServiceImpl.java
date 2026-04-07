@@ -125,7 +125,7 @@ public class SearchServiceImpl implements SearchService {
 
   @Override
   public Collection<BffSearchInstance> findInstances(String query) {
-    log.info("findInstances:: searching instances by query: {}", query);
+    log.info("findInstances:: searching instances by query");
     SearchInstances searchResult = searchInstancesClient.findInstances(query, true);
 
     return toBffSearchInstances(searchResult.getInstances());

@@ -36,8 +36,8 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
 
   @Override
   public Object createEcsRequestExternal(EcsRequestExternal request) {
-    log.info("createEcsRequestExternal:: requesterId={}, itemId={}, instanceId={}",
-      request::getRequesterId, request::getItemId, request::getInstanceId);
+    log.info("createEcsRequestExternal:: itemId={}, instanceId={}",
+      request::getItemId, request::getInstanceId);
 
     fetchMissingRequestProperties(request);
 
@@ -52,7 +52,7 @@ public class EcsRequestExternalServiceImpl implements EcsRequestExternalService 
       tenantService.getCentralTenantId().orElseThrow(),
       () -> ecsTlrClient.createEcsExternalRequest(ecsRequestExternal));
     log.info("createExternalEcsTlr:: ECS TLR created: {}", ecsTlr::getId);
-    log.debug("createExternalEcsTlr:: ecsTlr: {}", ecsTlr);
+    log.debug("createExternalEcsTlr:: ecsTlrId={}", ecsTlr::getId);
 
     log.info("createExternalEcsTlr:: fetching primary request");
     return circulationClient.getRequestById(ecsTlr.getPrimaryRequestId());

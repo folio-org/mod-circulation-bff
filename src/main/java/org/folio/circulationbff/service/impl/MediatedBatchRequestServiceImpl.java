@@ -41,7 +41,7 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
 
   @Override
   public ResponseEntity<BatchRequestResponse> createMediatedBatchRequest(BatchRequest batchRequest) {
-    log.debug("createMediatedBatchRequest:: parameters batchRequest: {}", batchRequest);
+    log.debug("createMediatedBatchRequest:: processing batch request");
 
     return requestMediatedClient.postMediatedBatchRequest(batchRequest);
   }

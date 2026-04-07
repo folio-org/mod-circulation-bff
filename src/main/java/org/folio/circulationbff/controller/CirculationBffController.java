@@ -102,8 +102,7 @@ public class CirculationBffController implements CirculationBffApi {
 
   @Override
   public ResponseEntity<UserCollection> getExternalUsers(String externalUserId, String tenantId) {
-    log.info("getExternalUser:: externalUserId = {}, tenantId = {}", externalUserId,
-      tenantId);
+    log.info("getExternalUser:: tenantId = {}", tenantId);
 
     return ResponseEntity.status(HttpStatus.OK)
       .body(userService.getExternalUser(externalUserId, tenantId));
@@ -115,8 +114,8 @@ public class CirculationBffController implements CirculationBffApi {
     UUID requesterId, UUID itemId) {
 
     log.info("circulationBffRequestsAllowedServicePointsGet:: params: " +
-        "patronGroupId={}, operation={}, instanceId={}, requestId={}, requesterId={}, itemId={}",
-      patronGroupId, operation, instanceId, requestId, requesterId, itemId);
+        "patronGroupId={}, operation={}, instanceId={}, requestId={}, itemId={}",
+      patronGroupId, operation, instanceId, requestId, itemId);
 
     return ResponseEntity.status(HttpStatus.OK).body(circulationBffService.getAllowedServicePoints(
       AllowedServicePointParams.builder()
@@ -146,7 +145,7 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<MediatedRequest> saveAndConfirmMediatedRequest(
     MediatedRequest mediatedRequest) {
 
-    log.info("saveAndConfirmMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+    log.info("saveAndConfirmMediatedRequest:: processing mediated request");
 
     if (mediatedRequest.getId() != null) {
       return handleExistingRequest(mediatedRequest);
@@ -172,8 +171,8 @@ public class CirculationBffController implements CirculationBffApi {
 
     ResponseEntity<Void> updateResponse = mediatedRequestsService.updateMediatedRequest(mediatedRequest);
     if (!updateResponse.getStatusCode().equals(NO_CONTENT)) {
-      log.warn("handleExistingRequest:: the mediated request has not been updated, status: {}, " +
-        "message: {}", updateResponse.getStatusCode(), updateResponse.getBody());
+      log.warn("handleExistingRequest:: the mediated request has not been updated, status: {}",
+        updateResponse.getStatusCode());
       return ResponseEntity.status(updateResponse.getStatusCode()).build();
     }
     log.info("handleExistingRequest:: mediated request {} has been updated",
@@ -189,8 +188,8 @@ public class CirculationBffController implements CirculationBffApi {
       .saveMediatedRequest(mediatedRequest);
     var postResponseBody = createResponse.getBody();
     if (!createResponse.getStatusCode().equals(CREATED) || postResponseBody == null) {
-      log.warn("handleNewRequest:: failed to create new mediated request, status: {}, " +
-        "message: {}", createResponse.getStatusCode(), postResponseBody);
+      log.warn("handleNewRequest:: failed to create new mediated request, status: {}",
+        createResponse.getStatusCode());
 
       return ResponseEntity.status(createResponse.getStatusCode()).build();
     }
@@ -281,8 +280,8 @@ public class CirculationBffController implements CirculationBffApi {
     var response = mediatedBatchRequestService.createMediatedBatchRequest(batchRequest);
 
     if (!response.getStatusCode().equals(CREATED) || response.getBody() == null) {
-      log.warn("createBatchRequest:: failed to create new mediated batch request, status: {}, " +
-        "message: {}", response.getStatusCode(), response.getBody());
+      log.warn("createBatchRequest:: failed to create new mediated batch request, status: {}",
+        response.getStatusCode());
     }
 
     log.info("createBatchRequest:: mediated batch request has been created");
@@ -293,8 +292,8 @@ public class CirculationBffController implements CirculationBffApi {
   public ResponseEntity<BatchRequestResponse> getBatchRequestById(UUID batchId) {
     var response = mediatedBatchRequestService.retrieveMediatedBatchRequestById(batchId);
     if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
-      log.warn("getBatchRequestById:: failed to retrieve mediated batch request by id {}, status: {}, " +
-        "message: {}", batchId, response.getStatusCode(), response.getBody());
+      log.warn("getBatchRequestById:: failed to retrieve mediated batch request by id {}, status: {}",
+        batchId, response.getStatusCode());
     }
 
     return ResponseEntity.status(response.getStatusCode()).body(response.getBody());

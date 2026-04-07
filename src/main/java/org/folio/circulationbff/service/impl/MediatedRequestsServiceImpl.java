@@ -17,21 +17,21 @@ public class MediatedRequestsServiceImpl implements MediatedRequestsService {
 
   @Override
   public ResponseEntity<Void> updateMediatedRequest(MediatedRequest mediatedRequest) {
-    log.debug("updateMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+    log.debug("updateMediatedRequest:: processing mediated request");
 
     return requestMediatedClient.putRequestMediated(mediatedRequest.getId(), mediatedRequest);
   }
 
   @Override
   public ResponseEntity<MediatedRequest> saveMediatedRequest(MediatedRequest mediatedRequest) {
-    log.debug("saveMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+    log.debug("saveMediatedRequest:: processing mediated request");
 
     return requestMediatedClient.postRequestMediated(mediatedRequest);
   }
 
   @Override
   public ResponseEntity<Void> confirmMediatedRequest(MediatedRequest mediatedRequest) {
-    log.debug("confirmMediatedRequest:: parameters mediatedRequest: {}", mediatedRequest);
+    log.debug("confirmMediatedRequest:: processing mediated request");
 
     return requestMediatedClient.confirmRequestMediated(mediatedRequest.getId(), mediatedRequest);
   }
