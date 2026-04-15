@@ -1,8 +1,36 @@
-## 1.2.0-SNAPSHOT 202X-XX-XX
+## 1.2.0 2026-04-15
 
-* Add APIs to create and retrieve mediated multi-item batch requests ([MCBFF-139](https://folio-org.atlassian.net/browse/MCBFF-139))
-* Add endpoint to fetch circulation requests enriched with batch request info ([MCBFF-163](https://folio-org.atlassian.net/browse/MCBFF-163))\
-* Adjust endpoints retrieving Batch Request Details for Secure Tenant ([MCBFF-173](https://folio-org.atlassian.net/browse/MCBFF-173))
+* Remove sensitive data from logs (MCBFF-65)
+* Close secure-tenants loans after claimed-returned items check in (MCBFF-158)
+* Upgrade to Spring Boot 4.0 and Spring 7.0 (MCBFF-157)
+* Enable GitHub Workflows (MCBFF-172)
+* Fix custom tenant service enable/disable handling
+* Update batch-request DTOs and secure-tenant detail endpoints (MCBFF-173)
+* Update module descriptor and add enriched circulation-request endpoint (MCBFF-163)
+* Forward check-in requests to mod-requests-mediated (MCBFF-165)
+* Deliver mediated multi-item batch endpoints and schema fixes (MCBFF-139)
+* Fix module compilation on Windows (MCBFF-146)
+* Remove barcode quotes and add fetch-by-query endpoint (MCBFF-136)
+* Update requests-mediated-loans interface and mark missing API (MCBFF-133)
+* Search instances with `expandAll=true` (MCBFF-134)
+* Implement claim-item-returned API (MCBFF-115)
+* Search instances by itemId in batches (MCBFF-122)
+* Bump dev dependencies
+* Update `item-storage` interface version (MCBFF-116)
+* Set up Dependabot (MCBFF-103)
+* Update for split Search & Browse APIs (MCBFF-118)
+* Implement declare-item-lost API (MCBFF-114)
+* Refactor schemas and OpenAPI files (MCBFF-18)
+* Fix local builds (MCBFF-106)
+* Enrich items for secure tenants (MCBFF-104)
+* Handle duplicate item IDs in search responses (MCBFF-107)
+* Add missing tokens to due-date slip (MCBFF-102)
+* Forward secure-tenant check-outs to mod-requests-mediated (MCBFF-95)
+* Close secure-tenant loans on central check-in (MCBFF-90)
+* Support returns workflow for central check-in with holds (MCBFF-88)
+* Add discoveryDisplayName to allowed service points (MCBFF-93)
+* Add location and loan-type fields to requests/search-instances (MCBFF-87)
+* Populate call number from holdings when item value is empty (MCBFF-75)
 
 ## 1.1.0 2025-03-13
 
