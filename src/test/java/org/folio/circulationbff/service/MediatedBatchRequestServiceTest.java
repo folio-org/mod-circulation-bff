@@ -260,4 +260,72 @@ class MediatedBatchRequestServiceTest {
     assertThat(response.getInstance().getId(), is(instanceId.toString()));
     assertThat(response.getInstance().getTitle(), is(nullValue()));
   }
+
+  @Test
+  void retrieveBatchRequestDetailsReturnsNullWhenClientReturnsNull() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(null);
+
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, 0, 5);
+
+    assertThat(response, is(nullValue()));
+  }
+
+  @Test
+  void resolveInstanceReturnsOnlyIdWhenSearchReturnsNull() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+    var centralTenantId = "consortium";
+
+    var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of());
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(batchDetails);
+    when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
+      .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
+    when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(null);
+
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, 0, 5);
+
+    assertThat(response.getInstance(), is(notNullValue()));
+    assertThat(response.getInstance().getId(), is(instanceId.toString()));
+    assertThat(response.getInstance().getTitle(), is(nullValue()));
+  }
+
+  @Test
+  void retrieveBatchRequestDetailsResolvesInstanceAndUpdatesConfirmedRequestIdForSecureTenant() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+    var offset = 0;
+    var limit = 5;
+    var centralTenantId = "consortium";
+    var mediatedRequestId = UUID.randomUUID().toString();
+    var circulationRequestId = UUID.randomUUID().toString();
+    var title = "Interesting Times";
+
+    var detail = new BatchRequestDetail().confirmedRequestId(mediatedRequestId);
+    var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of(detail));
+    var searchInstances = new SearchInstances()
+      .instances(List.of(new SearchInstance().id(instanceId.toString()).title(title)));
+    var mediatedRequest = new MediatedRequest()
+      .id(mediatedRequestId)
+      .confirmedRequestId(circulationRequestId);
+    var mediatedRequests = new MediatedRequests().mediatedRequests(List.of(mediatedRequest));
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
+    when(tenantService.isCurrentTenantSecure()).thenReturn(true);
+    when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
+    when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
+      .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
+    when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
+
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, offset, limit);
+
+    assertThat(response.getMediatedBatchRequestDetails().getFirst().getConfirmedRequestId(), is(circulationRequestId));
+    assertThat(response.getInstance(), is(notNullValue()));
+    assertThat(response.getInstance().getTitle(), is(title));
+  }
 }
