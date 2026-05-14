@@ -2,14 +2,19 @@ package org.folio.circulationbff.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.folio.circulationbff.client.RequestMediatedClient;
+import org.folio.circulationbff.client.SearchInstancesClient;
 import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestDetail;
@@ -17,7 +22,10 @@ import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
 import org.folio.circulationbff.domain.dto.MediatedRequests;
+import org.folio.circulationbff.domain.dto.SearchInstance;
+import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.service.impl.MediatedBatchRequestServiceImpl;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +41,10 @@ class MediatedBatchRequestServiceTest {
   private RequestMediatedClient requestMediatedClient;
   @Mock
   private TenantService tenantService;
+  @Mock
+  private SearchInstancesClient searchInstancesClient;
+  @Mock
+  private SystemUserScopedExecutionService executionService;
 
   @InjectMocks
   private MediatedBatchRequestServiceImpl service;
@@ -94,7 +106,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(expectedDetails);
 
-    var response = service.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+    var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
     assertThat(response, is(expectedDetails));
     verify(requestMediatedClient).getMediatedBatchRequestDetails(batchId, limit, offset);
@@ -122,7 +134,7 @@ class MediatedBatchRequestServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
 
-    var response = service.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+    var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
     assertThat(response.getMediatedBatchRequestDetails().getFirst().getConfirmedRequestId(), is(circulationRequestId));
   }
@@ -142,7 +154,7 @@ class MediatedBatchRequestServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
 
-    var response = service.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+    var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
     assertThat(response.getMediatedBatchRequestDetails().getFirst().getConfirmedRequestId(), is(nullValue()));
   }
@@ -169,7 +181,7 @@ class MediatedBatchRequestServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
 
-    var response = service.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+    var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
     assertThat(response.getMediatedBatchRequestDetails().get(0).getConfirmedRequestId(), is(nullValue()));
     assertThat(response.getMediatedBatchRequestDetails().get(1).getConfirmedRequestId(), is(circulationRequestId));
@@ -194,8 +206,58 @@ class MediatedBatchRequestServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
 
-    var response = service.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+    var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
     assertThat(response.getMediatedBatchRequestDetails().getFirst().getConfirmedRequestId(), is(nullValue()));
+  }
+
+  @Test
+  void retrieveBatchRequestDetailsResolvesInstanceFromCentralTenant() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+    var offset = 0;
+    var limit = 5;
+    var centralTenantId = "consortium";
+    var title = "Interesting Times";
+
+    var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of());
+    var searchInstances = new SearchInstances()
+      .instances(List.of(new SearchInstance().id(instanceId.toString()).title(title)));
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
+    when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
+      .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
+    when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
+
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, offset, limit);
+
+    assertThat(response.getInstance(), is(notNullValue()));
+    assertThat(response.getInstance().getId(), is(instanceId.toString()));
+    assertThat(response.getInstance().getTitle(), is(title));
+  }
+
+  @Test
+  void retrieveBatchRequestDetailsHandlesMissingInstanceFromCentralTenant() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+    var offset = 0;
+    var limit = 5;
+    var centralTenantId = "consortium";
+
+    var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of());
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
+    when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
+      .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
+    when(searchInstancesClient.findInstances("id==" + instanceId, true))
+      .thenReturn(new SearchInstances().instances(List.of()));
+
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, offset, limit);
+
+    assertThat(response.getInstance(), is(notNullValue()));
+    assertThat(response.getInstance().getId(), is(instanceId.toString()));
+    assertThat(response.getInstance().getTitle(), is(nullValue()));
   }
 }

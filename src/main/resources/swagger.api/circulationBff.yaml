@@ -15,7 +15,7 @@ paths:
     $ref: 'paths/multiItemBatchRequest.yaml'
   /circulation-bff/batch-requests/{batchId}:
     $ref: 'paths/getMultiItemBatchRequest.yaml'
-  /circulation-bff/batch-requests/{batchId}/details:
+  /circulation-bff/instance/{instanceId}/batch-requests/{batchId}/details:
     $ref: 'paths/getMultiItemBatchRequestDetails.yaml'
   /circulation-bff/loans:
     $ref: 'paths/loans.yaml'

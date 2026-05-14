@@ -4,6 +4,13 @@ get:
   tags:
     - multiItemBatchRequests
   parameters:
+    - name: instanceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The UUID of the instance whose details are being requested
     - name: batchId
       in: path
       required: true

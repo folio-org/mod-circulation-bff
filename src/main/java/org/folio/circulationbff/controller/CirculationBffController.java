@@ -306,8 +306,8 @@ public class CirculationBffController implements CirculationBffApi {
   }
 
   @Override
-  public ResponseEntity<BatchRequestDetailsResponse> getMultiItemBatchRequestDetailsByBatchId(UUID batchId, Integer offset, Integer limit) {
-    var batchRequestDetails = mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(batchId, offset, limit);
+  public ResponseEntity<BatchRequestDetailsResponse> getMultiItemBatchRequestDetailsByBatchId(UUID instanceId, UUID batchId, Integer offset, Integer limit) {
+    var batchRequestDetails = mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(instanceId, batchId, offset, limit);
     return ResponseEntity.ok(batchRequestDetails);
   }
 
