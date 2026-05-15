@@ -186,6 +186,16 @@
           "methods": [
             "GET"
           ],
+          "pathPattern": "/circulation-bff/batch-requests/{batchRequestId}/details",
+          "permissionsRequired": ["circulation-bff.batch-request.details.collection.get"],
+          "modulePermissions": [
+            "requests-mediated.batch-mediated-requests.batch-details.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/circulation-bff/instance/{instanceId}/batch-requests/{batchRequestId}/details",
           "permissionsRequired": ["circulation-bff.batch-request.details.collection.get"],
           "modulePermissions": [
