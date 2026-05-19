@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -226,6 +227,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
@@ -249,6 +251,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true))
@@ -283,6 +286,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(null);
@@ -318,6 +322,7 @@ class MediatedBatchRequestServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
@@ -327,5 +332,44 @@ class MediatedBatchRequestServiceTest {
     assertThat(response.getMediatedBatchRequestDetails().getFirst().getConfirmedRequestId(), is(circulationRequestId));
     assertThat(response.getInstance(), is(notNullValue()));
     assertThat(response.getInstance().getTitle(), is(title));
+  }
+
+  @Test
+  void resolveInstanceThrowsWhenCalledFromMemberTenantInEcsEnvironment() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+    var centralTenantId = "consortium";
+
+    var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of());
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(batchDetails);
+    when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
+    when(tenantService.isCurrentTenantCentral()).thenReturn(false);
+    when(tenantService.getCurrentTenantId()).thenReturn("member-tenant");
+
+    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+      () -> service.retrieveMediatedBatchRequestDetails(instanceId, batchId, 0, 5));
+  }
+
+  @Test
+  void resolveInstanceReadsDirectlyFromCurrentTenantInNonEcsEnvironment() {
+    var instanceId = UUID.randomUUID();
+    var batchId = UUID.randomUUID();
+    var title = "Some Book";
+
+    var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of());
+    var searchInstances = new SearchInstances()
+      .instances(List.of(new SearchInstance().id(instanceId.toString()).title(title)));
+
+    when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(batchDetails);
+    when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.empty());
+    when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
+
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, 0, 5);
+
+    assertThat(response.getInstance(), is(notNullValue()));
+    assertThat(response.getInstance().getId(), is(instanceId.toString()));
+    assertThat(response.getInstance().getTitle(), is(title));
+    verifyNoInteractions(executionService);
   }
 }

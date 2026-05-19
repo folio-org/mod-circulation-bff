@@ -81,9 +81,23 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
   }
 
   private BatchRequestDetailsResponseInstance resolveInstance(UUID instanceId) {
-    log.info("resolveInstance:: resolving instance {} from central tenant", instanceId);
-    var centralTenantId = tenantService.getCentralTenantId().orElseThrow();
-    SearchInstance searchInstance = executionService.executeSystemUserScoped(centralTenantId, () -> {
+    var searchInstance = tenantService.getCentralTenantId()
+      .map(centralTenantId -> fetchInstanceFromCentralTenant(instanceId, centralTenantId))
+      .orElseGet(() -> fetchInstanceFromCurrentTenant(instanceId));
+
+    return new BatchRequestDetailsResponseInstance()
+      .id(instanceId.toString())
+      .title(searchInstance != null ? searchInstance.getTitle() : null);
+  }
+
+  private SearchInstance fetchInstanceFromCentralTenant(UUID instanceId, String centralTenantId) {
+    if (!tenantService.isCurrentTenantCentral()) {
+      throw new IllegalStateException(
+        "resolveInstance:: instance resolution must be performed via central tenant in ECS environment, current: " + tenantService.getCurrentTenantId());
+    }
+    log.info("resolveInstance:: ECS environment, resolving instance {} from central tenant {}", instanceId, centralTenantId);
+
+    return executionService.executeSystemUserScoped(centralTenantId, () -> {
       SearchInstances result = searchInstancesClient.findInstances("id==" + instanceId, true);
       if (result == null || CollectionUtils.isEmpty(result.getInstances())) {
         log.warn("resolveInstance:: instance {} not found in central tenant {}", instanceId, centralTenantId);
@@ -91,12 +105,16 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
       }
       return result.getInstances().getFirst();
     });
+  }
 
-    var instance = new BatchRequestDetailsResponseInstance().id(instanceId.toString());
-    if (searchInstance != null) {
-      instance.setTitle(searchInstance.getTitle());
+  private SearchInstance fetchInstanceFromCurrentTenant(UUID instanceId) {
+    log.info("resolveInstance:: non-ECS environment, resolving instance {} from current tenant", instanceId);
+    SearchInstances result = searchInstancesClient.findInstances("id==" + instanceId, true);
+    if (result == null || CollectionUtils.isEmpty(result.getInstances())) {
+      log.warn("resolveInstance:: instance {} not found", instanceId);
+      return null;
     }
-    return instance;
+    return result.getInstances().getFirst();
   }
 
   private void updateConfirmedRequestId(BatchRequestDetailsResponse batchDetails) {
