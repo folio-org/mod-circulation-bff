@@ -296,14 +296,15 @@ class CirculationBffControllerTest {
 
   @Test
   void getMultiItemBatchRequestDetailsByBatchIdReturnsOkResponse() {
+    var instanceId = UUID.randomUUID();
     var batchId = UUID.randomUUID();
     var offset = 0;
     var limit = 5;
     var detailsResponse = new BatchRequestDetailsResponse();
 
-    when(mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(batchId, offset, limit)).thenReturn(detailsResponse);
+    when(mediatedBatchRequestService.retrieveMediatedBatchRequestDetails(instanceId, batchId, offset, limit)).thenReturn(detailsResponse);
 
-    var response = controller.getMultiItemBatchRequestDetailsByBatchId(batchId, offset, limit);
+    var response = controller.getMultiItemBatchRequestDetailsByBatchId(instanceId, batchId, offset, limit);
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), is(detailsResponse));
