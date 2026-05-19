@@ -9,6 +9,17 @@ properties:
   totalRecords:
     description: Total number of requests
     type: integer
+  instance:
+    description: Instance data resolved for the requested instance id
+    type: object
+    properties:
+      id:
+        description: UUID of the instance
+        $ref: '../../dto/common/uuid.yaml'
+      title:
+        description: Title of the instance
+        type: string
+    additionalProperties: false
 additionalProperties: false
 required:
   - mediatedBatchRequestDetails

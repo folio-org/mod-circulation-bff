@@ -376,6 +376,15 @@ public class MockHelper {
       .willReturn(jsonResponse(asJsonString(response), SC_OK)));
   }
 
+  public void mockSearchInstanceForBatchDetails(String instanceId, String title) {
+    var searchInstance = new SearchInstance().id(instanceId).title(title);
+    var searchInstances = new org.folio.circulationbff.domain.dto.SearchInstances()
+      .instances(List.of(searchInstance));
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo("/search/instances"))
+      .withQueryParam("query", equalTo("id==" + instanceId))
+      .willReturn(jsonResponse(asJsonString(searchInstances), SC_OK)));
+  }
+
   public static void mockSystemUserService(SystemUserScopedExecutionService systemUserService) {
     doAnswer(invocation -> ((Callable<?>) invocation.getArguments()[1]).call())
       .when(systemUserService).executeSystemUserScoped(anyString(), any(Callable.class));

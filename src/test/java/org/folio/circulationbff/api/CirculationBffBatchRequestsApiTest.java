@@ -13,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.UUID;
 import lombok.SneakyThrows;
+import org.folio.circulationbff.domain.dto.UserTenant;
+import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.util.MockHelper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -79,7 +81,7 @@ class CirculationBffBatchRequestsApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void getMultiItemBatchRequestDetailsByBatchIdReturnsOk() {
+  void getMultiItemBatchRequestDetailsByBatchIdLegacyReturnsOk() {
     var batchId = UUID.randomUUID().toString();
     var offset = "0";
     var limit = "5";
@@ -97,5 +99,39 @@ class CirculationBffBatchRequestsApiTest extends BaseIT {
     wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
       .withQueryParam("offset", equalTo(offset))
       .withQueryParam("limit", equalTo(limit)));
+  }
+
+  @Test
+  @SneakyThrows
+  void getMultiItemBatchRequestDetailsByBatchIdReturnsOk() {
+    var instanceId = UUID.randomUUID().toString();
+    var batchId = UUID.randomUUID().toString();
+    var offset = "0";
+    var limit = "5";
+    var detailsResponse = MockHelper.buildBatchRequestDetailsResponse();
+    mockHelper.mockGetMultiItemBatchRequestDetails(batchId, offset, limit, detailsResponse);
+    mockHelper.mockUserTenants(buildConsortiumUserTenants(), TENANT_ID_CONSORTIUM);
+    mockHelper.mockSearchInstanceForBatchDetails(instanceId, "Interesting Times");
+
+    mockMvc.perform(get("/circulation-bff/instance/" + instanceId + "/batch-requests/" + batchId + "/details")
+        .queryParam("offset", offset)
+        .queryParam("limit", limit)
+        .headers(defaultHeaders()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.mediatedBatchRequestDetails[0].itemId",
+        is(detailsResponse.getMediatedBatchRequestDetails().getFirst().getItemId())))
+      .andExpect(jsonPath("$.instance.id", is(instanceId)))
+      .andExpect(jsonPath("$.instance.title", is("Interesting Times")));
+
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
+      .withQueryParam("offset", equalTo(offset))
+      .withQueryParam("limit", equalTo(limit)));
+  }
+
+  private static UserTenantCollection buildConsortiumUserTenants() {
+    var userTenant = new UserTenant()
+      .tenantId(TENANT_ID_CONSORTIUM)
+      .centralTenantId(TENANT_ID_CONSORTIUM);
+    return new UserTenantCollection().addUserTenantsItem(userTenant);
   }
 }

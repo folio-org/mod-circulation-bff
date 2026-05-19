@@ -11,5 +11,5 @@ public interface MediatedBatchRequestService {
   ResponseEntity<BatchRequestResponse> createMediatedBatchRequest(BatchRequest batchRequest);
   ResponseEntity<BatchRequestResponse> retrieveMediatedBatchRequestById(UUID batchRequestId);
   BatchRequestCollectionResponse retrieveMediatedBatchRequestsByQuery(String query, Integer offset, Integer limit);
-  BatchRequestDetailsResponse retrieveMediatedBatchRequestDetails(UUID batchRequestId, Integer offset, Integer limit);
+  BatchRequestDetailsResponse retrieveMediatedBatchRequestDetails(UUID instanceId, UUID batchRequestId, Integer offset, Integer limit);
 }
