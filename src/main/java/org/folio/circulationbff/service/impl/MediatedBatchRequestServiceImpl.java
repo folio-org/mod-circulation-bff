@@ -91,12 +91,7 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
   }
 
   private SearchInstance fetchInstanceFromCentralTenant(UUID instanceId, String centralTenantId) {
-    if (!tenantService.isCurrentTenantCentral()) {
-      throw new IllegalStateException(
-        "resolveInstance:: instance resolution must be performed via central tenant in ECS environment, current: " + tenantService.getCurrentTenantId());
-    }
     log.info("resolveInstance:: ECS environment, resolving instance {} from central tenant {}", instanceId, centralTenantId);
-
     return executionService.executeSystemUserScoped(centralTenantId, () -> {
       SearchInstances result = searchInstancesClient.findInstances("id==" + instanceId, true);
       if (result == null || CollectionUtils.isEmpty(result.getInstances())) {
