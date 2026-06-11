@@ -227,7 +227,6 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
-    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
@@ -251,7 +250,6 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
-    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true))
@@ -286,7 +284,6 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
-    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(null);
@@ -322,7 +319,6 @@ class MediatedBatchRequestServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
-    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
     when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
@@ -335,20 +331,28 @@ class MediatedBatchRequestServiceTest {
   }
 
   @Test
-  void resolveInstanceThrowsWhenCalledFromMemberTenantInEcsEnvironment() {
+  void resolveInstanceFetchesFromCentralTenantWhenCalledFromMemberTenantInEcsEnvironment() {
     var instanceId = UUID.randomUUID();
     var batchId = UUID.randomUUID();
     var centralTenantId = "consortium";
+    var title = "Interesting Times";
 
     var batchDetails = new BatchRequestDetailsResponse().mediatedBatchRequestDetails(List.of());
+    var searchInstances = new SearchInstances()
+      .instances(List.of(new SearchInstance().id(instanceId.toString()).title(title)));
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, 5, 0)).thenReturn(batchDetails);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
-    when(tenantService.isCurrentTenantCentral()).thenReturn(false);
-    when(tenantService.getCurrentTenantId()).thenReturn("member-tenant");
+    when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
+      .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
+    when(searchInstancesClient.findInstances("id==" + instanceId, true)).thenReturn(searchInstances);
 
-    org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
-      () -> service.retrieveMediatedBatchRequestDetails(instanceId, batchId, 0, 5));
+    var response = service.retrieveMediatedBatchRequestDetails(instanceId, batchId, 0, 5);
+
+    assertThat(response.getInstance(), is(notNullValue()));
+    assertThat(response.getInstance().getId(), is(instanceId.toString()));
+    assertThat(response.getInstance().getTitle(), is(title));
+    verify(executionService).executeSystemUserScoped(eq(centralTenantId), any(Callable.class));
   }
 
   @Test

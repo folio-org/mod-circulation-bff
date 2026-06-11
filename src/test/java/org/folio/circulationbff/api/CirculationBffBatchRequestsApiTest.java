@@ -128,6 +128,68 @@ class CirculationBffBatchRequestsApiTest extends BaseIT {
       .withQueryParam("limit", equalTo(limit)));
   }
 
+  @Test
+  @SneakyThrows
+  void getMultiItemBatchRequestDetailsByBatchIdFromMemberTenantReturnsOk() {
+    var instanceId = UUID.randomUUID().toString();
+    var batchId = UUID.randomUUID().toString();
+    var offset = "0";
+    var limit = "5";
+    var detailsResponse = MockHelper.buildBatchRequestDetailsResponse();
+    mockHelper.mockGetMultiItemBatchRequestDetails(batchId, offset, limit, detailsResponse);
+
+    var userTenant = new UserTenant()
+      .tenantId(TENANT_ID_COLLEGE)
+      .centralTenantId(TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(new UserTenantCollection().addUserTenantsItem(userTenant), TENANT_ID_COLLEGE);
+    mockHelper.mockSearchInstanceForBatchDetails(instanceId, "Interesting Times");
+
+    mockMvc.perform(get("/circulation-bff/instance/" + instanceId + "/batch-requests/" + batchId + "/details")
+        .queryParam("offset", offset)
+        .queryParam("limit", limit)
+        .headers(buildHeaders(TENANT_ID_COLLEGE)))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.mediatedBatchRequestDetails[0].itemId",
+        is(detailsResponse.getMediatedBatchRequestDetails().getFirst().getItemId())))
+      .andExpect(jsonPath("$.instance.id", is(instanceId)))
+      .andExpect(jsonPath("$.instance.title", is("Interesting Times")));
+
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
+      .withQueryParam("offset", equalTo(offset))
+      .withQueryParam("limit", equalTo(limit)));
+  }
+
+  @Test
+  @SneakyThrows
+  void getMultiItemBatchRequestDetailsByBatchIdFromSecureTenantReturnsOk() {
+    var instanceId = UUID.randomUUID().toString();
+    var batchId = UUID.randomUUID().toString();
+    var offset = "0";
+    var limit = "5";
+    var detailsResponse = MockHelper.buildBatchRequestDetailsResponse();
+    mockHelper.mockGetMultiItemBatchRequestDetails(batchId, offset, limit, detailsResponse);
+
+    var userTenant = new UserTenant()
+      .tenantId(TENANT_ID_SECURE)
+      .centralTenantId(TENANT_ID_CONSORTIUM);
+    mockHelper.mockUserTenants(new UserTenantCollection().addUserTenantsItem(userTenant), TENANT_ID_SECURE);
+    mockHelper.mockSearchInstanceForBatchDetails(instanceId, "Interesting Times");
+
+    mockMvc.perform(get("/circulation-bff/instance/" + instanceId + "/batch-requests/" + batchId + "/details")
+        .queryParam("offset", offset)
+        .queryParam("limit", limit)
+        .headers(buildHeaders(TENANT_ID_SECURE)))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.mediatedBatchRequestDetails[0].itemId",
+        is(detailsResponse.getMediatedBatchRequestDetails().getFirst().getItemId())))
+      .andExpect(jsonPath("$.instance.id", is(instanceId)))
+      .andExpect(jsonPath("$.instance.title", is("Interesting Times")));
+
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
+      .withQueryParam("offset", equalTo(offset))
+      .withQueryParam("limit", equalTo(limit)));
+  }
+
   private static UserTenantCollection buildConsortiumUserTenants() {
     var userTenant = new UserTenant()
       .tenantId(TENANT_ID_CONSORTIUM)
