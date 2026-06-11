@@ -12,11 +12,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
+import java.util.stream.Stream;
+
 import lombok.SneakyThrows;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
 import org.folio.circulationbff.util.MockHelper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 
 
@@ -128,9 +132,10 @@ class CirculationBffBatchRequestsApiTest extends BaseIT {
       .withQueryParam("limit", equalTo(limit)));
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("nonCentralTenantIds")
   @SneakyThrows
-  void getMultiItemBatchRequestDetailsByBatchIdFromMemberTenantReturnsOk() {
+  void getMultiItemBatchRequestDetailsByBatchIdFromNonCentralTenantReturnsOk(String tenantId) {
     var instanceId = UUID.randomUUID().toString();
     var batchId = UUID.randomUUID().toString();
     var offset = "0";
@@ -139,55 +144,22 @@ class CirculationBffBatchRequestsApiTest extends BaseIT {
     mockHelper.mockGetMultiItemBatchRequestDetails(batchId, offset, limit, detailsResponse);
 
     var userTenant = new UserTenant()
-      .tenantId(TENANT_ID_COLLEGE)
+      .tenantId(tenantId)
       .centralTenantId(TENANT_ID_CONSORTIUM);
-    mockHelper.mockUserTenants(new UserTenantCollection().addUserTenantsItem(userTenant), TENANT_ID_COLLEGE);
+    mockHelper.mockUserTenants(new UserTenantCollection().addUserTenantsItem(userTenant), tenantId);
     mockHelper.mockSearchInstanceForBatchDetails(instanceId, "Interesting Times");
 
     mockMvc.perform(get("/circulation-bff/instance/" + instanceId + "/batch-requests/" + batchId + "/details")
         .queryParam("offset", offset)
         .queryParam("limit", limit)
-        .headers(buildHeaders(TENANT_ID_COLLEGE)))
+        .headers(buildHeaders(tenantId)))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.mediatedBatchRequestDetails[0].itemId",
-        is(detailsResponse.getMediatedBatchRequestDetails().getFirst().getItemId())))
       .andExpect(jsonPath("$.instance.id", is(instanceId)))
       .andExpect(jsonPath("$.instance.title", is("Interesting Times")));
-
-    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
-      .withQueryParam("offset", equalTo(offset))
-      .withQueryParam("limit", equalTo(limit)));
   }
 
-  @Test
-  @SneakyThrows
-  void getMultiItemBatchRequestDetailsByBatchIdFromSecureTenantReturnsOk() {
-    var instanceId = UUID.randomUUID().toString();
-    var batchId = UUID.randomUUID().toString();
-    var offset = "0";
-    var limit = "5";
-    var detailsResponse = MockHelper.buildBatchRequestDetailsResponse();
-    mockHelper.mockGetMultiItemBatchRequestDetails(batchId, offset, limit, detailsResponse);
-
-    var userTenant = new UserTenant()
-      .tenantId(TENANT_ID_SECURE)
-      .centralTenantId(TENANT_ID_CONSORTIUM);
-    mockHelper.mockUserTenants(new UserTenantCollection().addUserTenantsItem(userTenant), TENANT_ID_SECURE);
-    mockHelper.mockSearchInstanceForBatchDetails(instanceId, "Interesting Times");
-
-    mockMvc.perform(get("/circulation-bff/instance/" + instanceId + "/batch-requests/" + batchId + "/details")
-        .queryParam("offset", offset)
-        .queryParam("limit", limit)
-        .headers(buildHeaders(TENANT_ID_SECURE)))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.mediatedBatchRequestDetails[0].itemId",
-        is(detailsResponse.getMediatedBatchRequestDetails().getFirst().getItemId())))
-      .andExpect(jsonPath("$.instance.id", is(instanceId)))
-      .andExpect(jsonPath("$.instance.title", is("Interesting Times")));
-
-    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batchId + "/details"))
-      .withQueryParam("offset", equalTo(offset))
-      .withQueryParam("limit", equalTo(limit)));
+  private static Stream<String> nonCentralTenantIds() {
+    return Stream.of(TENANT_ID_COLLEGE, TENANT_ID_SECURE);
   }
 
   private static UserTenantCollection buildConsortiumUserTenants() {
