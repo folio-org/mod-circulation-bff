@@ -150,7 +150,7 @@
     },
     {
       "id": "circulation-bff-requests-batch",
-      "version": "1.0",
+      "version": "1.1",
       "handlers": [
         {
           "methods": [
@@ -190,6 +190,18 @@
           "permissionsRequired": ["circulation-bff.batch-request.details.collection.get"],
           "modulePermissions": [
             "requests-mediated.batch-mediated-requests.batch-details.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/circulation-bff/instance/{instanceId}/batch-requests/{batchRequestId}/details",
+          "permissionsRequired": ["circulation-bff.batch-request.details.collection.get"],
+          "modulePermissions": [
+            "requests-mediated.batch-mediated-requests.batch-details.collection.get",
+            "search.instances.collection.get",
+            "user-tenants.collection.get"
           ]
         }
       ]

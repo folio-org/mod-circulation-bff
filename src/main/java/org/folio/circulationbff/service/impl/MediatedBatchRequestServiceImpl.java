@@ -15,15 +15,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.client.RequestMediatedClient;
+import org.folio.circulationbff.client.SearchInstancesClient;
 import org.folio.circulationbff.domain.dto.BatchRequest;
 import org.folio.circulationbff.domain.dto.BatchRequestCollectionResponse;
 import org.folio.circulationbff.domain.dto.BatchRequestDetail;
 import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponse;
+import org.folio.circulationbff.domain.dto.BatchRequestDetailsResponseInstance;
 import org.folio.circulationbff.domain.dto.BatchRequestResponse;
 import org.folio.circulationbff.domain.dto.MediatedRequest;
+import org.folio.circulationbff.domain.dto.SearchInstance;
+import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.service.MediatedBatchRequestService;
 import org.folio.circulationbff.service.TenantService;
 import org.folio.circulationbff.support.CqlQuery;
+import org.folio.spring.service.SystemUserScopedExecutionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -35,6 +40,8 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
 
   private final RequestMediatedClient requestMediatedClient;
   private final TenantService tenantService;
+  private final SearchInstancesClient searchInstancesClient;
+  private final SystemUserScopedExecutionService executionService;
 
   @Value("${folio.batch-requests.query-request-ids-count}")
   private Integer batchRequestDetailsQueryIdsSize;
@@ -57,7 +64,7 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
   }
 
   @Override
-  public BatchRequestDetailsResponse retrieveMediatedBatchRequestDetails(UUID batchRequestId, Integer offset, Integer limit) {
+  public BatchRequestDetailsResponse retrieveMediatedBatchRequestDetails(UUID instanceId, UUID batchRequestId, Integer offset, Integer limit) {
     var batchDetails = requestMediatedClient.getMediatedBatchRequestDetails(batchRequestId, limit, offset);
     if (batchDetails != null && isNotEmpty(batchDetails.getMediatedBatchRequestDetails()) && tenantService.isCurrentTenantSecure()) {
       // batch requests created with secure tenant will not have circulation request id in confirmedRequestId field, but it would be
@@ -66,7 +73,43 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
       updateConfirmedRequestId(batchDetails);
     }
 
+    if (batchDetails != null && instanceId != null) {
+      batchDetails.setInstance(resolveInstance(instanceId));
+    }
+
     return batchDetails;
+  }
+
+  private BatchRequestDetailsResponseInstance resolveInstance(UUID instanceId) {
+    var searchInstance = tenantService.getCentralTenantId()
+      .map(centralTenantId -> fetchInstanceFromCentralTenant(instanceId, centralTenantId))
+      .orElseGet(() -> fetchInstanceFromCurrentTenant(instanceId));
+
+    return new BatchRequestDetailsResponseInstance()
+      .id(instanceId.toString())
+      .title(searchInstance != null ? searchInstance.getTitle() : null);
+  }
+
+  private SearchInstance fetchInstanceFromCentralTenant(UUID instanceId, String centralTenantId) {
+    log.info("resolveInstance:: ECS environment, resolving instance {} from central tenant {}", instanceId, centralTenantId);
+    return executionService.executeSystemUserScoped(centralTenantId, () -> {
+      SearchInstances result = searchInstancesClient.findInstances("id==" + instanceId, true);
+      if (result == null || CollectionUtils.isEmpty(result.getInstances())) {
+        log.warn("resolveInstance:: instance {} not found in central tenant {}", instanceId, centralTenantId);
+        return null;
+      }
+      return result.getInstances().getFirst();
+    });
+  }
+
+  private SearchInstance fetchInstanceFromCurrentTenant(UUID instanceId) {
+    log.info("resolveInstance:: non-ECS environment, resolving instance {} from current tenant", instanceId);
+    SearchInstances result = searchInstancesClient.findInstances("id==" + instanceId, true);
+    if (result == null || CollectionUtils.isEmpty(result.getInstances())) {
+      log.warn("resolveInstance:: instance {} not found", instanceId);
+      return null;
+    }
+    return result.getInstances().getFirst();
   }
 
   private void updateConfirmedRequestId(BatchRequestDetailsResponse batchDetails) {

@@ -1,3 +1,6 @@
+## 1.2.1 2026-06-25
+* Resolve instance for batch details endpoint (MCBFF-186)
+
 ## 1.2.0 2026-04-15
 
 * Remove sensitive data from logs (MCBFF-65)

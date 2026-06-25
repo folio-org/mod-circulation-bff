@@ -1,16 +1,9 @@
 get:
-  description: Retrieve multi-item batch request details by batch id
-  operationId: getMultiItemBatchRequestDetailsByBatchId
+  description: Retrieve multi-item batch request details by batch id (deprecated, use /instance/{instanceId}/batch-requests/{batchId}/details instead)
+  operationId: getMultiItemBatchRequestDetailsByBatchIdLegacy
   tags:
     - multiItemBatchRequests
   parameters:
-    - name: instanceId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: The UUID of the instance whose details are being requested
     - name: batchId
       in: path
       required: true
@@ -27,9 +20,6 @@ get:
         application/json:
           schema:
             $ref: "../schemas/response/batch/batchRequestDetailsResponse.yaml"
-          examples:
-            objectExample:
-              externalValue: '../examples/response/mediatedBatchRequestDetails.json'
     '400':
       $ref: '../responses/badRequestResponse.yaml'
     '404':
