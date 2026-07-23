@@ -17,6 +17,8 @@ import java.util.UUID;
 import org.folio.circulationbff.client.CheckInClient;
 import org.folio.circulationbff.client.CirculationItemClient;
 import org.folio.circulationbff.client.HoldingsStorageClient;
+import org.folio.circulationbff.client.LoanTypeClient;
+import org.folio.circulationbff.client.MaterialTypeClient;
 import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
@@ -52,6 +54,10 @@ class CheckInServiceTest {
   private HoldingsStorageClient holdingsStorageClient;
   @Mock
   private RequestMediatedClient requestMediatedClient;
+  @Mock
+  private MaterialTypeClient materialTypeClient;
+  @Mock
+  private LoanTypeClient loanTypeClient;
   @Mock
   private SettingsService settingsService;
   @Mock
