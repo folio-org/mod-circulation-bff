@@ -1,5 +1,6 @@
 ## 1.2.1 2026-06-25
 * Resolve instance for batch details endpoint (MCBFF-186)
+* Populate staff slip material type and loan type with names instead of IDs (MCBFF-195)
 
 ## 1.2.0 2026-04-15
 
