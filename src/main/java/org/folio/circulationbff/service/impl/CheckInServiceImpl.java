@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.circulationbff.client.CheckInClient;
 import org.folio.circulationbff.client.CirculationItemClient;
 import org.folio.circulationbff.client.HoldingsStorageClient;
+import org.folio.circulationbff.client.LoanTypeClient;
+import org.folio.circulationbff.client.MaterialTypeClient;
 import org.folio.circulationbff.client.RequestMediatedClient;
 import org.folio.circulationbff.domain.dto.CheckInRequest;
 import org.folio.circulationbff.domain.dto.CheckInResponse;
@@ -53,6 +55,8 @@ public class CheckInServiceImpl implements CheckInService {
   private final CirculationItemClient circulationItemClient;
   private final HoldingsStorageClient holdingsStorageClient;
   private final RequestMediatedClient requestMediatedClient;
+  private final MaterialTypeClient materialTypeClient;
+  private final LoanTypeClient loanTypeClient;
 
   private final SettingsService settingsService;
   private final TenantService tenantService;
@@ -309,8 +313,8 @@ public class CheckInServiceImpl implements CheckInService {
       .yearCaption(item.getYearCaption() != null
         ? String.join("; ", item.getYearCaption())
         : null)
-      .loanType(item.getPermanentLoanTypeId())
-      .materialType(item.getMaterialTypeId())
+      .loanType(fetchLoanTypeName(item.getPermanentLoanTypeId()))
+      .materialType(fetchMaterialTypeName(item.getMaterialTypeId()))
       .numberOfPieces(item.getNumberOfPieces())
       .descriptionOfPieces(item.getDescriptionOfPieces())
       .lastCheckedInDateTime(item.getLastCheckIn() != null
@@ -337,6 +341,24 @@ public class CheckInServiceImpl implements CheckInService {
 
     log.info("rebuildCheckInStaffSlipContext:: staff slips context for item {} " +
       "has been successfully built", item::getId);
+  }
+
+  private String fetchLoanTypeName(String loanTypeId) {
+    if (StringUtils.isBlank(loanTypeId)) {
+      return null;
+    }
+    log.info("fetchLoanTypeName:: loanTypeId={}", loanTypeId);
+    var loanType = loanTypeClient.findLoanType(loanTypeId);
+    return loanType == null ? null : loanType.getName();
+  }
+
+  private String fetchMaterialTypeName(String materialTypeId) {
+    if (StringUtils.isBlank(materialTypeId)) {
+      return null;
+    }
+    log.info("fetchMaterialTypeName:: materialTypeId={}", materialTypeId);
+    var materialType = materialTypeClient.findMaterialType(materialTypeId);
+    return materialType == null ? null : materialType.getName();
   }
 
   private void rebuildCheckInItem(CheckInResponse response, SearchInstance searchInstance,

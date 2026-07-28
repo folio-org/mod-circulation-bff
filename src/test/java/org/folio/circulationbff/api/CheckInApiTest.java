@@ -39,9 +39,11 @@ import org.folio.circulationbff.domain.dto.Institution;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Library;
 import org.folio.circulationbff.domain.dto.Loan;
+import org.folio.circulationbff.domain.dto.LoanType;
 import org.folio.circulationbff.domain.dto.LoanStatus;
 import org.folio.circulationbff.domain.dto.Loans;
 import org.folio.circulationbff.domain.dto.Location;
+import org.folio.circulationbff.domain.dto.MaterialType;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.SearchItem;
@@ -66,6 +68,8 @@ class CheckInApiTest extends BaseIT {
   private static final String REQUESTS_MEDIATED_CHECK_IN_URL = "/requests-mediated/loans/check-in-by-barcode";
   private static final String CIRCULATION_ITEM_URL = "/circulation-item/%s";
   private static final String HOLDING_STORAGE_URL = "/holdings-storage/holdings/%s";
+  private static final String LOAN_TYPE_URL = "/loan-types/%s";
+  private static final String MATERIAL_TYPE_URL = "/material-types/%s";
   private static final String LOAN_STORAGE_URL = "/loan-storage/loans";
   private static final String USERS_URL = "/users";
 
@@ -146,6 +150,10 @@ class CheckInApiTest extends BaseIT {
     var primaryServicePointName = "updated service point";
     var holdingRecordId = randomId();
     var callNumber = "CNTST";
+    var materialTypeId = randomId();
+    var materialTypeName = "Shared material";
+    var loanTypeId = randomId();
+    var loanTypeName = "loan";
     givenCirculationCheckInForInTransitItemSucceed(request, itemId, DCB_INSTANCE_ID);
     var checkinItem = new Item()
       .id(itemId)
@@ -153,6 +161,8 @@ class CheckInApiTest extends BaseIT {
       .inTransitDestinationServicePointId(primaryServicePointId.toString())
       .copyNumber("copyNumber")
       .effectiveLocationId(effectiveLocationId)
+      .materialTypeId(materialTypeId)
+      .permanentLoanTypeId(loanTypeId)
       .itemLevelCallNumber(callNumber);
     givenSearchInstanceReturnsItem(TENANT_ID_COLLEGE, checkinItem);
     givenCurrentTenantIsConsortium();
@@ -194,6 +204,12 @@ class CheckInApiTest extends BaseIT {
     wireMockServer.stubFor(WireMock.get(urlMatching("/location-units/libraries/" + libraryId))
       .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
       .willReturn(jsonResponse(library, SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching(format(MATERIAL_TYPE_URL, materialTypeId)))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(new MaterialType().id(materialTypeId).name(materialTypeName), SC_OK)));
+    wireMockServer.stubFor(WireMock.get(urlMatching(format(LOAN_TYPE_URL, loanTypeId)))
+      .withHeader(HEADER_TENANT, WireMock.equalTo(TENANT_ID_COLLEGE))
+      .willReturn(jsonResponse(new LoanType().id(loanTypeId).name(loanTypeName), SC_OK)));
 
     checkIn(request)
       .andExpect(status().isOk())
@@ -203,6 +219,8 @@ class CheckInApiTest extends BaseIT {
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationCampus", equalTo(campus.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationLibrary", equalTo(library.getName())))
       .andExpect(jsonPath("$.staffSlipContext.item.effectiveLocationSpecific", equalTo(location.getName())))
+      .andExpect(jsonPath("$.staffSlipContext.item.materialType", equalTo(materialTypeName)))
+      .andExpect(jsonPath("$.staffSlipContext.item.loanType", equalTo(loanTypeName)))
       .andExpect(jsonPath("$.staffSlipContext.item.callNumber", equalTo(callNumber)))
       .andExpect(jsonPath("$.item.inTransitDestinationServicePointId", equalTo(primaryServicePointId.toString())))
       .andExpect(jsonPath("$.item.inTransitDestinationServicePoint.id", equalTo(primaryServicePointId.toString())))
