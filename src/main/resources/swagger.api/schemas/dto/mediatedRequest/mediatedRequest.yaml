@@ -216,7 +216,7 @@ properties:
     type: string
     enum: [ 'New - Awaiting confirmation', 'Open - Not yet filled', 'Open - In transit for approval',
             'Open - Item arrived', 'Open - In transit to be checked out', 'Open - Awaiting pickup',
-            'Closed - Cancelled', 'Closed - Declined', 'Closed - Filled'
+            'Open - Awaiting delivery', 'Closed - Cancelled', 'Closed - Declined', 'Closed - Filled'
     ]
   cancellationReasonId:
     $ref: '../common/uuid.yaml'

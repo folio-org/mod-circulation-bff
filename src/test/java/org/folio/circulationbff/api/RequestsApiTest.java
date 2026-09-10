@@ -125,9 +125,6 @@ class RequestsApiTest extends BaseIT {
   @ValueSource(booleans = {true, false})
   @SneakyThrows
   void getRequestsWithBatchRequestInfo(boolean isSecureTenant) {
-    // Given: mocks
-    record BatchData(String batchId, Date submittedDate) {}
-
     // Create test data
     var batch1 = new BatchData(UUID.randomUUID().toString(), new Date());
     var batch2 = new BatchData(
@@ -255,5 +252,85 @@ class RequestsApiTest extends BaseIT {
 
     wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_DETAILS_URL)));
   }
+
+  @Test
+  @SneakyThrows
+  void getConfirmedRequestInStatusOpenAwaitingDelivery() {
+    when(tenantService.isCurrentTenantSecure()).thenReturn(true);
+    var batch = new BatchData(UUID.randomUUID().toString(), new Date());
+
+    // mock confirmed request
+    var confirmedRequestId = UUID.randomUUID().toString();
+    Request confirmedRequest = new Request()
+      .id(confirmedRequestId)
+      .requestType(Request.RequestTypeEnum.PAGE)
+      .status(Request.StatusEnum.OPEN_AWAITING_DELIVERY)
+      .requestLevel(Request.RequestLevelEnum.ITEM)
+      .requesterId(UUID.randomUUID().toString())
+      .itemId(UUID.randomUUID().toString())
+      .instanceId(UUID.randomUUID().toString());
+
+    var requestsResponse = new Requests()
+      .requests(List.of(confirmedRequest))
+      .totalRecords(1);
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_REQUEST_URL))
+      .withQueryParam("query", equalTo("status==Open*"))
+      .withQueryParam("limit", equalTo("1"))
+      .withQueryParam("offset", equalTo("0"))
+      .willReturn(jsonResponse(asJsonString(requestsResponse), SC_OK)));
+
+    // mock mediated request
+    var mediatedRequestId = UUID.randomUUID().toString();
+    MediatedRequest mediatedRequest = new MediatedRequest()
+      .id(mediatedRequestId)
+      .requestType(MediatedRequest.RequestTypeEnum.PAGE)
+      .status(MediatedRequest.StatusEnum.OPEN_AWAITING_DELIVERY)
+      .mediatedRequestStatus(MediatedRequest.MediatedRequestStatusEnum.OPEN)
+      .requestLevel(MediatedRequest.RequestLevelEnum.ITEM)
+      .requesterId(UUID.randomUUID().toString())
+      .itemId(UUID.randomUUID().toString())
+      .instanceId(UUID.randomUUID().toString())
+      .confirmedRequestId(confirmedRequestId);
+
+    var mediatedRequestsResponse = new MediatedRequests()
+      .mediatedRequests(List.of(mediatedRequest))
+      .totalRecords(20);
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(MEDIATED_REQUEST_URL))
+      .withQueryParam("query", matching("confirmedRequestId=.*"))
+      .willReturn(jsonResponse(asJsonString(mediatedRequestsResponse), SC_OK)));
+
+    // mock mediated batch request details
+    var batchDetailsResponse = new BatchRequestDetailsResponse()
+      .mediatedBatchRequestDetails(List.of(new BatchRequestDetail()
+        .confirmedRequestId(confirmedRequest.getId())
+        .batchId(batch.batchId())))
+      .totalRecords(1);
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(MEDIATED_BATCH_REQUEST_DETAILS_URL))
+      .withQueryParam("query", matching("confirmedRequestId=.*"))
+      .willReturn(jsonResponse(asJsonString(batchDetailsResponse), SC_OK)));
+
+    // mock batch request response
+    BatchRequestResponse batchRequestResponse = new BatchRequestResponse()
+      .batchId(batch.batchId())
+      .requestDate(batch.submittedDate());
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(MEDIATED_BATCH_REQUEST_URL + "/" + batch.batchId()))
+      .willReturn(jsonResponse(asJsonString(batchRequestResponse), SC_OK)));
+
+    // get request
+    mockMvc.perform(get(REQUESTS_PATH)
+        .queryParam("query", "status==Open*")
+        .queryParam("limit", "1")
+        .queryParam("offset", "0")
+        .headers(defaultHeaders()))
+      .andExpect(MockMvcResultMatchers.status().isOk());
+
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_REQUEST_URL)));
+  }
+
+  record BatchData(String batchId, Date submittedDate) {}
 
 }
