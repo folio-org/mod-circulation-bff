@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -211,7 +212,7 @@ class CirculationBffServiceTest {
       when(circulationClient.getRequests(anyString(), any(), any(), anyString()))
         .thenReturn(requests);
       when(tenantService.isCurrentTenantSecure()).thenReturn(false);
-      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString()))
+      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString(), anyInt()))
         .thenReturn(batchDetailsResponse);
       when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId1)))
         .thenReturn(ResponseEntity.ok(batchResponse1));
@@ -232,7 +233,7 @@ class CirculationBffServiceTest {
       assertEquals(requestDate, enrichedRequest1.getBatchRequestInfo().getBatchRequestSubmittedAt());
 
       verify(circulationClient).getRequests("status==Open", 10, 0, "exact");
-      verify(requestMediatedClient).queryMediatedBatchRequestDetails(anyString());
+      verify(requestMediatedClient).queryMediatedBatchRequestDetails(anyString(), eq(20));
     }
 
     @Test
@@ -270,9 +271,9 @@ class CirculationBffServiceTest {
       when(circulationClient.getRequests(anyString(), any(), any(), anyString()))
         .thenReturn(requests);
       when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-      when(requestMediatedClient.getMediatedRequestsByQuery(anyString()))
+      when(requestMediatedClient.getMediatedRequestsByQuery(anyString(), anyInt()))
         .thenReturn(new MediatedRequests().mediatedRequests(List.of(mediatedRequest1, mediatedRequest2)));
-      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString()))
+      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString(), anyInt()))
         .thenReturn(batchDetailsResponse);
       when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId1)))
         .thenReturn(ResponseEntity.ok(batchResponse1));
@@ -293,13 +294,13 @@ class CirculationBffServiceTest {
       assertEquals(requestDate, enrichedRequest1.getBatchRequestInfo().getBatchRequestSubmittedAt());
 
       verify(circulationClient).getRequests("status==Open", 10, 0, "exact");
-      verify(requestMediatedClient).queryMediatedBatchRequestDetails(anyString());
+      verify(requestMediatedClient).queryMediatedBatchRequestDetails(anyString(), eq(20));
       verify(requestMediatedClient).getMediatedRequestsByQuery(argThat(query ->
         (query.contains("confirmedRequestId==(\"" + requestId1 + "\" or \"" + requestId2 + "\")")
           || query.contains("confirmedRequestId==(\"" + requestId2 + "\" or \"" + requestId1 + "\")"))
           && query.contains("mediatedRequestStatusText==(\"Open\" or \"Closed\")")
           && query.contains("requestLevelText==\"Item\"")
-        ));
+        ), eq(20));
     }
 
     @Test
@@ -317,7 +318,7 @@ class CirculationBffServiceTest {
       // Then
       assertNotNull(result);
       assertEquals(0, result.getRequests().size());
-      verify(requestMediatedClient, never()).queryMediatedBatchRequestDetails(anyString());
+      verify(requestMediatedClient, never()).queryMediatedBatchRequestDetails(anyString(), anyInt());
     }
 
     @Test
@@ -339,7 +340,7 @@ class CirculationBffServiceTest {
 
       when(circulationClient.getRequests(anyString(), any(), any(), anyString()))
         .thenReturn(requests);
-      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString()))
+      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString(), anyInt()))
         .thenReturn(batchDetailsResponse);
       when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId)))
         .thenReturn(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -614,7 +615,7 @@ class CirculationBffServiceTest {
 
       when(circulationClient.getRequests(anyString(), any(), any(), anyString()))
         .thenReturn(requests);
-      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString()))
+      when(requestMediatedClient.queryMediatedBatchRequestDetails(anyString(), anyInt()))
         .thenReturn(batchDetailsResponse1, batchDetailsResponse2);
       when(requestMediatedClient.getMediatedBatchRequestById(UUID.fromString(batchId)))
         .thenReturn(ResponseEntity.ok(batchResponse));
@@ -637,6 +638,11 @@ class CirculationBffServiceTest {
       // Should call batch request only once due to caching
       verify(requestMediatedClient, times(1))
         .getMediatedBatchRequestById(UUID.fromString(batchId));
+
+      // MODPATRON-283: the requested limit must match the partition size, otherwise
+      // mod-requests-mediated falls back to its default of 10 and silently drops rows
+      verify(requestMediatedClient, times(2))
+        .queryMediatedBatchRequestDetails(anyString(), eq(2));
     }
   }
 }

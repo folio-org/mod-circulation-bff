@@ -122,7 +122,8 @@ public class MediatedBatchRequestServiceImpl implements MediatedBatchRequestServ
       .and(new CqlQuery("requestLevelText=Item"));
     var mediatedRequestsById = Lists.partition(new ArrayList<>(idsToRequestDetail.keySet()), batchRequestDetailsQueryIdsSize).stream()
       .map(ids -> CqlQuery.exactMatchAnyId(ids).and(statusQuery))
-      .map(cqlQuery -> requestMediatedClient.getMediatedRequestsByQuery(cqlQuery.query()).getMediatedRequests())
+      .map(cqlQuery -> requestMediatedClient.getMediatedRequestsByQuery(cqlQuery.query(),
+        batchRequestDetailsQueryIdsSize).getMediatedRequests())
       .flatMap(List::stream)
       .filter(mediatedRequest -> isNotBlank(mediatedRequest.getConfirmedRequestId()))
       .collect(Collectors.toMap(MediatedRequest::getId, Function.identity()));

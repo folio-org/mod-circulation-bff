@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -133,7 +134,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-    when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
+    when(requestMediatedClient.getMediatedRequestsByQuery(anyString(), anyInt())).thenReturn(mediatedRequests);
 
     var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
@@ -153,7 +154,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-    when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
+    when(requestMediatedClient.getMediatedRequestsByQuery(anyString(), anyInt())).thenReturn(mediatedRequests);
 
     var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
@@ -180,7 +181,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-    when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
+    when(requestMediatedClient.getMediatedRequestsByQuery(anyString(), anyInt())).thenReturn(mediatedRequests);
 
     var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
@@ -205,7 +206,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-    when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
+    when(requestMediatedClient.getMediatedRequestsByQuery(anyString(), anyInt())).thenReturn(mediatedRequests);
 
     var response = service.retrieveMediatedBatchRequestDetails(null, batchId, offset, limit);
 
@@ -317,7 +318,7 @@ class MediatedBatchRequestServiceTest {
 
     when(requestMediatedClient.getMediatedBatchRequestDetails(batchId, limit, offset)).thenReturn(batchDetails);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
-    when(requestMediatedClient.getMediatedRequestsByQuery(anyString())).thenReturn(mediatedRequests);
+    when(requestMediatedClient.getMediatedRequestsByQuery(anyString(), anyInt())).thenReturn(mediatedRequests);
     when(tenantService.getCentralTenantId()).thenReturn(java.util.Optional.of(centralTenantId));
     when(executionService.executeSystemUserScoped(eq(centralTenantId), any(Callable.class)))
       .thenAnswer(inv -> ((Callable<?>) inv.getArgument(1)).call());
