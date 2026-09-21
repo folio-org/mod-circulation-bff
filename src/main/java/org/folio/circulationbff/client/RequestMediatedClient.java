@@ -41,7 +41,9 @@ public interface RequestMediatedClient {
     @RequestBody MediatedRequest mediatedRequest);
 
   @GetExchange("/mediated-requests")
-  MediatedRequests getMediatedRequestsByQuery(@RequestParam("query") String query);
+  MediatedRequests getMediatedRequestsByQuery(
+    @RequestParam("query") String query,
+    @RequestParam("limit") Integer limit);
 
   @PostExchange("/loans/check-out-by-barcode")
   CheckOutResponse checkOutByBarcode(@RequestBody CheckOutRequest request);
@@ -80,5 +82,7 @@ public interface RequestMediatedClient {
     @RequestParam("offset") Integer offset);
 
   @GetExchange("/batch-mediated-requests/details")
-  BatchRequestDetailsResponse queryMediatedBatchRequestDetails(@RequestParam("query") String query);
+  BatchRequestDetailsResponse queryMediatedBatchRequestDetails(
+    @RequestParam("query") String query,
+    @RequestParam("limit") Integer limit);
 }
