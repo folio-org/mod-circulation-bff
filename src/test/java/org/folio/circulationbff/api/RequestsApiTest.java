@@ -250,7 +250,15 @@ class RequestsApiTest extends BaseIT {
       .withQueryParam("limit", equalTo("20"))
       .withQueryParam("offset", equalTo("0")));
 
-    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_DETAILS_URL)));
+    // MODPATRON-283: the limit must be sent and must equal the chunk size, otherwise
+    // mod-requests-mediated applies its default of 10 and silently drops batch details
+    wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_BATCH_REQUEST_DETAILS_URL))
+      .withQueryParam("limit", equalTo("20")));
+
+    if (isSecureTenant) {
+      wireMockServer.verify(getRequestedFor(urlPathEqualTo(MEDIATED_REQUEST_URL))
+        .withQueryParam("limit", equalTo("20")));
+    }
   }
 
   @Test

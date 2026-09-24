@@ -110,21 +110,24 @@ public class CirculationBffServiceImpl implements CirculationBffService {
         .and(new CqlQuery("requestLevelText==\"Item\""));
       var mediatedToCirculationIds = partition(new ArrayList<>(circulationRequestIds), batchRequestDetailsQueryIdsSize).stream()
         .map(ids -> exactMatchAny(CONFIRMED_REQUEST_ID_FIELD, ids).and(statusQuery))
-        .map(cqlQuery -> requestMediatedClient.getMediatedRequestsByQuery(cqlQuery.query()).getMediatedRequests())
+        .map(cqlQuery -> requestMediatedClient.getMediatedRequestsByQuery(cqlQuery.query(),
+          batchRequestDetailsQueryIdsSize).getMediatedRequests())
         .flatMap(List::stream)
         .filter(mediatedRequest -> isNotBlank(mediatedRequest.getConfirmedRequestId()))
         .collect(Collectors.toMap(MediatedRequest::getId, MediatedRequest::getConfirmedRequestId));
 
       return partition(new ArrayList<>(mediatedToCirculationIds.keySet()), batchRequestDetailsQueryIdsSize).stream()
         .map(partition -> exactMatchAny(CONFIRMED_REQUEST_ID_FIELD, partition))
-        .map(cqlQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(cqlQuery.query()).getMediatedBatchRequestDetails())
+        .map(cqlQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(cqlQuery.query(),
+          batchRequestDetailsQueryIdsSize).getMediatedBatchRequestDetails())
         .flatMap(List::stream)
         .collect(Collectors.toMap(detail -> mediatedToCirculationIds.get(detail.getConfirmedRequestId()), Function.identity()));
     }
 
     return partition(new ArrayList<>(circulationRequestIds), batchRequestDetailsQueryIdsSize).stream()
       .map(partition -> exactMatchAny(CONFIRMED_REQUEST_ID_FIELD, partition))
-      .map(cqlQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(cqlQuery.query()).getMediatedBatchRequestDetails())
+      .map(cqlQuery -> requestMediatedClient.queryMediatedBatchRequestDetails(cqlQuery.query(),
+        batchRequestDetailsQueryIdsSize).getMediatedBatchRequestDetails())
       .flatMap(List::stream)
       .collect(Collectors.toMap(BatchRequestDetail::getConfirmedRequestId, Function.identity()));
   }
