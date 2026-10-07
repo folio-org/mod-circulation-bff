@@ -8,7 +8,9 @@ import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.SERVICE
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildTlrSettings;
 import static org.folio.circulationbff.api.StaffSlipsApiTestDataProvider.buildUserTenantCollection;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
@@ -17,7 +19,9 @@ import java.util.stream.Stream;
 import org.folio.circulationbff.domain.dto.PickSlipCollection;
 import org.folio.circulationbff.domain.dto.SearchSlipCollection;
 import org.folio.circulationbff.domain.dto.StaffSlip;
+import org.folio.circulationbff.domain.dto.StaffSlipItem;
 import org.folio.spring.integration.XOkapiHeaders;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -76,6 +80,40 @@ class StaffSlipApiTest extends BaseIT {
     mockPickSlipsPerform(pickSlips, tenantId);
 
     wireMockServer.verify(1, getRequestedFor(externalModuleUrlPattern));
+  }
+
+  @Test
+  @SneakyThrows
+  void pickSlipsFromTlrPreserveAdditionalItemTokens() {
+    var item = new StaffSlipItem()
+      .title("Title")
+      .putAdditionalProperty("accessionNumber", "ACC-1")
+      .putAdditionalProperty("datesOfPublication", "2020")
+      .putAdditionalProperty("editions", "2nd ed.")
+      .putAdditionalProperty("physicalDescriptions", "300 pages")
+      .putAdditionalProperty("instanceHrid", "in00000000001")
+      .putAdditionalProperty("administrativeNotes", List.of("note"));
+    var pickSlips = new PickSlipCollection(1, List.of(new StaffSlip().item(item)));
+    var externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
+      "/tlr/staff-slips/pick-slips", SERVICE_POINT_ID));
+
+    mockHelper.mockUserTenants(buildUserTenantCollection(TENANT_ID_CONSORTIUM),
+      TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(buildTlrSettings(true), TENANT_ID_CONSORTIUM);
+    mockHelper.mockPickSlips(pickSlips, externalModuleUrlPattern, TENANT_ID_CONSORTIUM);
+
+    HttpHeaders httpHeaders = defaultHeaders();
+    httpHeaders.set(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM);
+    mockMvc.perform(get(CIRCULATION_BFF_PICK_SLIPS_URL, SERVICE_POINT_ID)
+        .headers(httpHeaders)
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.pickSlips[0].item.accessionNumber", equalTo("ACC-1")))
+      .andExpect(jsonPath("$.pickSlips[0].item.datesOfPublication", equalTo("2020")))
+      .andExpect(jsonPath("$.pickSlips[0].item.editions", equalTo("2nd ed.")))
+      .andExpect(jsonPath("$.pickSlips[0].item.physicalDescriptions", equalTo("300 pages")))
+      .andExpect(jsonPath("$.pickSlips[0].item.instanceHrid", equalTo("in00000000001")))
+      .andExpect(jsonPath("$.pickSlips[0].item.administrativeNotes[0]", equalTo("note")));
   }
 
   @SneakyThrows
