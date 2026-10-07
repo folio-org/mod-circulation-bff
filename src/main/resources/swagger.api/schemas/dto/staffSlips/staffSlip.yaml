@@ -59,6 +59,7 @@ properties:
       lastCheckedInDateTime:
         type: string
         format: date-time
+    additionalProperties: true
 
   request:
     type: object
@@ -85,6 +86,7 @@ properties:
         type: string
       patronComments:
         type: string
+    additionalProperties: true
 
   requester:
     type: object
@@ -131,3 +133,5 @@ properties:
         type: string
       countryId:
         type: string
+    additionalProperties: true
+additionalProperties: true
