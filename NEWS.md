@@ -5,6 +5,7 @@
 * Adding Missing Dependencies (MCBFF-197)
 * Populate staff slip material type and loan type with names instead of IDs (MCBFF-195)
 * Send `limit` when querying mediated requests and batch request details, so batch info is not dropped for patrons with more than 10 batched requests (MCBFF-216)
+* Upgrade to Spring Boot v4.1.1 (MCBFF-223)
 
 ## 1.2.1 2026-06-25
 * Resolve instance for batch details endpoint (MCBFF-186)
