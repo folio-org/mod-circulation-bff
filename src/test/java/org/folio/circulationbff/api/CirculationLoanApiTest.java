@@ -141,7 +141,7 @@ class CirculationLoanApiTest extends BaseIT {
     mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
 
     var expectedLoans = new CirculationLoans()
-      .loans(List.of(circulationLoan))
+      .loans(List.of(circulationLoan(USER_ID, true, enrichedLoanItem())))
       .totalRecords(1);
 
     mockMvc.perform(get("/circulation-bff/loans")
