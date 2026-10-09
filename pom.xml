@@ -235,9 +235,6 @@
                                 <interfaceOnly>true</interfaceOnly>
                                 <useSpringBoot3>true</useSpringBoot3>
                             </configOptions>
-                          <additionalProperties>
-                            <additionalProperty>defaultToEmptyContainer=</additionalProperty>
-                          </additionalProperties>
                         </configuration>
                     </execution>
                 </executions>
