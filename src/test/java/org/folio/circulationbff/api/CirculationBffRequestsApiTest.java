@@ -64,9 +64,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -109,9 +109,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(defaultHeaders())
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -160,9 +160,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -213,9 +213,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -260,9 +260,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
