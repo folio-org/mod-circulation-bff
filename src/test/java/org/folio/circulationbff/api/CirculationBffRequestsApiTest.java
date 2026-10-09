@@ -56,17 +56,17 @@ class CirculationBffRequestsApiTest extends BaseIT {
     var patronGroupId = UUID.randomUUID();
 
     mockMvc.perform(
-      get(ALLOWED_SERVICE_POINT_PATH)
-        .queryParam("operation", "create")
-        .queryParam("requestId", requestId.toString())
-        .queryParam("instanceId", instanceId.toString())
-        .queryParam("patronGroupId", patronGroupId.toString())
-        .headers(buildHeaders(TENANT_ID_COLLEGE))
-        .contentType(MediaType.APPLICATION_JSON))
+        get(ALLOWED_SERVICE_POINT_PATH)
+          .queryParam("operation", "create")
+          .queryParam("requestId", requestId.toString())
+          .queryParam("instanceId", instanceId.toString())
+          .queryParam("patronGroupId", patronGroupId.toString())
+          .headers(buildHeaders(TENANT_ID_COLLEGE))
+          .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -101,17 +101,17 @@ class CirculationBffRequestsApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(allowedSpResponseConsortium), SC_OK)));
 
     mockMvc.perform(
-      get(ALLOWED_SERVICE_POINT_PATH)
-        .queryParam("operation", "create")
-        .queryParam("requestId", requestId.toString())
-        .queryParam("instanceId", instanceId.toString())
-        .queryParam("patronGroupId", patronGroupId.toString())
-        .headers(defaultHeaders())
-        .contentType(MediaType.APPLICATION_JSON))
+        get(ALLOWED_SERVICE_POINT_PATH)
+          .queryParam("operation", "create")
+          .queryParam("requestId", requestId.toString())
+          .queryParam("instanceId", instanceId.toString())
+          .queryParam("patronGroupId", patronGroupId.toString())
+          .headers(defaultHeaders())
+          .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -160,9 +160,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -213,9 +213,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
@@ -260,9 +260,9 @@ class CirculationBffRequestsApiTest extends BaseIT {
         .headers(buildHeaders(TENANT_ID_COLLEGE))
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.Page").isEmpty())
+      .andExpect(jsonPath("$.Page").doesNotExist())
       .andExpect(jsonPath("$.Hold").exists())
-      .andExpect(jsonPath("$.Recall").isEmpty())
+      .andExpect(jsonPath("$.Recall").doesNotExist())
       .andExpect(jsonPath("$.Hold[*].name",
         containsInAnyOrder("SP_consortium_1", "SP_consortium_2")));
 
