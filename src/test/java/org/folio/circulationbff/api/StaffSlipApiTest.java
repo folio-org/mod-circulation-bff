@@ -28,6 +28,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.Json;
 
 import lombok.SneakyThrows;
@@ -84,15 +85,15 @@ class StaffSlipApiTest extends BaseIT {
 
   @Test
   @SneakyThrows
-  void pickSlipsFromTlrPreserveAdditionalItemTokens() {
+  void pickSlipsFromTlrContainAccessionNumberNotesPublicationEditionsDescriptionAndHrid() {
     var item = new StaffSlipItem()
       .title("Title")
-      .putAdditionalProperty("accessionNumber", "ACC-1")
-      .putAdditionalProperty("datesOfPublication", "2020")
-      .putAdditionalProperty("editions", "2nd ed.")
-      .putAdditionalProperty("physicalDescriptions", "300 pages")
-      .putAdditionalProperty("instanceHrid", "in00000000001")
-      .putAdditionalProperty("administrativeNotes", List.of("note"));
+      .accessionNumber("ACC-1")
+      .datesOfPublication("2020")
+      .editions("2nd ed.")
+      .physicalDescriptions("300 pages")
+      .instanceHrid("in00000000001")
+      .administrativeNotes("note");
     var pickSlips = new PickSlipCollection(1, List.of(new StaffSlip().item(item)));
     var externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
       "/tlr/staff-slips/pick-slips", SERVICE_POINT_ID));
@@ -113,7 +114,45 @@ class StaffSlipApiTest extends BaseIT {
       .andExpect(jsonPath("$.pickSlips[0].item.editions", equalTo("2nd ed.")))
       .andExpect(jsonPath("$.pickSlips[0].item.physicalDescriptions", equalTo("300 pages")))
       .andExpect(jsonPath("$.pickSlips[0].item.instanceHrid", equalTo("in00000000001")))
-      .andExpect(jsonPath("$.pickSlips[0].item.administrativeNotes[0]", equalTo("note")));
+      .andExpect(jsonPath("$.pickSlips[0].item.administrativeNotes", equalTo("note")));
+  }
+
+  @Test
+  @SneakyThrows
+  void pickSlipsDoNotExposePropertiesMissingFromSchema() {
+    var externalModuleUrlPattern = urlPathMatching(String.format(URL_PATTERN,
+      "/tlr/staff-slips/pick-slips", SERVICE_POINT_ID));
+    var tlrResponse = """
+      {
+        "totalRecords": 1,
+        "pickSlips": [{
+          "item": {"title": "Title", "unexpectedItemField": "secret"},
+          "request": {"unexpectedRequestField": "secret"},
+          "requester": {"lastName": "Last", "unexpectedRequesterField": "secret"},
+          "unexpectedSlipField": "secret"
+        }]
+      }
+      """;
+
+    mockHelper.mockUserTenants(buildUserTenantCollection(TENANT_ID_CONSORTIUM),
+      TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(buildTlrSettings(true), TENANT_ID_CONSORTIUM);
+    wireMockServer.stubFor(WireMock.get(externalModuleUrlPattern)
+      .withHeader(XOkapiHeaders.TENANT, WireMock.equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(WireMock.okJson(tlrResponse)));
+
+    HttpHeaders httpHeaders = defaultHeaders();
+    httpHeaders.set(XOkapiHeaders.TENANT, TENANT_ID_CONSORTIUM);
+    mockMvc.perform(get(CIRCULATION_BFF_PICK_SLIPS_URL, SERVICE_POINT_ID)
+        .headers(httpHeaders)
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.pickSlips[0].item.title", equalTo("Title")))
+      .andExpect(jsonPath("$.pickSlips[0].requester.lastName", equalTo("Last")))
+      .andExpect(jsonPath("$.pickSlips[0].item.unexpectedItemField").doesNotExist())
+      .andExpect(jsonPath("$.pickSlips[0].request.unexpectedRequestField").doesNotExist())
+      .andExpect(jsonPath("$.pickSlips[0].requester.unexpectedRequesterField").doesNotExist())
+      .andExpect(jsonPath("$.pickSlips[0].unexpectedSlipField").doesNotExist());
   }
 
   @SneakyThrows
