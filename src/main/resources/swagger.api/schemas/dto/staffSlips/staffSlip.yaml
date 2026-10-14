@@ -59,6 +59,19 @@ properties:
       lastCheckedInDateTime:
         type: string
         format: date-time
+      accessionNumber:
+        type: string
+      administrativeNotes:
+        type: string
+      datesOfPublication:
+        type: string
+      editions:
+        type: string
+      physicalDescriptions:
+        type: string
+      instanceHrid:
+        type: string
+    additionalProperties: false
 
   request:
     type: object
@@ -85,6 +98,7 @@ properties:
         type: string
       patronComments:
         type: string
+    additionalProperties: false
 
   requester:
     type: object
@@ -131,3 +145,5 @@ properties:
         type: string
       countryId:
         type: string
+    additionalProperties: false
+additionalProperties: false
