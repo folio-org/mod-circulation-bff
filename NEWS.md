@@ -1,3 +1,6 @@
+## 1.2.3 2026-10-21
+* Send limit when querying mediated requests and batch details (MCBFF-224)
+
 ## 1.2.2 2026-08-14
 * Adding Missing Dependencies (MCBFF-197)
 * Populate staff slip material type and loan type with names instead of IDs (MCBFF-195)
