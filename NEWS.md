@@ -1,6 +1,10 @@
+## 1.2.3 2026-10-21
+* Send limit when querying mediated requests and batch details (MCBFF-224)
+
 ## 1.2.2 2026-08-14
 * Adding Missing Dependencies (MCBFF-197)
 * Populate staff slip material type and loan type with names instead of IDs (MCBFF-195)
+* Send `limit` when querying mediated requests and batch request details, so batch info is not dropped for patrons with more than 10 batched requests (MCBFF-216)
 
 ## 1.2.1 2026-06-25
 * Resolve instance for batch details endpoint (MCBFF-186)
