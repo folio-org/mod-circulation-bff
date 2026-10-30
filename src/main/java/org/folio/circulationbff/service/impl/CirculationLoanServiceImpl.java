@@ -1,31 +1,23 @@
 package org.folio.circulationbff.service.impl;
 
 import static java.lang.Boolean.TRUE;
-import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.circulationbff.client.CirculationClient;
-import org.folio.circulationbff.domain.dto.BffSearchInstance;
-import org.folio.circulationbff.domain.dto.BffSearchItem;
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.LoanItem;
 import org.folio.circulationbff.domain.dto.Parameter;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapper;
+import org.folio.circulationbff.domain.model.LoanEnrichment;
 import org.folio.circulationbff.domain.type.ErrorCode;
 import org.folio.circulationbff.exception.ValidationException;
 import org.folio.circulationbff.service.CirculationLoanService;
-import org.folio.circulationbff.service.SearchService;
+import org.folio.circulationbff.service.LoanEnrichmentService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class CirculationLoanServiceImpl implements CirculationLoanService {
 
-  private final SearchService searchService;
+  private final LoanEnrichmentService loanEnrichmentService;
   private final TenantService tenantService;
   private final SettingsService settingsService;
   private final CirculationClient circulationClient;
@@ -56,37 +48,37 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
     log.info("findCirculationLoans:: enriching circulation loans by parameters: " +
       "query={}, limit={}, offset={}, totalRecords={}", query, limit, offset, totalRecords);
     var circulationLoans = circulationClient.findLoansByQuery(query, limit, offset, totalRecords);
-    var dcbItemIds = circulationLoans.getLoans().stream()
+    var dcbLoanItems = circulationLoans.getLoans().stream()
       .filter(CirculationLoanServiceImpl::shouldEnrichCirculationLoan)
-      .map(CirculationLoan::getItemId)
+      .map(CirculationLoan::getItem)
       .toList();
 
-    if (CollectionUtils.isEmpty(dcbItemIds) || !isEnrichOperationAllowed()) {
+    if (CollectionUtils.isEmpty(dcbLoanItems) || !isEnrichOperationAllowed()) {
       var cause = "(DCB items not found | not tenant central | TLR disabled)";
       log.info("findCirculationLoans:: circulation loans not enriched: {}", cause);
       return circulationLoans;
     }
 
-    var bffInstances = getBffInstancesByItemId(dcbItemIds);
-    var enrichedLoanIds = new ArrayList<>();
+    var enrichments = loanEnrichmentService.enrich(dcbLoanItems);
+    var enrichedLoanIds = new ArrayList<String>();
 
     for (var loan : circulationLoans.getLoans()) {
       if (shouldEnrichCirculationLoan(loan)) {
-        var loanItem = loan.getItem();
-        var bffSearchInstance = bffInstances.get(loan.getItemId());
-        if (bffSearchInstance == null) {
-          log.warn("findCirculationLoans:: instance not found by itemId: {}", loan.getItemId());
+        var enrichment = enrichments.get(loan.getItemId());
+        if (enrichment == null) {
+          log.warn("findCirculationLoans:: enrichment not found by itemId: {}", loan.getItemId());
           continue;
         }
 
         enrichedLoanIds.add(loan.getId());
-        loan.setItem(enrichLoanItem(loanItem, bffSearchInstance));
+        loan.setItem(enrichLoanItem(loan.getItem(), enrichment));
       } else {
         log.debug("findCirculationLoans:: circulation loan not enriched: {}", loan.getId());
       }
     }
 
-    log.info("findCirculationLoans:: circulation loans are enriched: {}", enrichedLoanIds);
+    log.info("findCirculationLoans:: circulation loans are enriched: {} of {}",
+      enrichedLoanIds.size(), circulationLoans.getLoans().size());
 
     return circulationLoans;
   }
@@ -102,15 +94,14 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
     }
 
     var itemId = circulationLoan.getItemId();
-    var bffSearchInstancesMap = getBffInstancesByItemId(List.of(itemId));
-    var bffSearchInstance = bffSearchInstancesMap.get(itemId);
-    if (bffSearchInstance == null) {
-      log.warn("getCirculationLoanById:: instance not found by itemId: {}", itemId);
+    var enrichment = loanEnrichmentService.enrich(List.of(circulationLoan.getItem())).get(itemId);
+    if (enrichment == null) {
+      log.warn("getCirculationLoanById:: enrichment not found by itemId: {}", itemId);
       return circulationLoan;
     }
 
     log.info("getCirculationLoanById:: circulation loan is enriched: {}", loanId);
-    circulationLoan.setItem(enrichLoanItem(circulationLoan.getItem(), bffSearchInstance));
+    circulationLoan.setItem(enrichLoanItem(circulationLoan.getItem(), enrichment));
     return circulationLoan;
   }
 
@@ -133,27 +124,7 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
     return TRUE.equals(loan.getIsDcb()) && loan.getItem() != null;
   }
 
-  private LoanItem enrichLoanItem(LoanItem loanItem, BffSearchInstance bffSearchInstance) {
-    var bffSearchItem = getBffSearchItem(loanItem.getId(), bffSearchInstance);
-    return circulationLoanMapper.enrichLoanItem(loanItem, bffSearchInstance, bffSearchItem);
-  }
-
-  private Map<String, BffSearchInstance> getBffInstancesByItemId(List<String> itemIds) {
-    return searchService.findInstances("item.id", itemIds)
-      .stream()
-      .flatMap(CirculationLoanServiceImpl::getInstanceByItemEntry)
-      .collect(toMap(Entry::getKey, Entry::getValue, (o1, o2) -> o2));
-  }
-
-  private static Stream<Entry<String, BffSearchInstance>> getInstanceByItemEntry(BffSearchInstance instance) {
-    return emptyIfNull(instance.getItems()).stream()
-      .map(item -> new SimpleImmutableEntry<>(item.getId(), instance));
-  }
-
-  private static BffSearchItem getBffSearchItem(String itemId, BffSearchInstance searchInstance) {
-    return emptyIfNull(searchInstance.getItems()).stream()
-      .filter(bffSearchItem -> Objects.equals(bffSearchItem.getId(), itemId))
-      .findFirst()
-      .orElse(null);
+  private LoanItem enrichLoanItem(LoanItem loanItem, LoanEnrichment enrichment) {
+    return circulationLoanMapper.enrichLoanItem(loanItem, enrichment);
   }
 }
