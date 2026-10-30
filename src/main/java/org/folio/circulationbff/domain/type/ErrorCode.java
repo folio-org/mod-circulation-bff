@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
   FAILED_TO_DECLARE_CLAIMED_RETURNED_ITEM_AS_MISSING(
-    "FAILED_TO_DECLARE_CLAIMED_RETURNED_ITEM_AS_MISSING");
+    "FAILED_TO_DECLARE_CLAIMED_RETURNED_ITEM_AS_MISSING"),
+  LOANS_LIMIT_EXCEEDED("LOANS_LIMIT_EXCEEDED");
 
   private final String value;
 }

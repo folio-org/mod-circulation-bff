@@ -20,11 +20,15 @@ import org.folio.circulationbff.domain.dto.BffSearchItem;
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.dto.LoanItem;
+import org.folio.circulationbff.domain.dto.Parameter;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapper;
+import org.folio.circulationbff.domain.type.ErrorCode;
+import org.folio.circulationbff.exception.ValidationException;
 import org.folio.circulationbff.service.CirculationLoanService;
 import org.folio.circulationbff.service.SearchService;
 import org.folio.circulationbff.service.SettingsService;
 import org.folio.circulationbff.service.TenantService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -41,10 +45,14 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
   private final CirculationClient circulationClient;
   private final CirculationLoanMapper circulationLoanMapper;
 
+  @Value("${folio.loans.max-limit}")
+  private int loansMaxLimit;
+
   @Override
   public CirculationLoans findCirculationLoans(String query, Integer limit,
     Integer offset, String totalRecords) {
 
+    validateLimit(limit);
     log.info("findCirculationLoans:: enriching circulation loans by parameters: " +
       "query={}, limit={}, offset={}, totalRecords={}", query, limit, offset, totalRecords);
     var circulationLoans = circulationClient.findLoansByQuery(query, limit, offset, totalRecords);
@@ -104,6 +112,16 @@ public class CirculationLoanServiceImpl implements CirculationLoanService {
     log.info("getCirculationLoanById:: circulation loan is enriched: {}", loanId);
     circulationLoan.setItem(enrichLoanItem(circulationLoan.getItem(), bffSearchInstance));
     return circulationLoan;
+  }
+
+  private void validateLimit(Integer limit) {
+    if (limit != null && limit > loansMaxLimit) {
+      log.warn("validateLimit:: requested limit {} exceeds the maximum {}", limit, loansMaxLimit);
+      throw new ValidationException(
+        "Requested limit exceeds the maximum allowed value of " + loansMaxLimit,
+        ErrorCode.LOANS_LIMIT_EXCEEDED,
+        List.of(new Parameter().key("limit").value(String.valueOf(limit))));
+    }
   }
 
   private boolean isEnrichOperationAllowed() {

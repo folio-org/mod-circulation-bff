@@ -22,6 +22,7 @@ applications.
 | OKAPI_URL                             | http://okapi:9130         | OKAPI URL used to login system user, required                                                                                                                                         |
 | ENV                                   | folio                     | The logical name of the deployment, must be unique across all environments using the same shared Kafka/Elasticsearch clusters, `a-z (any case)`, `0-9`, `-`, `_` symbols only allowed |
 | BATCH_REQUEST_DETAILS_QUERY_IDS_COUNT | 20                        | The number of request IDs to be included in the batch request details collection query.                                                                                               |
+| LOANS_MAX_LIMIT                       | 500                       | Maximum `limit` accepted by `GET /circulation-bff/loans`. Larger values are rejected with HTTP 422 (`LOANS_LIMIT_EXCEEDED`).                                                         |
 
 ## Further information
 
