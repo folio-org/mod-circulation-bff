@@ -4,6 +4,7 @@
 * Send `limit` when querying mediated requests and batch request details, so batch info is not dropped for patrons with more than 10 batched requests (MCBFF-216)
 * Upgrade to Spring Boot v4.1.1 (MCBFF-223)
 * Pick slips printed in Central tenant does not contain values for some tokens (MCBFF-215)
+* Enrich loans without `expandAll=true` instance search and cap the loans `limit` (MCBFF-221)
 
 ## 1.2.0 2026-04-15
 
