@@ -159,7 +159,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     Map<String, HoldingsRecord> holdings = fetchHoldings(items.values());
     Map<String, ServicePoint> servicePoints = fetchServicePoints(items.values());
 
-    Map<String, String> instanceIdByItem = new HashMap<>();
+    Map<String, String> instanceIdByItem = new LinkedHashMap<>();
     for (ConsortiumItem consortiumItem : consortiumItems) {
       String loanInstanceId = instanceIdByItemId.get(consortiumItem.getId());
       instanceIdByItem.put(consortiumItem.getId(),

@@ -2,8 +2,11 @@ package org.folio.circulationbff.api;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.folio.circulationbff.util.CirculationLoanTestData.HOLDINGS_RECORD_ID;
 import static org.folio.circulationbff.util.CirculationLoanTestData.INSTANCE_ID;
@@ -15,24 +18,29 @@ import static org.folio.circulationbff.util.CirculationLoanTestData.dcbLoanItem;
 import static org.folio.circulationbff.util.CirculationLoanTestData.enrichedLoanItem;
 import static org.folio.circulationbff.util.CirculationLoanTestData.inventoryInstance;
 import static org.folio.circulationbff.util.CirculationLoanTestData.inventoryItem;
-import static org.folio.circulationbff.util.CirculationLoanTestData.searchInstance;
-import static org.folio.circulationbff.util.CirculationLoanTestData.searchItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
 
 import org.folio.circulationbff.domain.dto.CirculationLoan;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
+import org.folio.circulationbff.domain.dto.ConsortiumItem;
+import org.folio.circulationbff.domain.dto.ConsortiumItemBatchRequest;
+import org.folio.circulationbff.domain.dto.ConsortiumItemCollection;
+import org.folio.circulationbff.domain.dto.HoldingsRecord;
+import org.folio.circulationbff.domain.dto.HoldingsRecords;
 import org.folio.circulationbff.domain.dto.Instance;
 import org.folio.circulationbff.domain.dto.Instances;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Items;
-import org.folio.circulationbff.domain.dto.SearchInstance;
-import org.folio.circulationbff.domain.dto.SearchInstances;
 import org.folio.circulationbff.domain.dto.ServicePoint;
+import org.folio.circulationbff.domain.dto.LoanItem;
 import org.folio.circulationbff.domain.dto.ServicePoints;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;
@@ -56,6 +64,12 @@ class CirculationLoanApiTest extends BaseIT {
   private static final String ITEM_STORAGE_URL = "/item-storage/items";
   private static final String INSTANCE_STORAGE_URL = "/instance-storage/instances";
   private static final String SERVICE_POINTS_URL = "/service-points";
+  private static final String BATCH_ITEMS_URL = "/search/consortium/batch/items";
+  private static final String HOLDINGS_STORAGE_URL = "/holdings-storage/holdings";
+  private static final String LOCATIONS_URL = "/locations";
+  private static final String MATERIAL_TYPES_URL = "/material-types";
+  private static final String LOAN_TYPES_URL = "/loan-types";
+  private static final String TENANT_ID_UNIVERSITY = "university";
 
   @Test
   void findCirculationLoansForItem() throws Exception {
@@ -162,10 +176,10 @@ class CirculationLoanApiTest extends BaseIT {
     var circulationLoan = circulationLoan(USER_ID, true, dcbLoanItem());
 
     mockCirculationLoansRequest(loanQuery, TENANT_ID_SECURE, circulationLoan);
-    mockSearchRequest(List.of(ITEM_ID), TENANT_ID_SECURE, searchInstance(searchItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
     mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
     mockServicePointsRequest();
-    mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE, inventoryInstance());
 
     var expectedLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(USER_ID, true, enrichedLoanItem())))
@@ -178,6 +192,10 @@ class CirculationLoanApiTest extends BaseIT {
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(content().json(asJsonString(expectedLoans)));
+
+    // a secure tenant must search in the central tenant scope
+    wireMockServer.verify(1, postRequestedFor(urlPathEqualTo(BATCH_ITEMS_URL))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM)));
   }
 
   @Test
@@ -187,10 +205,10 @@ class CirculationLoanApiTest extends BaseIT {
 
     var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
     mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
-    mockSearchRequest(List.of(ITEM_ID), searchInstance(searchItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
     mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
     mockServicePointsRequest();
-    mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE, inventoryInstance());
 
     var expectedLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(USER_ID, true, enrichedLoanItem())))
@@ -203,6 +221,271 @@ class CirculationLoanApiTest extends BaseIT {
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(content().json(asJsonString(expectedLoans)));
+  }
+
+  @Test
+  void findCirculationLoansDoesNotCallSearchInstances() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockDcbItemFlow(TENANT_ID_COLLEGE);
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans[0].item.tenantId").value(TENANT_ID_COLLEGE));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(SEARCH_INSTANCES_URL)));
+  }
+
+  @Test
+  void findCirculationLoansOnlyRequestsLoanedItemsFromStorage() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockDcbItemFlow(TENANT_ID_COLLEGE);
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk());
+
+    wireMockServer.verify(1, getRequestedFor(urlPathEqualTo(ITEM_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(HOLDINGS_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(LOCATIONS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(MATERIAL_TYPES_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(LOAN_TYPES_URL)));
+  }
+
+  @Test
+  void findCirculationLoansSplitsBatchCallsIntoChunks() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    var loans = IntStream.range(0, 250)
+      .mapToObj(i -> dcbLoan("chunk-loan-" + i, UUID.randomUUID().toString()))
+      .toArray(CirculationLoan[]::new);
+    mockCirculationLoansRequest(loanQuery, "250", TENANT_ID_CONSORTIUM, loans);
+    mockAnyBatchItemsRequest();
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "250")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans.length()").value(250))
+      .andExpect(jsonPath("$.loans[0].item.tenantId").doesNotExist());
+
+    wireMockServer.verify(3, postRequestedFor(urlPathEqualTo(BATCH_ITEMS_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(ITEM_STORAGE_URL)));
+  }
+
+  @Test
+  void findCirculationLoansWithItemsFromTwoTenants() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    var collegeItemId = UUID.randomUUID().toString();
+    var universityItemId = UUID.randomUUID().toString();
+    var collegeInstanceId = UUID.randomUUID().toString();
+    var universityInstanceId = UUID.randomUUID().toString();
+    mockCirculationLoansRequest(loanQuery,
+      dcbLoan("college-loan", collegeItemId, collegeInstanceId),
+      dcbLoan("university-loan", universityItemId, universityInstanceId));
+    mockBatchItemsRequest(List.of(collegeItemId, universityItemId),
+      consortiumItem(collegeItemId, TENANT_ID_COLLEGE, collegeInstanceId),
+      consortiumItem(universityItemId, TENANT_ID_UNIVERSITY, universityInstanceId));
+    mockItemStorageRequest(List.of(collegeItemId), TENANT_ID_COLLEGE,
+      inventoryItem().id(collegeItemId).inTransitDestinationServicePointId(null));
+    mockItemStorageRequest(List.of(universityItemId), TENANT_ID_UNIVERSITY,
+      inventoryItem().id(universityItemId).inTransitDestinationServicePointId(null));
+    mockInstanceStorageRequest(List.of(collegeInstanceId), TENANT_ID_COLLEGE,
+      inventoryInstance().id(collegeInstanceId));
+    mockInstanceStorageRequest(List.of(universityInstanceId), TENANT_ID_UNIVERSITY,
+      inventoryInstance().id(universityInstanceId));
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans[0].item.tenantId").value(TENANT_ID_COLLEGE))
+      .andExpect(jsonPath("$.loans[0].item.callNumber").value("testCallNumber"))
+      .andExpect(jsonPath("$.loans[1].item.tenantId").value(TENANT_ID_UNIVERSITY))
+      .andExpect(jsonPath("$.loans[1].item.callNumber").value("testCallNumber"));
+
+    wireMockServer.verify(1, postRequestedFor(urlPathEqualTo(BATCH_ITEMS_URL)));
+  }
+
+  @Test
+  void findCirculationLoansWhenItemMissingFromSearch() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID));
+
+    var expectedLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(USER_ID, true, dcbLoanItem())))
+      .totalRecords(1);
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoans)));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(ITEM_STORAGE_URL)));
+  }
+
+  @Test
+  void findCirculationLoansFallsBackToCentralInstance() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
+    mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
+    mockServicePointsRequest();
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE);
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_CONSORTIUM, inventoryInstance());
+
+    var expectedLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(USER_ID, true, enrichedLoanItem())))
+      .totalRecords(1);
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoans)));
+
+    wireMockServer.verify(1, getRequestedFor(urlPathEqualTo(INSTANCE_STORAGE_URL))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_COLLEGE)));
+    wireMockServer.verify(1, getRequestedFor(urlPathEqualTo(INSTANCE_STORAGE_URL))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM)));
+  }
+
+  @Test
+  void findCirculationLoansUsesHoldingsCopyNumberWhenItemHasNone() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
+    mockItemStorageRequest(List.of(ITEM_ID),
+      inventoryItem().copyNumber(null).holdingsRecordId(HOLDINGS_RECORD_ID));
+    mockHoldingsStorageRequest(List.of(HOLDINGS_RECORD_ID), TENANT_ID_COLLEGE,
+      new HoldingsRecord().id(HOLDINGS_RECORD_ID).copyNumber("holdingsCopy"));
+    mockServicePointsRequest();
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE, inventoryInstance());
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans[0].item.copyNumber").value("holdingsCopy"));
+  }
+
+  @Test
+  void findCirculationLoansWhenHoldingsMissing() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
+    mockItemStorageRequest(List.of(ITEM_ID),
+      inventoryItem().copyNumber(null).holdingsRecordId(HOLDINGS_RECORD_ID));
+    mockHoldingsStorageRequest(List.of(HOLDINGS_RECORD_ID), TENANT_ID_COLLEGE);
+    mockServicePointsRequest();
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE, inventoryInstance());
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans[0].item.tenantId").value(TENANT_ID_COLLEGE))
+      .andExpect(jsonPath("$.loans[0].item.copyNumber").doesNotExist());
+  }
+
+  @Test
+  void findCirculationLoansWhenSearchFails() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, circulationLoan(USER_ID, true, dcbLoanItem()));
+    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(BATCH_ITEMS_URL))
+      .willReturn(aResponse().withStatus(500).withBody("search is down")));
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "500")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  void findCirculationLoansProductionShapedCardinality() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    var loans = new ArrayList<CirculationLoan>();
+    var itemIds = new ArrayList<String>();
+    var instanceIds = new ArrayList<String>();
+    var consortiumItems = new ArrayList<ConsortiumItem>();
+    var storageItems = new ArrayList<Item>();
+    var instances = new ArrayList<Instance>();
+    for (int i = 0; i < 49; i++) {
+      var itemId = UUID.randomUUID().toString();
+      var instanceId = UUID.randomUUID().toString();
+      itemIds.add(itemId);
+      instanceIds.add(instanceId);
+      loans.add(dcbLoan("loan-" + i, itemId, instanceId));
+      consortiumItems.add(consortiumItem(itemId, TENANT_ID_COLLEGE, instanceId));
+      storageItems.add(inventoryItem().id(itemId).inTransitDestinationServicePointId(null));
+      instances.add(inventoryInstance().id(instanceId));
+    }
+    mockCirculationLoansRequest(loanQuery, "49", TENANT_ID_CONSORTIUM,
+      loans.toArray(CirculationLoan[]::new));
+    mockBatchItemsRequest(itemIds, consortiumItems.toArray(ConsortiumItem[]::new));
+    mockItemStorageRequest(itemIds, storageItems.toArray(Item[]::new));
+    mockInstanceStorageRequest(instanceIds, TENANT_ID_COLLEGE,
+      instances.toArray(Instance[]::new));
+
+    mockMvc.perform(get(LOANS_URL)
+        .queryParam("query", loanQuery)
+        .param("limit", "49")
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans.length()").value(49))
+      .andExpect(jsonPath("$.loans[0].item.tenantId").value(TENANT_ID_COLLEGE))
+      .andExpect(jsonPath("$.loans[48].item.tenantId").value(TENANT_ID_COLLEGE))
+      .andExpect(jsonPath("$.loans[48].item.callNumber").value("testCallNumber"));
+
+    wireMockServer.verify(1, postRequestedFor(urlPathEqualTo(BATCH_ITEMS_URL)));
+    wireMockServer.verify(1, getRequestedFor(urlPathEqualTo(ITEM_STORAGE_URL)));
+    wireMockServer.verify(1, getRequestedFor(urlPathEqualTo(INSTANCE_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(HOLDINGS_STORAGE_URL)));
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(SEARCH_INSTANCES_URL)));
   }
 
   @Test
@@ -259,10 +542,10 @@ class CirculationLoanApiTest extends BaseIT {
     mockHelper.mockEcsTlrSettings(true);
 
     mockCirculationLoanBydRequest(circulationLoan(USER_ID, true, dcbLoanItem()));
-    mockSearchRequest(List.of(ITEM_ID), searchInstance(searchItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
     mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
     mockServicePointsRequest();
-    mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE, inventoryInstance());
 
     var expectedLoan = circulationLoan(USER_ID, true, enrichedLoanItem());
     mockMvc.perform(get(LOAN_BY_ID_URL, LOAN_ID)
@@ -272,6 +555,22 @@ class CirculationLoanApiTest extends BaseIT {
       .andExpect(content().json(asJsonString(expectedLoan)));
   }
 
+
+  @Test
+  void getCirculationLoanByIdForDcbItemDoesNotCallSearchInstances() throws Exception {
+    mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
+    mockHelper.mockEcsTlrSettings(true);
+    mockCirculationLoanBydRequest(circulationLoan(USER_ID, true, dcbLoanItem()));
+    mockDcbItemFlow(TENANT_ID_COLLEGE);
+
+    mockMvc.perform(get(LOAN_BY_ID_URL, LOAN_ID)
+        .headers(buildHeaders(TENANT_ID_CONSORTIUM))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.item.tenantId").value(TENANT_ID_COLLEGE));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(SEARCH_INSTANCES_URL)));
+  }
 
   @Test
   void getCirculationLoanByIdForDcbItemForNonCentralTenant() throws Exception {
@@ -294,10 +593,10 @@ class CirculationLoanApiTest extends BaseIT {
     mockHelper.mockEcsTlrCirculationSettings(true, TENANT_ID_SECURE);
 
     mockCirculationLoanBydRequest(TENANT_ID_SECURE, circulationLoan(USER_ID, true, dcbLoanItem()));
-    mockSearchRequest(List.of(ITEM_ID), TENANT_ID_SECURE, searchInstance(searchItem()));
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, TENANT_ID_COLLEGE));
     mockItemStorageRequest(List.of(ITEM_ID), inventoryItem());
     mockServicePointsRequest();
-    mockInstanceStorageRequest(List.of(INSTANCE_ID), inventoryInstance());
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), TENANT_ID_COLLEGE, inventoryInstance());
 
     var expectedLoan = circulationLoan(USER_ID, true, enrichedLoanItem());
     mockMvc.perform(get(LOAN_BY_ID_URL, LOAN_ID)
@@ -329,13 +628,19 @@ class CirculationLoanApiTest extends BaseIT {
   private static void mockCirculationLoansRequest(String loanQuery, String tenantId,
     CirculationLoan... loans) {
 
+    mockCirculationLoansRequest(loanQuery, "500", tenantId, loans);
+  }
+
+  private static void mockCirculationLoansRequest(String loanQuery, String limit,
+    String tenantId, CirculationLoan... loans) {
+
     var circulationLoans = new CirculationLoans()
       .loans(List.of(loans))
       .totalRecords(loans.length);
 
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo(CIRCULATION_LOANS_URL))
       .withQueryParam("query", equalTo(loanQuery))
-      .withQueryParam("limit", equalTo("500"))
+      .withQueryParam("limit", equalTo(limit))
       .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(circulationLoans), 200)));
   }
@@ -360,47 +665,112 @@ class CirculationLoanApiTest extends BaseIT {
       .willReturn(jsonResponse(asJsonString(loan), 200)));
   }
 
-  private static void mockSearchRequest(List<String> itemIds, SearchInstance... instances) {
-    mockSearchRequest(itemIds, TENANT_ID_CONSORTIUM, instances);
+  private static CirculationLoan dcbLoan(String loanId, String itemId) {
+    return dcbLoan(loanId, itemId, UUID.randomUUID().toString());
   }
 
-  private static void mockSearchRequest(List<String> itemIds, String tenantId,
-    SearchInstance... instances) {
+  private static CirculationLoan dcbLoan(String loanId, String itemId, String instanceId) {
+    var item = dcbLoanItem().id(itemId).instanceId(instanceId);
+    return circulationLoan(USER_ID, true, item).id(loanId).itemId(itemId);
+  }
 
-    var searchInstances = new SearchInstances()
-      .instances(List.of(instances))
-      .totalRecords(instances.length);
+  /** Stubs the whole happy path for the default DCB item living in the given tenant. */
+  private static void mockDcbItemFlow(String itemTenantId) {
+    mockBatchItemsRequest(List.of(ITEM_ID), consortiumItem(ITEM_ID, itemTenantId));
+    mockItemStorageRequest(List.of(ITEM_ID), itemTenantId, inventoryItem());
+    mockServicePointsRequest(itemTenantId);
+    mockInstanceStorageRequest(List.of(INSTANCE_ID), itemTenantId, inventoryInstance());
+  }
 
-    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(SEARCH_INSTANCES_URL))
-      .withQueryParam("query", equalTo(CqlQuery.exactMatchAny("item.id", itemIds).toString()))
-      .withQueryParam("expandAll", equalTo("true"))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
-      .willReturn(jsonResponse(asJsonString(searchInstances), 200)));
+  /** The batch search is always executed in the central tenant scope. */
+  private static void mockBatchItemsRequest(List<String> itemIds, ConsortiumItem... items) {
+    var response = new ConsortiumItemCollection()
+      .items(List.of(items))
+      .totalRecords(items.length);
+
+    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(BATCH_ITEMS_URL))
+      .withRequestBody(matchingJsonPath("$.identifierType", equalTo("id")))
+      .withRequestBody(equalToJson(asJsonString(new ConsortiumItemBatchRequest()
+        .identifierType("id")
+        .identifierValues(itemIds)), true, true))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(response), 200)));
+  }
+
+  /** Matches any batch request, regardless of the requested ids. */
+  private static void mockAnyBatchItemsRequest(ConsortiumItem... items) {
+    var response = new ConsortiumItemCollection()
+      .items(List.of(items))
+      .totalRecords(items.length);
+
+    wireMockServer.stubFor(WireMock.post(urlPathEqualTo(BATCH_ITEMS_URL))
+      .withRequestBody(matchingJsonPath("$.identifierType", equalTo("id")))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
+      .willReturn(jsonResponse(asJsonString(response), 200)));
+  }
+
+  private static ConsortiumItem consortiumItem(String itemId, String tenantId) {
+    return consortiumItem(itemId, tenantId, INSTANCE_ID);
+  }
+
+  private static ConsortiumItem consortiumItem(String itemId, String tenantId,
+    String instanceId) {
+
+    return new ConsortiumItem()
+      .id(itemId)
+      .tenantId(tenantId)
+      .instanceId(instanceId)
+      .holdingsRecordId(HOLDINGS_RECORD_ID);
   }
 
   private static void mockItemStorageRequest(List<String> itemIds, Item... items) {
+    mockItemStorageRequest(itemIds, TENANT_ID_COLLEGE, items);
+  }
+
+  private static void mockItemStorageRequest(List<String> itemIds, String tenantId,
+    Item... items) {
+
     var foundItems = new Items()
       .items(List.of(items))
       .totalRecords(items.length);
 
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo(ITEM_STORAGE_URL))
       .withQueryParam("query", equalTo(CqlQuery.exactMatchAnyId(itemIds).toString()))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(foundItems), 200)));
   }
 
-  private static void mockInstanceStorageRequest(List<String> instanceIds, Instance... instances) {
-    var foundItems = new Instances()
+  private static void mockInstanceStorageRequest(List<String> instanceIds, String tenantId,
+    Instance... instances) {
+
+    var foundInstances = new Instances()
       .instances(List.of(instances))
       .totalRecords(instances.length);
 
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo(INSTANCE_STORAGE_URL))
       .withQueryParam("query", equalTo(CqlQuery.exactMatchAnyId(instanceIds).toString()))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_CONSORTIUM))
-      .willReturn(jsonResponse(asJsonString(foundItems), 200)));
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
+      .willReturn(jsonResponse(asJsonString(foundInstances), 200)));
+  }
+
+  private static void mockHoldingsStorageRequest(List<String> holdingsIds, String tenantId,
+    HoldingsRecord... holdings) {
+
+    var foundHoldings = new HoldingsRecords()
+      .holdingsRecords(List.of(holdings))
+      .totalRecords(holdings.length);
+
+    wireMockServer.stubFor(WireMock.get(urlPathEqualTo(HOLDINGS_STORAGE_URL))
+      .withQueryParam("query", equalTo(CqlQuery.exactMatchAnyId(holdingsIds).toString()))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
+      .willReturn(jsonResponse(asJsonString(foundHoldings), 200)));
   }
 
   private static void mockServicePointsRequest() {
+    mockServicePointsRequest(TENANT_ID_COLLEGE);
+  }
+
+  private static void mockServicePointsRequest(String tenantId) {
     var servicePointId = IN_TRANSIT_DESTINATION_SERVICE_POINT_ID.toString();
     var servicePoints = new ServicePoints()
       .servicepoints(List.of(new ServicePoint().id(servicePointId).name("test-library")))
@@ -410,7 +780,7 @@ class CirculationLoanApiTest extends BaseIT {
     wireMockServer.stubFor(WireMock.get(urlPathEqualTo(SERVICE_POINTS_URL))
       .withQueryParam("query", equalTo(query))
       .withQueryParam("limit", equalTo("1"))
-      .withHeader(XOkapiHeaders.TENANT, equalTo(TENANT_ID_COLLEGE))
+      .withHeader(XOkapiHeaders.TENANT, equalTo(tenantId))
       .willReturn(jsonResponse(asJsonString(servicePoints), 200)));
   }
 
