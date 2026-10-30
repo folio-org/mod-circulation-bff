@@ -23,6 +23,7 @@ inventory-storage.loan-types.item.get
 user-tenants.collection.get
 consortium-search.items.collection.get
 consortium-search.items.item.get
+consortium-search.items.batch.collection.get
 circulation.check-in-by-barcode.post
 circulation-storage.loans.item.get
 circulation-storage.loans.collection.get

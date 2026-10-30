@@ -671,6 +671,7 @@
         "inventory-storage.loan-types.item.get",
         "consortium-search.items.collection.get",
         "consortium-search.items.item.get",
+        "consortium-search.items.batch.collection.get",
         "tlr.ecs-request-external.post",
         "inventory-storage.location-units.libraries.item.get",
         "inventory-storage.location-units.libraries.collection.get",

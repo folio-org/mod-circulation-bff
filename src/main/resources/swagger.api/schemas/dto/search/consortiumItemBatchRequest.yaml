@@ -1,0 +1,15 @@
+type: object
+description: Request for a batch lookup of consortium items
+required:
+  - identifierType
+  - identifierValues
+properties:
+  identifierType:
+    type: string
+    description: Type of the identifiers (for example id, hrid or barcode)
+    example: id
+  identifierValues:
+    type: array
+    description: Identifier values to look up
+    items:
+      type: string

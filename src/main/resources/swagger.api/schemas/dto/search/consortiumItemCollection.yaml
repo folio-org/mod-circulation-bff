@@ -1,0 +1,11 @@
+type: object
+description: Result of a batch lookup of consortium items
+properties:
+  items:
+    type: array
+    description: Found items. Missing items are omitted and the order is not guaranteed.
+    items:
+      $ref: 'consortiumItem.yaml'
+  totalRecords:
+    type: integer
+    description: Number of items found
