@@ -48,7 +48,8 @@ import org.folio.circulationbff.domain.dto.LoanItem;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.model.LoanEnrichment;
 import org.folio.circulationbff.service.impl.LoanEnrichmentServiceImpl;
-import org.folio.spring.service.SystemUserScopedExecutionService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.scope.FolioExecutionContextService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -77,7 +78,8 @@ class LoanEnrichmentServiceTest {
   @Mock private HoldingsStorageClient holdingsStorageClient;
   @Mock private ServicePointClient servicePointClient;
   @Mock private InstanceStorageClient instanceStorageClient;
-  @Mock private SystemUserScopedExecutionService executionService;
+  @Mock private FolioExecutionContextService executionService;
+  @Mock private FolioExecutionContext folioExecutionContext;
 
   @InjectMocks private LoanEnrichmentServiceImpl service;
 
@@ -143,8 +145,10 @@ class LoanEnrichmentServiceTest {
     assertEquals(List.of(contributor), enrichment.contributors());
     assertEquals(List.of(publication), enrichment.publication());
 
-    verify(executionService, times(1)).executeSystemUserScoped(eq(CENTRAL), any(Callable.class));
-    verify(executionService, times(1)).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
+    verify(executionService, times(1)).execute(eq(CENTRAL),
+      any(FolioExecutionContext.class), any(Callable.class));
+    verify(executionService, times(1)).execute(eq(COLLEGE),
+      any(FolioExecutionContext.class), any(Callable.class));
     var captor = ArgumentCaptor.forClass(ConsortiumItemBatchRequest.class);
     verify(searchItemsClient).searchItemsBatch(captor.capture());
     assertEquals("id", captor.getValue().getIdentifierType());
@@ -218,8 +222,10 @@ class LoanEnrichmentServiceTest {
     assertEquals(2, result.size());
     assertEquals(COLLEGE, result.get(ITEM_1).tenantId());
     assertEquals(UNIVERSITY, result.get(ITEM_2).tenantId());
-    verify(executionService, times(1)).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
-    verify(executionService, times(1)).executeSystemUserScoped(eq(UNIVERSITY), any(Callable.class));
+    verify(executionService, times(1)).execute(eq(COLLEGE),
+      any(FolioExecutionContext.class), any(Callable.class));
+    verify(executionService, times(1)).execute(eq(UNIVERSITY),
+      any(FolioExecutionContext.class), any(Callable.class));
   }
 
   @Test
@@ -249,7 +255,8 @@ class LoanEnrichmentServiceTest {
     var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1)));
 
     assertEquals(Set.of(ITEM_1), result.keySet());
-    verify(executionService, times(1)).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
+    verify(executionService, times(1)).execute(eq(COLLEGE),
+      any(FolioExecutionContext.class), any(Callable.class));
   }
 
   @Test
@@ -261,7 +268,7 @@ class LoanEnrichmentServiceTest {
     var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1)));
 
     assertTrue(result.isEmpty());
-    verify(executionService, times(1)).executeSystemUserScoped(any(String.class),
+    verify(executionService, times(1)).execute(any(String.class), any(FolioExecutionContext.class),
       any(Callable.class));
     verifyNoInteractions(fetchingService);
   }
@@ -402,7 +409,8 @@ class LoanEnrichmentServiceTest {
 
     assertEquals(Set.of(ITEM_1), result.keySet());
     // central: one call for the batch search and one for the instance retry
-    verify(executionService, times(2)).executeSystemUserScoped(eq(CENTRAL), any(Callable.class));
+    verify(executionService, times(2)).execute(eq(CENTRAL),
+      any(FolioExecutionContext.class), any(Callable.class));
     verify(fetchingService, times(2)).fetchByIds(eq(instanceStorageClient), anyCollection(),
       any(), any());
   }
@@ -536,8 +544,9 @@ class LoanEnrichmentServiceTest {
 
   @SuppressWarnings("unchecked")
   private void stubScopedExecution() {
-    when(executionService.executeSystemUserScoped(any(String.class), any(Callable.class)))
-      .thenAnswer(invocation -> invocation.getArgument(1, Callable.class).call());
+    when(executionService.execute(any(String.class), any(FolioExecutionContext.class),
+      any(Callable.class)))
+      .thenAnswer(invocation -> invocation.getArgument(2, Callable.class).call());
   }
 
   private void stubBatch(ConsortiumItemCollection response, String... expectedIds) {

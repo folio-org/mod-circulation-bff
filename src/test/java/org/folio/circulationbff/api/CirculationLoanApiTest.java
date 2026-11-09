@@ -40,7 +40,6 @@ import org.folio.circulationbff.domain.dto.Instances;
 import org.folio.circulationbff.domain.dto.Item;
 import org.folio.circulationbff.domain.dto.Items;
 import org.folio.circulationbff.domain.dto.ServicePoint;
-import org.folio.circulationbff.domain.dto.LoanItem;
 import org.folio.circulationbff.domain.dto.ServicePoints;
 import org.folio.circulationbff.domain.dto.UserTenant;
 import org.folio.circulationbff.domain.dto.UserTenantCollection;

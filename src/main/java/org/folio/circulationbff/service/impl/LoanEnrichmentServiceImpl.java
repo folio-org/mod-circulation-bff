@@ -42,7 +42,8 @@ import org.folio.circulationbff.domain.model.LoanEnrichment;
 import org.folio.circulationbff.service.BulkFetchingService;
 import org.folio.circulationbff.service.LoanEnrichmentService;
 import org.folio.circulationbff.service.TenantService;
-import org.folio.spring.service.SystemUserScopedExecutionService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.scope.FolioExecutionContextService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,8 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
   private final HoldingsStorageClient holdingsStorageClient;
   private final ServicePointClient servicePointClient;
   private final InstanceStorageClient instanceStorageClient;
-  private final SystemUserScopedExecutionService executionService;
+  private final FolioExecutionContextService executionService;
+  private final FolioExecutionContext folioExecutionContext;
 
   @Override
   public Map<String, LoanEnrichment> enrich(Collection<LoanItem> loanItems) {
@@ -121,7 +123,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
       .identifierType(ID_IDENTIFIER_TYPE)
       .identifierValues(itemIds);
 
-    var response = executionService.executeSystemUserScoped(centralTenantId,
+    var response = executionService.execute(centralTenantId, folioExecutionContext,
       () -> searchItemsClient.searchItemsBatch(request));
 
     Map<String, ConsortiumItem> byId = new LinkedHashMap<>();
@@ -141,7 +143,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     List<ConsortiumItem> consortiumItems, Map<String, String> instanceIdByItemId,
     String centralTenantId) {
 
-    return executionService.executeSystemUserScoped(tenantId,
+    return executionService.execute(tenantId, folioExecutionContext,
       () -> doEnrichInTenant(tenantId, consortiumItems, instanceIdByItemId, centralTenantId));
   }
 
@@ -239,7 +241,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     if (!missing.isEmpty() && !Objects.equals(tenantId, centralTenantId)) {
       log.info("fetchInstances:: {} instance(s) not found in tenant {}, retrying in central",
         missing.size(), tenantId);
-      instances.putAll(executionService.executeSystemUserScoped(centralTenantId,
+      instances.putAll(executionService.execute(centralTenantId, folioExecutionContext,
         () -> fetchingService.fetchByIds(instanceStorageClient, missing,
           Instances::getInstances, Instance::getId)));
     }
