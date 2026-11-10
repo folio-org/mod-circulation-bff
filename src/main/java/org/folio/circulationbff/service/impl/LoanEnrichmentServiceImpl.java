@@ -108,10 +108,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     log.info("enrichChunk:: requested={}, found={}, missing={}", itemIds.size(), found.size(),
       itemIds.size() - found.size());
 
-    // DCB items point at a placeholder instance, there is no real data to enrich them with
     Map<String, List<ConsortiumItem>> byTenant = found.values().stream()
-      .filter(consortiumItem -> !isDcbInstance(resolveInstanceId(consortiumItem,
-        instanceIdByItemId)))
       .collect(groupingBy(ConsortiumItem::getTenantId));
 
     Map<String, LoanEnrichment> result = new HashMap<>();
@@ -183,8 +180,9 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
         missingItems++;
         continue;
       }
-      Instance instance = instances.get(instanceIdByItem.get(consortiumItem.getId()));
-      if (instance == null) {
+      String instanceId = instanceIdByItem.get(consortiumItem.getId());
+      Instance instance = instances.get(instanceId);
+      if (instance == null && !isDcbInstance(instanceId)) {
         missingInstances++;
         continue;
       }
@@ -230,7 +228,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     Collection<String> instanceIds) {
 
     Set<String> ids = instanceIds.stream()
-      .filter(id -> isNotBlank(id))
+      .filter(id -> isNotBlank(id) && !isDcbInstance(id))
       .collect(toCollection(LinkedHashSet::new));
 
     if (ids.isEmpty()) {
@@ -280,11 +278,12 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
           .id(UUID.fromString(sp.getId()))
           .name(sp.getName()))
         .orElse(null))
-      .editions(instance.getEditions() == null ? new LinkedHashSet<>()
+      .editions(instance == null || instance.getEditions() == null ? new LinkedHashSet<>()
         : new LinkedHashSet<>(instance.getEditions()))
-      .physicalDescriptions(emptyListIfNull(instance.getPhysicalDescriptions()))
-      .contributors(emptyListIfNull(instance.getContributors()))
-      .publication(emptyListIfNull(instance.getPublication()))
+      .physicalDescriptions(emptyListIfNull(
+        instance == null ? null : instance.getPhysicalDescriptions()))
+      .contributors(emptyListIfNull(instance == null ? null : instance.getContributors()))
+      .publication(emptyListIfNull(instance == null ? null : instance.getPublication()))
       .build();
   }
 
@@ -295,7 +294,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     return isNotBlank(loanInstanceId) ? loanInstanceId : consortiumItem.getInstanceId();
   }
 
-  /** The DCB placeholder instance carries no real bibliographic data. */
+  /** The DCB placeholder instance carries no real bibliographic data, so it is never fetched. */
   private static boolean isDcbInstance(String instanceId) {
     return DCB_INSTANCE_ID.equals(instanceId);
   }

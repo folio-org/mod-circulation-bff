@@ -238,45 +238,51 @@ class LoanEnrichmentServiceTest {
   }
 
   @Test
-  void enrichSkipsDcbItemWhenLoanCarriesDcbInstanceId() {
+  void enrichDoesNotFetchDcbInstanceButEnrichesItemFields() {
     stubCentralTenant();
     stubScopedExecution();
     stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1)), ITEM_1);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
 
     var result = service.enrich(List.of(loanItem(ITEM_1, DCB_INSTANCE_ID)));
 
-    assertTrue(result.isEmpty());
-    verify(executionService, never()).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
-    verifyNoInteractions(fetchingService, instanceStorageClient);
+    assertEquals(Set.of(ITEM_1), result.keySet());
+    assertDcbEnrichment(result.get(ITEM_1));
+    verify(fetchingService, never()).fetchByIds(eq(instanceStorageClient), anyCollection(),
+      any(), any());
   }
 
   @Test
-  void enrichSkipsDcbItemWhenSearchResultCarriesDcbInstanceId() {
+  void enrichDoesNotFetchDcbInstanceFromSearchResultFallback() {
     stubCentralTenant();
     stubScopedExecution();
     stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, DCB_INSTANCE_ID)), ITEM_1);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
 
     var result = service.enrich(List.of(loanItem(ITEM_1, null)));
 
-    assertTrue(result.isEmpty());
-    verify(executionService, never()).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
-    verifyNoInteractions(fetchingService, instanceStorageClient);
+    assertEquals(Set.of(ITEM_1), result.keySet());
+    assertDcbEnrichment(result.get(ITEM_1));
+    verify(fetchingService, never()).fetchByIds(eq(instanceStorageClient), anyCollection(),
+      any(), any());
   }
 
   @Test
-  void enrichSkipsOnlyDcbItemsInMixedBatch() {
+  void enrichFetchesInstanceOnlyForNonDcbItemsInMixedBatch() {
     stubCentralTenant();
     stubScopedExecution();
     stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1),
       consortiumItem(ITEM_2, COLLEGE, DCB_INSTANCE_ID)), ITEM_1, ITEM_2);
-    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
+    stubFetch(itemStorageClient, Set.of(ITEM_1, ITEM_2),
+      Map.of(ITEM_1, storageItemWithCopy(ITEM_1), ITEM_2, storageItemWithCopy(ITEM_2)));
     stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
       Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
 
     var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1),
       loanItem(ITEM_2, DCB_INSTANCE_ID)));
 
-    assertEquals(Set.of(ITEM_1), result.keySet());
+    assertEquals(Set.of(ITEM_1, ITEM_2), result.keySet());
+    assertDcbEnrichment(result.get(ITEM_2));
   }
 
   @Test
@@ -572,6 +578,14 @@ class LoanEnrichmentServiceTest {
   }
 
   // ---- helpers -----------------------------------------------------------------------------
+
+  private static void assertDcbEnrichment(LoanEnrichment enrichment) {
+    assertEquals(COLLEGE, enrichment.tenantId());
+    assertTrue(enrichment.contributors().isEmpty());
+    assertTrue(enrichment.publication().isEmpty());
+    assertTrue(enrichment.editions().isEmpty());
+    assertTrue(enrichment.physicalDescriptions().isEmpty());
+  }
 
   private void stubCentralTenant() {
     when(tenantService.getCentralTenantId()).thenReturn(Optional.of(CENTRAL));
