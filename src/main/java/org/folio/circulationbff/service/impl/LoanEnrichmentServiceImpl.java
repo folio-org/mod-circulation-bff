@@ -58,6 +58,7 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
 
   static final int BATCH_CHUNK_SIZE = 100;
   private static final String ID_IDENTIFIER_TYPE = "id";
+  private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
 
   private final TenantService tenantService;
   private final BulkFetchingService fetchingService;
@@ -107,7 +108,10 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     log.info("enrichChunk:: requested={}, found={}, missing={}", itemIds.size(), found.size(),
       itemIds.size() - found.size());
 
+    // DCB items point at a placeholder instance, there is no real data to enrich them with
     Map<String, List<ConsortiumItem>> byTenant = found.values().stream()
+      .filter(consortiumItem -> !isDcbInstance(resolveInstanceId(consortiumItem,
+        instanceIdByItemId)))
       .collect(groupingBy(ConsortiumItem::getTenantId));
 
     Map<String, LoanEnrichment> result = new HashMap<>();
@@ -164,9 +168,8 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
 
     Map<String, String> instanceIdByItem = new LinkedHashMap<>();
     for (ConsortiumItem consortiumItem : consortiumItems) {
-      String loanInstanceId = instanceIdByItemId.get(consortiumItem.getId());
       instanceIdByItem.put(consortiumItem.getId(),
-        isNotBlank(loanInstanceId) ? loanInstanceId : consortiumItem.getInstanceId());
+        resolveInstanceId(consortiumItem, instanceIdByItemId));
     }
     Map<String, Instance> instances = fetchInstances(tenantId, centralTenantId,
       instanceIdByItem.values());
@@ -283,6 +286,18 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
       .contributors(emptyListIfNull(instance.getContributors()))
       .publication(emptyListIfNull(instance.getPublication()))
       .build();
+  }
+
+  private static String resolveInstanceId(ConsortiumItem consortiumItem,
+    Map<String, String> instanceIdByItemId) {
+
+    String loanInstanceId = instanceIdByItemId.get(consortiumItem.getId());
+    return isNotBlank(loanInstanceId) ? loanInstanceId : consortiumItem.getInstanceId();
+  }
+
+  /** The DCB placeholder instance carries no real bibliographic data. */
+  private static boolean isDcbInstance(String instanceId) {
+    return DCB_INSTANCE_ID.equals(instanceId);
   }
 
   private static String resolveCopyNumber(Item item, Map<String, HoldingsRecord> holdings) {

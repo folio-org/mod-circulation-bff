@@ -66,6 +66,7 @@ class LoanEnrichmentServiceTest {
   private static final String ITEM_1 = "item-1";
   private static final String ITEM_2 = "item-2";
   private static final String ITEM_3 = "item-3";
+  private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
   private static final String INSTANCE_1 = "instance-1";
   private static final String INSTANCE_2 = "instance-2";
   private static final String SERVICE_POINT_ID = UUID.randomUUID().toString();
@@ -232,6 +233,48 @@ class LoanEnrichmentServiceTest {
       Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
 
     var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1), loanItem(ITEM_2, INSTANCE_2)));
+
+    assertEquals(Set.of(ITEM_1), result.keySet());
+  }
+
+  @Test
+  void enrichSkipsDcbItemWhenLoanCarriesDcbInstanceId() {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1)), ITEM_1);
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, DCB_INSTANCE_ID)));
+
+    assertTrue(result.isEmpty());
+    verify(executionService, never()).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
+    verifyNoInteractions(fetchingService, instanceStorageClient);
+  }
+
+  @Test
+  void enrichSkipsDcbItemWhenSearchResultCarriesDcbInstanceId() {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, DCB_INSTANCE_ID)), ITEM_1);
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, null)));
+
+    assertTrue(result.isEmpty());
+    verify(executionService, never()).executeSystemUserScoped(eq(COLLEGE), any(Callable.class));
+    verifyNoInteractions(fetchingService, instanceStorageClient);
+  }
+
+  @Test
+  void enrichSkipsOnlyDcbItemsInMixedBatch() {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1),
+      consortiumItem(ITEM_2, COLLEGE, DCB_INSTANCE_ID)), ITEM_1, ITEM_2);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
+    stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
+      Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1),
+      loanItem(ITEM_2, DCB_INSTANCE_ID)));
 
     assertEquals(Set.of(ITEM_1), result.keySet());
   }
