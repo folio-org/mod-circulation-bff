@@ -238,10 +238,40 @@ class LoanEnrichmentServiceTest {
   }
 
   @Test
-  void enrichDoesNotFetchDcbInstanceButEnrichesItemFields() {
+  void enrichUsesRealSearchInstanceWhenLoanCarriesDcbInstanceId() {
     stubCentralTenant();
     stubScopedExecution();
     stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1)), ITEM_1);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
+    stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
+      Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, DCB_INSTANCE_ID)));
+
+    assertEquals(Set.of(ITEM_1), result.keySet());
+    assertEquals(Set.of("ed"), result.get(ITEM_1).editions());
+  }
+
+  @Test
+  void enrichUsesRealLoanInstanceWhenSearchResultCarriesDcbInstanceId() {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, DCB_INSTANCE_ID)), ITEM_1);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
+    stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
+      Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1)));
+
+    assertEquals(Set.of(ITEM_1), result.keySet());
+    assertEquals(Set.of("ed"), result.get(ITEM_1).editions());
+  }
+
+  @Test
+  void enrichDoesNotFetchInstanceWhenBothSourcesCarryDcbInstanceId() {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, DCB_INSTANCE_ID)), ITEM_1);
     stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
 
     var result = service.enrich(List.of(loanItem(ITEM_1, DCB_INSTANCE_ID)));

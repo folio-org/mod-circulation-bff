@@ -291,7 +291,16 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     Map<String, String> instanceIdByItemId) {
 
     String loanInstanceId = instanceIdByItemId.get(consortiumItem.getId());
-    return isNotBlank(loanInstanceId) ? loanInstanceId : consortiumItem.getInstanceId();
+    String searchInstanceId = consortiumItem.getInstanceId();
+    // the loan's item of a DCB loan carries the DCB placeholder instance, so a real instance id
+    // from either source wins over it
+    if (isNotBlank(loanInstanceId) && !isDcbInstance(loanInstanceId)) {
+      return loanInstanceId;
+    }
+    if (isNotBlank(searchInstanceId) && !isDcbInstance(searchInstanceId)) {
+      return searchInstanceId;
+    }
+    return isNotBlank(loanInstanceId) ? loanInstanceId : searchInstanceId;
   }
 
   /** The DCB placeholder instance carries no real bibliographic data, so it is never fetched. */
