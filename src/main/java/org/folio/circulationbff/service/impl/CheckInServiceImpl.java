@@ -3,6 +3,7 @@ package org.folio.circulationbff.service.impl;
 import static java.util.stream.Collectors.joining;
 import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CHECKED_OUT;
 import static org.folio.circulationbff.domain.dto.CirculationItemStatus.NameEnum.CLAIMED_RETURNED;
+import static org.folio.circulationbff.support.DcbConstants.DCB_INSTANCE_ID;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +67,6 @@ public class CheckInServiceImpl implements CheckInService {
   private final SystemUserScopedExecutionService executionService;
   private final UserService userService;
 
-  private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
   private static final String DCB_SERVICE_POINT_ID = "9d1b77e8-f02e-4b7f-b296-3f2042ddac54";
 
   @Override

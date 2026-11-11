@@ -32,8 +32,6 @@ folio:
     permissionsFilePath: permissions/mod-circulation-bff.csv
   batch-requests:
     query-request-ids-count: ${BATCH_REQUEST_DETAILS_QUERY_IDS_COUNT:20}
-  loans:
-    max-limit: ${LOANS_MAX_LIMIT:500}
   exchange:
     enabled: true
   logging: # https://github.com/folio-org/folio-spring-support/blob/master/doc/REQUEST_LOGGING.md

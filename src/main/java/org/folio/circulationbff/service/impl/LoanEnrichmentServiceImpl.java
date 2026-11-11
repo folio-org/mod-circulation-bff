@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toCollection;
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.folio.circulationbff.support.DcbConstants.DCB_INSTANCE_ID;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import org.folio.circulationbff.domain.dto.BffSearchItemCallNumberComponents;
 import org.folio.circulationbff.domain.dto.BffSearchItemInTransitDestinationServicePoint;
 import org.folio.circulationbff.domain.dto.ConsortiumItem;
 import org.folio.circulationbff.domain.dto.ConsortiumItemBatchRequest;
+import org.folio.circulationbff.domain.dto.ConsortiumItemCollection;
 import org.folio.circulationbff.domain.dto.HoldingsRecord;
 import org.folio.circulationbff.domain.dto.HoldingsRecords;
 import org.folio.circulationbff.domain.dto.Instance;
@@ -56,7 +58,6 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
 
   static final int BATCH_CHUNK_SIZE = 100;
   private static final String ID_IDENTIFIER_TYPE = "id";
-  private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
 
   private final TenantService tenantService;
   private final BulkFetchingService fetchingService;
@@ -89,23 +90,16 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
       return Map.of();
     }
 
-    Map<String, LoanEnrichment> result = new HashMap<>();
+    // only the batch search is chunked, items are then grouped by tenant once so that every
+    // tenant is visited a single time regardless of the number of search chunks
+    Map<String, ConsortiumItem> found = new LinkedHashMap<>();
     for (List<String> chunk : ListUtils.partition(new ArrayList<>(instanceIdByItemId.keySet()),
       BATCH_CHUNK_SIZE)) {
 
-      result.putAll(enrichChunk(chunk, instanceIdByItemId, centralTenantId));
+      found.putAll(findConsortiumItems(chunk, centralTenantId));
     }
-
-    log.info("enrich:: requested={}, enriched={}", instanceIdByItemId.size(), result.size());
-    return result;
-  }
-
-  private Map<String, LoanEnrichment> enrichChunk(List<String> itemIds,
-    Map<String, String> instanceIdByItemId, String centralTenantId) {
-
-    Map<String, ConsortiumItem> found = findConsortiumItems(itemIds, centralTenantId);
-    log.info("enrichChunk:: requested={}, found={}, missing={}", itemIds.size(), found.size(),
-      itemIds.size() - found.size());
+    log.info("enrich:: requested={}, found={}, missing={}", instanceIdByItemId.size(),
+      found.size(), instanceIdByItemId.size() - found.size());
 
     Map<String, List<ConsortiumItem>> byTenant = found.values().stream()
       .collect(groupingBy(ConsortiumItem::getTenantId));
@@ -114,9 +108,14 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
     byTenant.forEach((tenantId, consortiumItems) -> result.putAll(
       enrichInTenant(tenantId, consortiumItems, instanceIdByItemId, centralTenantId)));
 
+    log.info("enrich:: requested={}, enriched={}", instanceIdByItemId.size(), result.size());
     return result;
   }
 
+  /**
+   * Looks the chunk up in the central tenant. A failed search leaves the chunk unenriched
+   * instead of failing the whole listing.
+   */
   private Map<String, ConsortiumItem> findConsortiumItems(List<String> itemIds,
     String centralTenantId) {
 
@@ -124,8 +123,15 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
       .identifierType(ID_IDENTIFIER_TYPE)
       .identifierValues(itemIds);
 
-    var response = executionService.execute(centralTenantId, folioExecutionContext,
-      () -> searchItemsClient.searchItemsBatch(request));
+    ConsortiumItemCollection response;
+    try {
+      response = executionService.execute(centralTenantId, folioExecutionContext,
+        () -> searchItemsClient.searchItemsBatch(request));
+    } catch (RuntimeException e) {
+      log.warn("findConsortiumItems:: batch search failed, {} item(s) will not be enriched: {}",
+        itemIds.size(), e.getMessage());
+      return Map.of();
+    }
 
     Map<String, ConsortiumItem> byId = new LinkedHashMap<>();
     for (ConsortiumItem consortiumItem : emptyIfNull(
@@ -135,17 +141,42 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
         log.warn("findConsortiumItems:: skipping search result without id or tenantId");
         continue;
       }
-      byId.putIfAbsent(consortiumItem.getId(), consortiumItem);
+      byId.merge(consortiumItem.getId(), consortiumItem, this::pickConsortiumItem);
     }
     return byId;
   }
 
+  /**
+   * The same item id can be returned for several tenants. The result must not depend on the order
+   * of the search response, so an entry with a real instance wins over a DCB placeholder one.
+   */
+  private ConsortiumItem pickConsortiumItem(ConsortiumItem existing, ConsortiumItem candidate) {
+    if (!Objects.equals(existing.getTenantId(), candidate.getTenantId())) {
+      log.warn("pickConsortiumItem:: item {} found in several tenants: {} and {}",
+        existing.getId(), existing.getTenantId(), candidate.getTenantId());
+    }
+    if (isDcbInstance(existing.getInstanceId()) && !isDcbInstance(candidate.getInstanceId())) {
+      return candidate;
+    }
+    return existing;
+  }
+
+  /**
+   * Enriches the items of one tenant. A tenant that can not be reached leaves its items
+   * unenriched instead of failing the whole listing.
+   */
   private Map<String, LoanEnrichment> enrichInTenant(String tenantId,
     List<ConsortiumItem> consortiumItems, Map<String, String> instanceIdByItemId,
     String centralTenantId) {
 
-    return executionService.execute(tenantId, folioExecutionContext,
-      () -> doEnrichInTenant(tenantId, consortiumItems, instanceIdByItemId, centralTenantId));
+    try {
+      return executionService.execute(tenantId, folioExecutionContext,
+        () -> doEnrichInTenant(tenantId, consortiumItems, instanceIdByItemId, centralTenantId));
+    } catch (RuntimeException e) {
+      log.warn("enrichInTenant:: tenant={}, {} item(s) will not be enriched: {}", tenantId,
+        consortiumItems.size(), e.getMessage());
+      return Map.of();
+    }
   }
 
   private Map<String, LoanEnrichment> doEnrichInTenant(String tenantId,

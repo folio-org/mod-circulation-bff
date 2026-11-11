@@ -21,18 +21,17 @@ import org.folio.circulationbff.client.CirculationClient;
 import org.folio.circulationbff.domain.dto.CirculationLoans;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapper;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapperImpl;
-import org.folio.circulationbff.domain.type.ErrorCode;
-import org.folio.circulationbff.exception.ValidationException;
 import org.folio.circulationbff.service.impl.CirculationLoanServiceImpl;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class CirculationLoanServiceTest {
@@ -45,40 +44,23 @@ class CirculationLoanServiceTest {
   @Mock private CirculationClient circulationClient;
   @Spy private CirculationLoanMapper circulationLoanMapper = new CirculationLoanMapperImpl();
 
-  @BeforeEach
-  void setUp() {
-    ReflectionTestUtils.setField(circulationLoanService, "loansMaxLimit", 500);
-  }
-
   @AfterEach
   void tearDown() {
     verifyNoMoreInteractions(tenantService, loanEnrichmentService, settingsService,
       circulationClient);
   }
 
-  @Test
-  void findCirculationLoansRejectsLimitAboveMaximum() {
-    var query = "(userId==" + USER_ID + ")";
-
-    var exception = assertThrows(ValidationException.class,
-      () -> circulationLoanService.findCirculationLoans(query, 501, 0, "auto"));
-
-    assertEquals(ErrorCode.LOANS_LIMIT_EXCEEDED, exception.getCode());
-    assertEquals("limit", exception.getParameters().get(0).getKey());
-    assertEquals("501", exception.getParameters().get(0).getValue());
-    verifyNoInteractions(circulationClient, tenantService, settingsService, loanEnrichmentService,
-      circulationLoanMapper);
-  }
-
-  @Test
-  void findCirculationLoansAcceptsLimitEqualToMaximum() {
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(ints = { 0, 500, 501, 100000 })
+  void findCirculationLoansPassesAnyLimitThroughToCirculation(Integer limit) {
     var query = "(userId==" + USER_ID + ")";
     var foundLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(false, enrichedLoanItem())))
       .totalRecords(1);
-    when(circulationClient.findLoansByQuery(query, 500, 0, "auto")).thenReturn(foundLoans);
+    when(circulationClient.findLoansByQuery(query, limit, 0, "auto")).thenReturn(foundLoans);
 
-    var result = circulationLoanService.findCirculationLoans(query, 500, 0, "auto");
+    var result = circulationLoanService.findCirculationLoans(query, limit, 0, "auto");
 
     assertEquals(foundLoans, result);
   }

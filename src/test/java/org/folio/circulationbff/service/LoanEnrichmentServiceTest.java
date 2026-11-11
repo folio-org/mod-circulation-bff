@@ -1,10 +1,10 @@
 package org.folio.circulationbff.service;
 
+import static java.util.stream.Collectors.toMap;
+import static org.folio.circulationbff.support.DcbConstants.DCB_INSTANCE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +52,9 @@ import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -67,7 +70,6 @@ class LoanEnrichmentServiceTest {
   private static final String ITEM_1 = "item-1";
   private static final String ITEM_2 = "item-2";
   private static final String ITEM_3 = "item-3";
-  private static final String DCB_INSTANCE_ID = "9d1b77e4-f02e-4b7f-b296-3f2042ddac54";
   private static final String INSTANCE_1 = "instance-1";
   private static final String INSTANCE_2 = "instance-2";
   private static final String SERVICE_POINT_ID = UUID.randomUUID().toString();
@@ -543,21 +545,22 @@ class LoanEnrichmentServiceTest {
   }
 
   @Test
-  void enrichPropagatesFailureFromBatchCall() {
+  void enrichLeavesItemsUnenrichedWhenBatchCallFails() {
     stubCentralTenant();
     stubScopedExecution();
     when(searchItemsClient.searchItemsBatch(any(ConsortiumItemBatchRequest.class)))
       .thenThrow(new IllegalStateException("search is down"));
     var loanItems = List.of(loanItem(ITEM_1, INSTANCE_1));
 
-    var exception = assertThrows(IllegalStateException.class, () -> service.enrich(loanItems));
+    var result = service.enrich(loanItems);
 
-    assertEquals("search is down", exception.getMessage());
+    assertTrue(result.isEmpty());
+    verifyNoInteractions(fetchingService);
   }
 
   @Test
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  void enrichPropagatesFailureFromStorage() {
+  void enrichLeavesItemsUnenrichedWhenStorageFails() {
     stubCentralTenant();
     stubScopedExecution();
     stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1)), ITEM_1);
@@ -566,19 +569,92 @@ class LoanEnrichmentServiceTest {
       .thenThrow(new IllegalStateException("storage is down"));
     var loanItems = List.of(loanItem(ITEM_1, INSTANCE_1));
 
-    var exception = assertThrows(IllegalStateException.class, () -> service.enrich(loanItems));
+    var result = service.enrich(loanItems);
 
-    assertEquals("storage is down", exception.getMessage());
+    assertTrue(result.isEmpty());
+  }
+
+  @ParameterizedTest
+  @CsvSource({ "99,1", "100,1", "101,2", "200,2", "201,3" })
+  void enrichChunksOnlyTheSearchAndVisitsTheTenantOnce(int itemsCount, int expectedSearches) {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubDynamicSearchAndFetches();
+    var loanItems = IntStream.range(0, itemsCount)
+      .mapToObj(i -> loanItem("item-" + i, "instance-" + i))
+      .toList();
+
+    var result = service.enrich(loanItems);
+
+    assertEquals(itemsCount, result.size());
+    verify(searchItemsClient, times(expectedSearches))
+      .searchItemsBatch(any(ConsortiumItemBatchRequest.class));
+    verify(executionService, times(expectedSearches)).execute(eq(CENTRAL),
+      any(FolioExecutionContext.class), any(Callable.class));
+    verify(executionService, times(1)).execute(eq(COLLEGE),
+      any(FolioExecutionContext.class), any(Callable.class));
+    verify(fetchingService, times(1)).fetchByIds(eq(itemStorageClient), anyCollection(), any(),
+      any());
+    verify(fetchingService, times(1)).fetchByIds(eq(instanceStorageClient), anyCollection(),
+      any(), any());
   }
 
   @Test
-  void enrichHasNoReferenceDataDependencies() {
-    var fieldTypes = Arrays.stream(LoanEnrichmentServiceImpl.class.getDeclaredFields())
-      .map(field -> field.getType().getSimpleName())
+  void enrichKeepsOtherTenantsWhenOneTenantFails() {
+    stubCentralTenant();
+    stubScopedExecution();
+    when(executionService.execute(eq(UNIVERSITY), any(FolioExecutionContext.class),
+      any(Callable.class))).thenThrow(new IllegalStateException("tenant is not reachable"));
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1),
+      consortiumItem(ITEM_2, UNIVERSITY, INSTANCE_2)), ITEM_1, ITEM_2);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
+    stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
+      Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, INSTANCE_1),
+      loanItem(ITEM_2, INSTANCE_2)));
+
+    assertEquals(Set.of(ITEM_1), result.keySet());
+  }
+
+  @Test
+  void enrichKeepsLaterChunksWhenOneBatchSearchFails() {
+    stubCentralTenant();
+    stubScopedExecution();
+    stubDynamicSearchAndFetches();
+    // the first chunk of 100 ids fails, the remaining single id must still be enriched
+    when(searchItemsClient.searchItemsBatch(argThat(request -> request != null
+      && request.getIdentifierValues().size() == 100)))
+      .thenThrow(new IllegalStateException("search is not available"));
+    var loanItems = IntStream.range(0, 101)
+      .mapToObj(i -> loanItem("item-" + i, "instance-" + i))
       .toList();
 
-    assertFalse(fieldTypes.stream().anyMatch(name -> name.contains("Location")
-      || name.contains("MaterialType") || name.contains("LoanType")));
+    var result = service.enrich(loanItems);
+
+    assertEquals(1, result.size());
+    assertTrue(result.containsKey("item-100"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = { false, true })
+  void enrichPrefersRealInstanceEntryWhenItemIsFoundInSeveralTenants(boolean dcbEntryFirst) {
+    stubCentralTenant();
+    stubScopedExecution();
+    var dcbEntry = consortiumItem(ITEM_1, COLLEGE, DCB_INSTANCE_ID);
+    var realEntry = consortiumItem(ITEM_1, UNIVERSITY, INSTANCE_1);
+    stubBatch(dcbEntryFirst ? collection(dcbEntry, realEntry) : collection(realEntry, dcbEntry),
+      ITEM_1);
+    stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
+    stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
+      Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
+
+    var result = service.enrich(List.of(loanItem(ITEM_1, null)));
+
+    assertEquals(UNIVERSITY, result.get(ITEM_1).tenantId());
+    assertEquals(Set.of("ed"), result.get(ITEM_1).editions());
+    verify(executionService, never()).execute(eq(COLLEGE), any(FolioExecutionContext.class),
+      any(Callable.class));
   }
 
   @Test
@@ -634,6 +710,29 @@ class LoanEnrichmentServiceTest {
     when(executionService.execute(any(String.class), any(FolioExecutionContext.class),
       any(Callable.class)))
       .thenAnswer(invocation -> invocation.getArgument(2, Callable.class).call());
+  }
+
+  /**
+   * Answers the batch search, item fetch and instance fetch for any requested ids: every item is
+   * found in the college tenant and is related to the instance with the same number.
+   */
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private void stubDynamicSearchAndFetches() {
+    when(searchItemsClient.searchItemsBatch(any(ConsortiumItemBatchRequest.class)))
+      .thenAnswer(invocation -> {
+        var request = invocation.getArgument(0, ConsortiumItemBatchRequest.class);
+        return collection(request.getIdentifierValues().stream()
+          .map(id -> consortiumItem(id, COLLEGE, id.replace("item-", "instance-")))
+          .toArray(ConsortiumItem[]::new));
+      });
+    when(fetchingService.fetchByIds(eq(itemStorageClient), anyCollection(),
+      any(Function.class), any(Function.class)))
+      .thenAnswer(invocation -> ((Collection<String>) invocation.getArgument(1)).stream()
+        .collect(toMap(id -> id, id -> storageItemWithCopy(id))));
+    when(fetchingService.fetchByIds(eq(instanceStorageClient), anyCollection(),
+      any(Function.class), any(Function.class)))
+      .thenAnswer(invocation -> ((Collection<String>) invocation.getArgument(1)).stream()
+        .collect(toMap(id -> id, id -> storageInstance(id))));
   }
 
   private void stubBatch(ConsortiumItemCollection response, String... expectedIds) {

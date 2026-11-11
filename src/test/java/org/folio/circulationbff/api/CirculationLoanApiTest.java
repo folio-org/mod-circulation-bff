@@ -89,20 +89,21 @@ class CirculationLoanApiTest extends BaseIT {
   }
 
   @Test
-  void findCirculationLoansRejectsLimitAboveMaximum() throws Exception {
+  void findCirculationLoansForwardsLargeLimit() throws Exception {
     var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
+    mockCirculationLoansRequest(loanQuery, "100000", TENANT_ID_CONSORTIUM,
+      circulationLoan(USER_ID, false, enrichedLoanItem()));
 
     mockMvc.perform(get(LOANS_URL)
         .queryParam("query", loanQuery)
-        .param("limit", "501")
+        .param("limit", "100000")
         .headers(buildHeaders(TENANT_ID_CONSORTIUM))
         .contentType(MediaType.APPLICATION_JSON))
-      .andExpect(status().isUnprocessableEntity())
-      .andExpect(jsonPath("$.errors[0].code").value("LOANS_LIMIT_EXCEEDED"))
-      .andExpect(jsonPath("$.errors[0].parameters[0].key").value("limit"))
-      .andExpect(jsonPath("$.errors[0].parameters[0].value").value("501"));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.loans.length()").value(1));
 
-    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(CIRCULATION_LOANS_URL)));
+    wireMockServer.verify(1, getRequestedFor(urlPathEqualTo(CIRCULATION_LOANS_URL))
+      .withQueryParam("limit", equalTo("100000")));
   }
 
   @Test

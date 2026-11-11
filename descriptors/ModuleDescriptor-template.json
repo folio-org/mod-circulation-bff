@@ -219,7 +219,6 @@
           "modulePermissions": [
             "circulation.loans.collection.get",
             "user-tenants.collection.get",
-            "search.instances.collection.get",
             "inventory-storage.items.item.get",
             "inventory-storage.items.collection.get",
             "inventory-storage.locations.item.get",
@@ -243,7 +242,6 @@
           "modulePermissions": [
             "circulation.loans.item.get",
             "user-tenants.collection.get",
-            "search.instances.collection.get",
             "inventory-storage.items.item.get",
             "inventory-storage.items.collection.get",
             "inventory-storage.locations.item.get",
