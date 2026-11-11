@@ -426,7 +426,7 @@ class CirculationLoanApiTest extends BaseIT {
   }
 
   @Test
-  void findCirculationLoansWhenSearchFails() throws Exception {
+  void findCirculationLoansReturnsUnenrichedLoansWhenSearchFails() throws Exception {
     mockHelper.mockUserTenants(buildUserTenant(TENANT_ID_CONSORTIUM), TENANT_ID_CONSORTIUM);
     mockHelper.mockEcsTlrSettings(true);
     var loanQuery = String.format("(userId==%s) sortby id", USER_ID);
@@ -434,12 +434,19 @@ class CirculationLoanApiTest extends BaseIT {
     wireMockServer.stubFor(WireMock.post(urlPathEqualTo(BATCH_ITEMS_URL))
       .willReturn(aResponse().withStatus(500).withBody("search is down")));
 
+    var expectedLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(USER_ID, true, dcbLoanItem())))
+      .totalRecords(1);
+
     mockMvc.perform(get(LOANS_URL)
         .queryParam("query", loanQuery)
         .param("limit", "500")
         .headers(buildHeaders(TENANT_ID_CONSORTIUM))
         .contentType(MediaType.APPLICATION_JSON))
-      .andExpect(status().isInternalServerError());
+      .andExpect(status().isOk())
+      .andExpect(content().json(asJsonString(expectedLoans)));
+
+    wireMockServer.verify(0, getRequestedFor(urlPathEqualTo(ITEM_STORAGE_URL)));
   }
 
   @Test
