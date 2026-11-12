@@ -3,17 +3,18 @@ package org.folio.circulationbff.service;
 import static org.folio.circulationbff.util.CirculationLoanTestData.ITEM_ID;
 import static org.folio.circulationbff.util.CirculationLoanTestData.LOAN_ID;
 import static org.folio.circulationbff.util.CirculationLoanTestData.USER_ID;
-import static org.folio.circulationbff.util.CirculationLoanTestData.bffSearchInstance;
-import static org.folio.circulationbff.util.CirculationLoanTestData.bffSearchItem;
 import static org.folio.circulationbff.util.CirculationLoanTestData.circulationLoan;
 import static org.folio.circulationbff.util.CirculationLoanTestData.dcbLoanItem;
 import static org.folio.circulationbff.util.CirculationLoanTestData.enrichedLoanItem;
+import static org.folio.circulationbff.util.CirculationLoanTestData.loanEnrichment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.folio.circulationbff.client.CirculationClient;
@@ -22,8 +23,11 @@ import org.folio.circulationbff.domain.mapping.CirculationLoanMapper;
 import org.folio.circulationbff.domain.mapping.CirculationLoanMapperImpl;
 import org.folio.circulationbff.service.impl.CirculationLoanServiceImpl;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -35,14 +39,30 @@ class CirculationLoanServiceTest {
   @InjectMocks private CirculationLoanServiceImpl circulationLoanService;
 
   @Mock private TenantService tenantService;
-  @Mock private SearchService searchService;
+  @Mock private LoanEnrichmentService loanEnrichmentService;
   @Mock private SettingsService settingsService;
   @Mock private CirculationClient circulationClient;
   @Spy private CirculationLoanMapper circulationLoanMapper = new CirculationLoanMapperImpl();
 
   @AfterEach
   void tearDown() {
-    verifyNoMoreInteractions(tenantService, searchService, settingsService, circulationClient);
+    verifyNoMoreInteractions(tenantService, loanEnrichmentService, settingsService,
+      circulationClient);
+  }
+
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(ints = { 0, 500, 501, 100000 })
+  void findCirculationLoansPassesAnyLimitThroughToCirculation(Integer limit) {
+    var query = "(userId==" + USER_ID + ")";
+    var foundLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(false, enrichedLoanItem())))
+      .totalRecords(1);
+    when(circulationClient.findLoansByQuery(query, limit, 0, "auto")).thenReturn(foundLoans);
+
+    var result = circulationLoanService.findCirculationLoans(query, limit, 0, "auto");
+
+    assertEquals(foundLoans, result);
   }
 
   @Test
@@ -75,8 +95,8 @@ class CirculationLoanServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
 
-    var bffSearchInstance = bffSearchInstance(bffSearchItem());
-    when(searchService.findInstances("item.id", List.of(ITEM_ID))).thenReturn(List.of(bffSearchInstance));
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem())))
+      .thenReturn(Map.of(ITEM_ID, loanEnrichment()));
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
 
     var expectedResult = new CirculationLoans()
@@ -98,14 +118,52 @@ class CirculationLoanServiceTest {
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
 
-    var bffSearchInstance = bffSearchInstance(bffSearchItem());
-    when(searchService.findInstances("item.id", List.of(ITEM_ID))).thenReturn(List.of(bffSearchInstance));
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem())))
+      .thenReturn(Map.of(ITEM_ID, loanEnrichment()));
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
 
     var expectedResult = new CirculationLoans()
       .loans(List.of(nonDcbItem, circulationLoan(true, enrichedLoanItem())))
       .totalRecords(1);
     assertEquals(expectedResult, result);
+  }
+
+  @Test
+  void findCirculationLoansEnrichesOnlyDcbLoansAndCallsEnrichmentOnce() {
+    var query = "(userId==" + USER_ID + ")";
+    var second = circulationLoan(true, dcbLoanItem());
+    second.setId(UUID.randomUUID().toString());
+    var foundLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(true, dcbLoanItem()), second))
+      .totalRecords(2);
+
+    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
+    when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
+    when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem(), dcbLoanItem())))
+      .thenReturn(Map.of(ITEM_ID, loanEnrichment()));
+
+    var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
+
+    assertEquals(enrichedLoanItem(), result.getLoans().get(0).getItem());
+    assertEquals(enrichedLoanItem(), result.getLoans().get(1).getItem());
+  }
+
+  @Test
+  void findCirculationLoansWhenEnrichmentFailsPropagatesException() {
+    var query = "(userId==" + USER_ID + ")";
+    var foundLoans = new CirculationLoans()
+      .loans(List.of(circulationLoan(true, dcbLoanItem())))
+      .totalRecords(1);
+
+    when(tenantService.isCurrentTenantCentral()).thenReturn(true);
+    when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
+    when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem())))
+      .thenThrow(new IllegalStateException("boom"));
+
+    assertThrows(IllegalStateException.class,
+      () -> circulationLoanService.findCirculationLoans(query, 200, 0, "auto"));
   }
 
   @Test
@@ -152,12 +210,11 @@ class CirculationLoanServiceTest {
     var foundLoans = new CirculationLoans()
       .loans(List.of(circulationLoan(true, dcbLoanItem())))
       .totalRecords(1);
-    var bffSearchInstance = bffSearchInstance();
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
     when(circulationClient.findLoansByQuery(query, 200, 0, "auto")).thenReturn(foundLoans);
-    when(searchService.findInstances("item.id", List.of(ITEM_ID))).thenReturn(List.of(bffSearchInstance));
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem()))).thenReturn(Map.of());
 
     var result = circulationLoanService.findCirculationLoans(query, 200, 0, "auto");
 
@@ -217,7 +274,7 @@ class CirculationLoanServiceTest {
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
     assertEquals(circulationLoan, result);
-    verifyNoInteractions(tenantService, settingsService, searchService);
+    verifyNoInteractions(tenantService, settingsService, loanEnrichmentService);
   }
 
   @Test
@@ -227,8 +284,8 @@ class CirculationLoanServiceTest {
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
-    when(searchService.findInstances("item.id", List.of(ITEM_ID)))
-      .thenReturn(List.of(bffSearchInstance(bffSearchItem())));
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem())))
+      .thenReturn(Map.of(ITEM_ID, loanEnrichment()));
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
@@ -243,8 +300,8 @@ class CirculationLoanServiceTest {
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
     when(tenantService.isCurrentTenantSecure()).thenReturn(true);
     when(tenantService.isCurrentTenantCentral()).thenReturn(false);
-    when(searchService.findInstances("item.id", List.of(ITEM_ID)))
-      .thenReturn(List.of(bffSearchInstance(bffSearchItem())));
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem())))
+      .thenReturn(Map.of(ITEM_ID, loanEnrichment()));
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
@@ -258,8 +315,7 @@ class CirculationLoanServiceTest {
 
     when(tenantService.isCurrentTenantCentral()).thenReturn(true);
     when(settingsService.isEcsTlrFeatureEnabled()).thenReturn(true);
-    when(searchService.findInstances("item.id", List.of(ITEM_ID)))
-      .thenReturn(List.of(bffSearchInstance()));
+    when(loanEnrichmentService.enrich(List.of(dcbLoanItem()))).thenReturn(Map.of());
     when(circulationClient.findLoanById(loanId)).thenReturn(circulationLoan);
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
@@ -276,7 +332,7 @@ class CirculationLoanServiceTest {
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
     assertEquals(circulationLoan(true, dcbLoanItem()), result);
-    verifyNoInteractions(tenantService, searchService);
+    verifyNoInteractions(tenantService, loanEnrichmentService);
   }
 
   @Test
@@ -291,7 +347,7 @@ class CirculationLoanServiceTest {
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
     assertEquals(circulationLoan(true, dcbLoanItem()), result);
-    verifyNoInteractions(searchService);
+    verifyNoInteractions(loanEnrichmentService);
   }
 
   @Test
@@ -302,6 +358,6 @@ class CirculationLoanServiceTest {
 
     var result = circulationLoanService.getCirculationLoanById(loanId);
     assertEquals(circulationLoan(true, null), result);
-    verifyNoInteractions(tenantService, settingsService, searchService);
+    verifyNoInteractions(tenantService, settingsService, loanEnrichmentService);
   }
 }
