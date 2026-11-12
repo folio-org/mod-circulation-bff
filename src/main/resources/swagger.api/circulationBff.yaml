@@ -91,6 +91,10 @@ components:
       $ref: 'schemas/dto/circulationItem/circulationItem.yaml'
     consortiumItem:
       $ref: 'schemas/dto/search/consortiumItem.yaml'
+    consortiumItemBatchRequest:
+      $ref: 'schemas/dto/search/consortiumItemBatchRequest.yaml'
+    consortiumItemCollection:
+      $ref: 'schemas/dto/search/consortiumItemCollection.yaml'
     loans:
       $ref: 'schemas/dto/circulation/loans.json'
     declareItemLostRequest:

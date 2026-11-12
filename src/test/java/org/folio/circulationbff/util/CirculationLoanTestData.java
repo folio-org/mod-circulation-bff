@@ -30,6 +30,7 @@ import org.folio.circulationbff.domain.dto.Publication;
 import org.folio.circulationbff.domain.dto.SearchInstance;
 import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.domain.dto.SearchItemEffectiveCallNumberComponents;
+import org.folio.circulationbff.domain.model.LoanEnrichment;
 
 public class CirculationLoanTestData {
 
@@ -192,5 +193,29 @@ public class CirculationLoanTestData {
         new InstanceContributorsInner().name("TestContributor1").primary(false),
         new InstanceContributorsInner().name("TestContributor2").primary(true),
         new InstanceContributorsInner().name("TestContributor3").primary(false)));
+  }
+
+  public static LoanEnrichment loanEnrichment() {
+    var instance = inventoryInstance();
+    return LoanEnrichment.builder()
+      .tenantId(TENANT_ID_COLLEGE)
+      .callNumber("testCallNumber")
+      .callNumberComponents(new BffSearchItemCallNumberComponents()
+        .prefix("testCallNumber Prefix")
+        .callNumber("testCallNumber")
+        .suffix("testCallNumber Suffix"))
+      .volume("testVolume")
+      .copyNumber("testCopyNumber")
+      .chronology("testChronology")
+      .enumeration("testEnumeration")
+      .displaySummary("testDisplaySummary")
+      .accessionNumber("testAccessionNumber")
+      .inTransitDestinationServicePoint(new BffSearchItemInTransitDestinationServicePoint()
+        .id(IN_TRANSIT_DESTINATION_SERVICE_POINT_ID).name("test-library"))
+      .editions(instance.getEditions())
+      .physicalDescriptions(instance.getPhysicalDescriptions())
+      .contributors(instance.getContributors())
+      .publication(instance.getPublication())
+      .build();
   }
 }
