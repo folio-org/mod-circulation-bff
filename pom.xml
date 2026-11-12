@@ -235,7 +235,8 @@
                             <configOptions>
                                 <dateLibrary>java</dateLibrary>
                                 <interfaceOnly>true</interfaceOnly>
-                                <useSpringBoot3>true</useSpringBoot3>
+                                <useJackson3>true</useJackson3>
+                                <useSpringBoot4>true</useSpringBoot4>
                             </configOptions>
                         </configuration>
                     </execution>
