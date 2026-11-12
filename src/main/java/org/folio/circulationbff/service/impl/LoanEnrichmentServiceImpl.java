@@ -141,24 +141,9 @@ public class LoanEnrichmentServiceImpl implements LoanEnrichmentService {
         log.warn("findConsortiumItems:: skipping search result without id or tenantId");
         continue;
       }
-      byId.merge(consortiumItem.getId(), consortiumItem, this::pickConsortiumItem);
+      byId.putIfAbsent(consortiumItem.getId(), consortiumItem);
     }
     return byId;
-  }
-
-  /**
-   * The same item id can be returned for several tenants. The result must not depend on the order
-   * of the search response, so an entry with a real instance wins over a DCB placeholder one.
-   */
-  private ConsortiumItem pickConsortiumItem(ConsortiumItem existing, ConsortiumItem candidate) {
-    if (!Objects.equals(existing.getTenantId(), candidate.getTenantId())) {
-      log.warn("pickConsortiumItem:: item {} found in several tenants: {} and {}",
-        existing.getId(), existing.getTenantId(), candidate.getTenantId());
-    }
-    if (isDcbInstance(existing.getInstanceId()) && !isDcbInstance(candidate.getInstanceId())) {
-      return candidate;
-    }
-    return existing;
   }
 
   /**

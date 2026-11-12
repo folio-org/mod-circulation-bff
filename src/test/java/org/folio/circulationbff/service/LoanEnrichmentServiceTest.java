@@ -636,24 +636,20 @@ class LoanEnrichmentServiceTest {
     assertTrue(result.containsKey("item-100"));
   }
 
-  @ParameterizedTest
-  @ValueSource(booleans = { false, true })
-  void enrichPrefersRealInstanceEntryWhenItemIsFoundInSeveralTenants(boolean dcbEntryFirst) {
+  @Test
+  void enrichUsesFirstEntryWhenItemIsFoundInSeveralTenants() {
     stubCentralTenant();
     stubScopedExecution();
-    var dcbEntry = consortiumItem(ITEM_1, COLLEGE, DCB_INSTANCE_ID);
-    var realEntry = consortiumItem(ITEM_1, UNIVERSITY, INSTANCE_1);
-    stubBatch(dcbEntryFirst ? collection(dcbEntry, realEntry) : collection(realEntry, dcbEntry),
-      ITEM_1);
+    stubBatch(collection(consortiumItem(ITEM_1, COLLEGE, INSTANCE_1),
+      consortiumItem(ITEM_1, UNIVERSITY, INSTANCE_2)), ITEM_1);
     stubFetch(itemStorageClient, Set.of(ITEM_1), Map.of(ITEM_1, storageItemWithCopy(ITEM_1)));
     stubFetch(instanceStorageClient, Set.of(INSTANCE_1),
       Map.of(INSTANCE_1, storageInstance(INSTANCE_1)));
 
     var result = service.enrich(List.of(loanItem(ITEM_1, null)));
 
-    assertEquals(UNIVERSITY, result.get(ITEM_1).tenantId());
-    assertEquals(Set.of("ed"), result.get(ITEM_1).editions());
-    verify(executionService, never()).execute(eq(COLLEGE), any(FolioExecutionContext.class),
+    assertEquals(COLLEGE, result.get(ITEM_1).tenantId());
+    verify(executionService, never()).execute(eq(UNIVERSITY), any(FolioExecutionContext.class),
       any(Callable.class));
   }
 
