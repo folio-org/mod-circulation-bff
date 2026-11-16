@@ -1,3 +1,7 @@
+## 1.2.4 2026-11-16
+* Upgrade to SpringBoot v4.1.1 (MCBFF-219)
+* Pick slips printed in Central tenant does not contain values for some tokens (MCBFF-215)
+
 ## 1.2.3 2026-10-21
 * Send limit when querying mediated requests and batch details (MCBFF-224)
 
@@ -5,7 +9,6 @@
 * Adding Missing Dependencies (MCBFF-197)
 * Populate staff slip material type and loan type with names instead of IDs (MCBFF-195)
 * Send `limit` when querying mediated requests and batch request details, so batch info is not dropped for patrons with more than 10 batched requests (MCBFF-216)
-* Upgrade to Spring Boot v4.1.1 (MCBFF-223)
 
 ## 1.2.1 2026-06-25
 * Resolve instance for batch details endpoint (MCBFF-186)
