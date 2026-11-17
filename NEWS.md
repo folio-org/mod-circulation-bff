@@ -1,6 +1,9 @@
+## 1.2.5 2026-11-17
+* Update `folio-spring-support` to 10.0.1 (MCBFF-219)
+
 ## 1.2.4 2026-11-16
 * Upgrade to SpringBoot v4.1.1 (MCBFF-219)
-* Pick slips printed in Central tenant does not contain values for some tokens (MCBFF-215)
+* Pick slips printed in Central tenant does not contain values for some tokens (MCBFF-225)
 
 ## 1.2.3 2026-10-21
 * Send limit when querying mediated requests and batch details (MCBFF-224)
