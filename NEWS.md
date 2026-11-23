@@ -1,4 +1,5 @@
 ## 1.3.0-SNAPSHOT In progress
+* Support in-house use check-ins (MCBFF-231)
 * Resolve instance for batch details endpoint (MCBFF-186)
 * Populate staff slip material type and loan type with names instead of IDs (MCBFF-195)
 * Send `limit` when querying mediated requests and batch request details, so batch info is not dropped for patrons with more than 10 batched requests (MCBFF-216)

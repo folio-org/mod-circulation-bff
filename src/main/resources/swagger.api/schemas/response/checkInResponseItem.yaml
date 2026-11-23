@@ -1,0 +1,57 @@
+description: Item data
+type: object
+properties:
+  id:
+    description: Item ID
+    type: string
+  instanceId:
+    description: Related Instance Id
+    type: string
+  holdingsRecordId:
+    description: Related holding record id
+    type: string
+  title:
+    description: Related title
+    type: string
+  barcode:
+    description: Barcode of the item
+    type: string
+  inTransitDestinationServicePointId:
+    description: Service point an item is intended to be transited to (should only be present when in transit)
+    type: string
+  inTransitDestinationServicePoint:
+    description: Service point an item is intended to be transited to (should only be present when in transit)
+    type: object
+    properties:
+      id:
+        description: The ID of the service point
+        type: string
+      name:
+        description: Name of the service point
+        type: string
+  location:
+    description: Effective location of the item
+    type: object
+    properties:
+      name:
+        description: Name of the location
+        type: string
+  enumeration:
+    description: Enumeration of the item
+    type: string
+  volume:
+    description: Volume of the item
+    type: string
+  chronology:
+    description: Chronology of the item
+    type: string
+  displaySummary:
+    description: Display summary of the item
+    type: string
+  copyNumber:
+    description: Copy number of the item
+    type: string
+  callNumber:
+    description: Call number of the item
+    type: string
+additionalProperties: true

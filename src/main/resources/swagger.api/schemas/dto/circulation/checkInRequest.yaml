@@ -19,6 +19,12 @@ properties:
     description: Randomly generated UUID which must be the same for all check-in requests issued in scope of the same check-in session
     type: string
     format: uuid
+  inHouseUse:
+    description: Explicitly registers in-house use when true; otherwise existing inference applies. Not supported in the Central tenant.
+    type: boolean
+  checkedOutItemInHouseUseOverride:
+    description: Confirms that a checked-out item should be checked in and then registered as in-house use. Only effective when inHouseUse is true.
+    type: boolean
 required:
   - itemBarcode
   - servicePointId
