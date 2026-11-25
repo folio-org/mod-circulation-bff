@@ -34,6 +34,8 @@ import org.folio.circulationbff.domain.dto.SearchItem;
 import org.folio.circulationbff.domain.dto.ServicePoint;
 import org.folio.circulationbff.domain.dto.User;
 import org.folio.circulationbff.domain.dto.UserPersonal;
+import org.folio.circulationbff.domain.type.ErrorCode;
+import org.folio.circulationbff.exception.ValidationException;
 import org.folio.circulationbff.service.CheckInService;
 import org.folio.circulationbff.service.CirculationStorageService;
 import org.folio.circulationbff.service.InventoryService;
@@ -71,6 +73,11 @@ public class CheckInServiceImpl implements CheckInService {
 
   @Override
   public CheckInResponse checkIn(CheckInRequest request) {
+    if (Boolean.TRUE.equals(request.getInHouseUse()) && tenantService.isCurrentTenantCentral()) {
+      throw new ValidationException("In-house use is not supported in the Central tenant",
+        ErrorCode.IN_HOUSE_USE_NOT_SUPPORTED_IN_CENTRAL_TENANT, List.of());
+    }
+
     CheckInResponse response = null;
     if (settingsService.isEcsTlrFeatureEnabled() && tenantService.isCurrentTenantCentral()) {
       SearchItem item = findItem(request);

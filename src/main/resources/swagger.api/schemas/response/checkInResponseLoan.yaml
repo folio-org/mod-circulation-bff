@@ -1,0 +1,67 @@
+description: Links the item with the patron and applies certain conditions based on policies
+type: object
+properties:
+  id:
+    description: Unique ID of the loan
+    type: string
+  userId:
+    description: Unique ID of the user who has borrowed the item
+    type: string
+  borrower:
+    description: Additional information about the borrower of the item, taken from the user referred to by the userId
+    type: object
+    properties:
+      firstName:
+        description: First name of the borrower
+        type: string
+      lastName:
+        description: Last name of the borrower
+        type: string
+      middleName:
+        description: Middle name of the borrower
+        type: string
+      barcode:
+        description: Barcode used to identify the borrower
+        type: string
+      preferredFirstName:
+        description: Preferred first name of the borrower
+        type: string
+      patronGroup:
+        description: Current patron group of the borrower
+        type: string
+    additionalProperties: true
+  item:
+    description: Item data
+    type: object
+    properties:
+      id:
+        description: Item ID
+        type: string
+      inTransitDestinationServicePointId:
+        description: Service point an item is intended to be transited to (should only be present when in transit)
+        type: string
+      inTransitDestinationServicePoint:
+        description: Service point an item is intended to be transited to (should only be present when in transit)
+        type: object
+        properties:
+          id:
+            description: The ID of the service point
+            type: string
+          name:
+            description: Name of the service point
+            type: string
+      location:
+        description: Effective location of the item
+        type: object
+        properties:
+          name:
+            description: Name of the location
+            type: string
+      instanceId:
+        description: Related Instance Id
+        type: string
+      holdingsRecordId:
+        description: Related holding record id
+        type: string
+    additionalProperties: true
+additionalProperties: true
